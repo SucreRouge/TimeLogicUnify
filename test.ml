@@ -37,7 +37,8 @@ let letter_of_list li =
 let letter s = letter_of_list (explodeS s)   ;;
 
 
-let ttt = {l='x'; c=[{l=letter "pq";c=[]}]};;
+let ttt = {l=LabelC 'x'; c=[{l=LabelS(letter "pq");c=[]}]};;
+
 
 
 StringSet.elements emptyLetter;;
@@ -48,6 +49,24 @@ let rec tree_and t p q = match t.l with
      LabelC l -> {l; List.map (function tt -> tree_and tt p l) t.c }
      StringSet s -> s.add p;;   
 
-let rec tree_iter t f = {l=f(t.l); c=List.map (function tt -> tree_and tt f) t.c};;
+let rec apply_if_letter ll f = match ll with LabelC l -> LabelC l | LabelS s -> LabelS (f s);;
+
+let rec tree_iter t f = {l=f(t.l); c=List.map (function tt -> tree_iter tt f) t.c};;
+let rec tree_iterL tt f = tree_iter tt (function ll -> apply_if_letter ll f);;
+
+let rec tree_and t p q = tree_iterL t (function s -> if StringSet.mem p s && StringSet.mem q s then StringSet.add (p ^ "&" ^ q) s else s);;
+
+let stringset_to_string sl = "{" ^ String.concat ", " (StringSet.elements sl) ^ "}";;
+let rec tree_to_string t = match t.l with LabelC l -> (Char.escaped l ^ "(" ^ String.concat (List.map tree_to_string t.c) ^ ")") | LabelS s -> stringset_to_string s;;
+
+let rec leftmost t = match t.l with LabelC l -> ( match l with '+' -> leftmost List.hd t.c );;
+
+
+     LabelC l -> {l; List.map (function tt -> tree_and tt p l) t.c }
+     StringSet s -> s.add p;;
+
+tree_iterL ttt (function s -> s.add 'p');
+
+let rec tree_to_string tl = match 
 
 tree_and = fun  
