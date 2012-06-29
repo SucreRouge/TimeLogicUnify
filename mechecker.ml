@@ -30,7 +30,25 @@ let rec tree_iter t f = {l=f(t.l); c=List.map (function tt -> tree_iter tt f) t.
 let rec tree_iterL tt f = tree_iter tt (function ll -> apply_if_letter ll f);;
 
 let stringset_to_string sl = "{" ^ String.concat ", " (StringSet.elements sl) ^ "}";;
-let rec tree_to_string t = match t.l with LabelC l -> (Char.escaped l ^ "(" ^ (String.concat ", " (List.map tree_to_string t.c)) ^ ")") | LabelS s -> stringset_to_string (StringSet.remove "1" s);;
+let rec tree_to_string t = match t.l with
+	 LabelC l -> (let subtree_strings = (List.map tree_to_string t.c) in
+		if l = '+' 
+		then (List.hd subtree_strings) ^ "+" ^ (List.nth subtree_strings 1 )    
+		else Char.escaped l ^ "(" ^ (String.concat ", " (List.map tree_to_string t.c)) ^ ")")
+	 | LabelS s -> stringset_to_string (StringSet.remove "1" s);;
+
+	(* or:	then "(" ^ (List.hd subtree_strings) ^ "+" ^ (List.nth subtree_strings 1 ) ^ ")" *)  
+(*let rec tree_to_string t = match t.l with 
+	LabelC l -> match l with 
+		'>' ->  l ^ string_from_tree (List.hd t.c)
+		(match List.length t.c with
+			0 -> Char.escaped l
+			| 1 -> Char.escaped l ^ string_from_tree (List.hd t.c)
+			| 2 ->  "(" ^  string_from_tree (List.nth t.c 0) ^ (Char.escaped l) ^ string_from_tree (List.nth t.c 1) ^ ")" )
+			
+(Char.escaped l ^ "(" ^ (String.concat ", " (List.map tree_to_string t.c)) ^ ")") | LabelS s -> stringset_to_string (StringSet.remove "1" s);;
+	| _ -> " ERROR!!! ";;*)
+
 let println_tree t = print_endline (tree_to_string t);;
 
 let rec leftmost t = match t.l with 
@@ -97,6 +115,8 @@ let rec string_from_ftree t = match List.length t.ch with
 	| 2 ->  "(" ^  string_from_ftree (List.nth t.ch 0) ^ (Char.escaped t.op) ^ string_from_ftree (List.nth t.ch 1) ^ ")"
 	| _ -> " ERROR!!! ";;
 
+let print_ftree t = print_string (string_from_ftree t);;
+
 let rec model_check_ me ft  = 
 	let me2 = (List.fold_left model_check_ me ft.ch) in
 	let ch_strings = (List.map string_from_ftree ft.ch) in
@@ -105,12 +125,14 @@ let rec model_check_ me ft  =
 		| 'U' -> ( tree_until me2 (List.hd ch_strings) (List.nth ch_strings 1) )
 		| '&' -> ( tree_and me2 (List.hd ch_strings) (List.nth ch_strings 1) )
 		| '-' -> ( tree_not me2 (List.hd ch_strings) )
-		| _ -> me in
-	if (new_me = me) then () else (print_string "... " ; println_tree (new_me));
+		| _ -> me2 in
+(*	print_string "x.. " ; print_ftree ft; println_tree (me2);*)
+	if (new_me = me2) then () else (print_string "... " ; println_tree (new_me));
 	new_me;;
 
 let model_check me ft =
-	println_tree me;
+	print_newline ();
+	print_ftree (ft); print_string " in ME: "; println_tree me;
 	let me2 = model_check_ me ft in
 	let ft_str = (string_from_ftree ft) in
 	let sat = a_leaf_contains ft_str me2 in
@@ -122,5 +144,9 @@ let test_me = {l=LabelC '+'; c=[{l=LabelS(letter "p");c=[]};{l=LabelS(letter "p"
 let test_ft = {op='-';ch=[{op='U'; ch=[{op='p';ch=[]};{op='-';ch=[{op='q';ch=[]}]}]}]};;
 
 model_check test_me test_ft;;
-model_check (List.hd test_me.c) test_ft;;
 model_check (List.hd test_me.c) (List.hd test_ft.ch);;
+model_check test_me (List.hd test_ft.ch);;
+model_check (List.hd test_me.c) test_ft;;
+
+(*
+*)
