@@ -17,12 +17,10 @@ let x = {l=LabelC('x'); c=[{l=LabelC('z');c=[]}]};;
 let rec tree_iter t f = {l=f(t.l); c=List.map (function tt -> tree_iter tt f) t.c};;
 let emptyLetter = StringSet.add "1" StringSet.empty;;
 let stringset_of_list li =      
-    List.fold_left (fun set elem -> StringSet.add elem set) StringSet.empty li
+    List.fold_left (fun set elem -> StringSet.add elem set) StringSet.empty li 
 let letter_of_list li =      
     List.fold_left (fun set elem -> StringSet.add elem set) emptyLetter li
 let letter s = letter_of_list (explodeS s)   ;;
-
-StringSet.elements emptyLetter;;
 
 let rec apply_if_letter ll f = match ll with LabelC l -> LabelC l | LabelS s -> LabelS (f s);;
 
