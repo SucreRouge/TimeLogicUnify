@@ -22,6 +22,15 @@ rule token = parse
   | '('		{ LPAREN }
   | ')'		{ RPAREN }
   | ','		{ COMMA }
-  | lower as ch	{ ATOM (ch) }
+  | lower+ as ch	{ ATOM (ch) }
+  | '{'         { LBRACE }
+  | '}'         { RBRACE }
+  | '[' 	{ LSQUARE }
+  | ']'		{ RSQUARE }
+  | ';'		{ SEMICOLON }
+  | '+'		{ PLUS }
+  | '<'		{ LT }
+  | '>'		{ GT }
+  | 'I' 'N'	{ IN }
   | _		{ token lexbuf }
   | eof		{ raise End_of_file }
