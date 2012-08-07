@@ -23,14 +23,14 @@ let fixstr = fun s -> fixstr_ (clear_equals s) 0 0
 let main () =
   try
     let lexbuf = Lexing.from_channel stdin in
-    let _ = Printf.printf "Content-type: text/plain\n\n" in
-(*    let _ = print_string ((Sys.getenv "QUERY_STRING")^"\n\n") ; flush stdout in *)
-    let _ = print_string ((fixstr (Sys.getenv "QUERY_STRING")^"\n")) ; flush stdout in
-    Calc.input Lexer.token (Lexing.from_string (fixstr (Sys.getenv "QUERY_STRING"))); flush stdout;
     while true do
       Calc.input Lexer.token lexbuf
     done;
-        
+     let _ = Printf.printf "Content-type: text/plain\n\n" in
+(*    let _ = print_string ((Sys.getenv "QUERY_STRING")^"\n\n") ; flush stdout in *)
+    let _ = print_string ((fixstr (Sys.getenv "QUERY_STRING")^"\n")) ; flush stdout in
+    Calc.input Lexer.token (Lexing.from_string (fixstr (Sys.getenv "QUERY_STRING"))); flush stdout;
+       
   with End_of_file -> exit 0
       
 let _ = Printexc.print main ()

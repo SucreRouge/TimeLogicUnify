@@ -61,11 +61,13 @@ let rec a_leaf_satisfies f t = match t.l with
 let rec all_leaves_satisfy f t = not (a_leaf_satisfies (function set -> not (f set)) t);;
 
 let rec a_leaf_contains s t = a_leaf_satisfies (function set -> StringSet.mem s set) t;;
-let rec all_leaves_contain s t = a_leaf_satisfies (function set -> StringSet.mem s set) t;;
-let rec all_leaves_contain_p_or_q p q t = a_leaf_satisfies (function set -> StringSet.mem p set || StringSet.mem q set) t;;
+let rec all_leaves_contain s t = all_leaves_satisfy (function set -> StringSet.mem s set) t;;
+(*let rec all_leaves_contain_p_or_q p q t = a_leaf_satisfies (function set -> StringSet.mem p set || StringSet.mem q set) t;;
+*)
 let pUq_from_pq p q = "(" ^ p ^ "U" ^ q ^ ")";;
 let pSq_from_pq p q = "(" ^ p ^ "S" ^ q ^ ")";;
-let leftmost_sat_pUq p q t = all_leaves_contain_p_or_q (pUq_from_pq p q) q t;;
+(*let leftmost_sat_pUq p q t = all_leaves_contain_p_or_q (pUq_from_pq p q) q t;;
+*)
 let leftmost_sat_pUq p q tt = let t = (leftmost tt) in 
 	let pUq = (pUq_from_pq p q) in
 	match t.l with
@@ -100,7 +102,7 @@ let rec mirror t = let c2 = List.rev t.c in
 let tree_until t p q =
 	let pUq = (pUq_from_pq p q) in
 	tree_until_ false t p q pUq;;
-let rec tree_and t p q = tree_iterL t (function s -> if StringSet.mem p s && StringSet.mem q s then StringSet.add (p ^ "&" ^ q) s else s);;
+let rec tree_and t p q = tree_iterL t (function s -> if StringSet.mem p s && StringSet.mem q s then StringSet.add ("(" ^ p ^ "&" ^ q ^ ")") s else s);;
 let rec tree_not t p = tree_iterL t (function s -> if StringSet.mem p s then s else StringSet.add ("-" ^ p) s);;
 let tree_since t p q =  
 	let pSq = (pSq_from_pq p q) in

@@ -1,7 +1,7 @@
-TARGET = calc
+TARGET = mechecker.cgi
 
-mechecker.cgi:
-	ocamlopt mechecker.ml calc.ml lexer.ml main.ml
+mechecker.cgi: mechecker.ml calc.ml lexer.ml main.ml
+	ocamlopt -o mechecker.cgi mechecker.ml calc.ml lexer.ml main.ml
 
 calc: lexer.cmo calc.cmo main.cmo mechecker.cmo
 	ocamlc -o $@ mechecker.cmo lexer.cmo calc.cmo main.cmo 

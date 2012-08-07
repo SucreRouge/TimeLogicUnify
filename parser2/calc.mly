@@ -28,7 +28,7 @@ line:	NEWLINE		{ }
 	| exp IN me NEWLINE   { ignore ( model_check $3 $1 ); flush stdout } 
 /*	| exp IN me NEWLINE   { Printf.printf "%s\n" (string_from_ftree $1); flush stdout }  */
 exp:	ATOM			{ {op= (String.get ($1) 0); ch=[]} }
-	| exp AND exp		{ {op= '^'; ch=[$1; $3]} }
+	| exp AND exp		{ {op= '&'; ch=[$1; $3]} }
 	| exp OR exp		{ {op= '|'; ch=[$1; $3]} }
 	| NEG exp		{ {op= '-'; ch=[$2]} }
 	| UNTIL LPAREN exp COMMA exp RPAREN		{ {op= 'U'; ch=[$3;$5]} }
