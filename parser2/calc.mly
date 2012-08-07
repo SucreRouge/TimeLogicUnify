@@ -44,7 +44,7 @@ atomlist:  /* empty */		{[]}
 	| ATOM			{ [$1] }
 ;
 me:	LBRACE atomlist RBRACE	{ {l=LabelS(letter_of_list $2);c=[]} }
-	| LSQUARE shuflist RBRACE	{ {l=LabelC 'S';c=$2} }
+	| LSQUARE shuflist RSQUARE	{ {l=LabelC 'S';c=$2} }
 	| me PLUS me		{ {l=LabelC '+'; c=[$1;$3] } }
 	| GT me			{ {l=LabelC '>'; c=[$2]} }
 	| LT me			{ {l=LabelC '<'; c=[$2]} }

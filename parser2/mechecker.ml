@@ -136,14 +136,3 @@ let model_check me ft =
 	print_string (ft_str ^ (if sat then "" else " NOT") ^ " satisfied in ") ;
 	println_tree me;
 	sat;;
-
-let test_me = {l=LabelC '+'; c=[{l=LabelS(letter "p");c=[]};{l=LabelS(letter "p");c=[]}]};;
-let test_ft = {op='-';ch=[{op='U'; ch=[{op='p';ch=[]};{op='-';ch=[{op='q';ch=[]}]}]}]};;
-
-model_check test_me test_ft;;
-model_check (List.hd test_me.c) (List.hd test_ft.ch);;
-model_check test_me (List.hd test_ft.ch);;
-model_check (List.hd test_me.c) test_ft;;
-
-(*
-*)

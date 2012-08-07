@@ -1,5 +1,8 @@
 TARGET = calc
 
+mechecker.cgi:
+	ocamlopt mechecker.ml calc.ml lexer.ml main.ml
+
 calc: lexer.cmo calc.cmo main.cmo mechecker.cmo
 	ocamlc -o $@ mechecker.cmo lexer.cmo calc.cmo main.cmo 
 
