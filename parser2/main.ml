@@ -24,13 +24,22 @@ let main () =
   try
     let lexbuf = Lexing.from_channel stdin in
     while true do
-      Calc.input Lexer.token lexbuf
+      try 
+      	Calc.input Lexer.token lexbuf ;
+      with Parsing.Parse_error -> Printf.printf "Parse Error!\n" ;
+      	Printf.printf "%f\n" (Sys.time()); flush stdout ;
     done;
-     let _ = Printf.printf "Content-type: text/plain\n\n" in
 (*    let _ = print_string ((Sys.getenv "QUERY_STRING")^"\n\n") ; flush stdout in *)
-    let _ = print_string ((fixstr (Sys.getenv "QUERY_STRING")^"\n")) ; flush stdout in
+(*    let _ = print_string ((fixstr (Sys.getenv "QUERY_STRING")^"\n")) ; flush stdout in
+
     Calc.input Lexer.token (Lexing.from_string (fixstr (Sys.getenv "QUERY_STRING"))); flush stdout;
-       
+  *)     
   with End_of_file -> exit 0
-      
-let _ = Printexc.print main ()
+
+let _ = try 
+	let qs = Sys.getenv "QUERY_STRING" in
+     	let _ = Printf.printf "Content-type: text/plain\n\n" in
+	try 
+    		Calc.input Lexer.token (Lexing.from_string (fixstr qs)); flush stdout;
+	with Parsing.Parse_error -> Printf.printf "Parse Error!\n"
+with Not_found -> Printexc.print main ()

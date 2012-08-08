@@ -85,10 +85,17 @@ let rec tree_until_ b t p q pUq =
 				{l=t.l;c=[left_tree;right_tree]}
 			| '>' -> let dummy_node = tree_until_ b (List.hd t.c) p q pUq in
 				let b2 = sat_pUq (dummy_node) in
-				if (b == b2) then {l=t.l;c=[dummy_node]} else tree_until_ b2 (List.hd t.c) p q pUq
+				if (b = b2) then {l=t.l;c=[dummy_node]} else tree_until_ b2 (List.hd t.c) p q pUq
 			| '<' -> let right_tree = ( tree_until_ b (List.hd t.c) p q pUq) in
-				let left_tree = tree_until_ (sat_pUq right_tree) (List.hd t.c) p q pUq in
-				{l=LabelC '+';c=[{l=LabelC '<';c=[left_tree]}; right_tree]}
+				let b2 = (sat_pUq right_tree) in 
+				if (b = b2) then
+					{l=LabelC '<';c=[right_tree]}
+				else 
+					let left_tree = tree_until_ (sat_pUq right_tree) (List.hd t.c) p q pUq in
+					if (left_tree = right_tree) then
+						{l=LabelC '<';c=[right_tree]}
+					else
+						{l=LabelC '+';c=[{l=LabelC '<';c=[left_tree]}; right_tree]}
 			| 'S' -> let b2 = (b && all_leaves_contain p t) || (all_leaves_contain p t && a_leaf_contains q t) in
 				{l=t.l;c=List.map (function tt -> tree_until_ b2 tt p q pUq) t.c} 
                         |  _  -> errorTree  )

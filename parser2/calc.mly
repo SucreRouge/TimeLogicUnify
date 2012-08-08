@@ -25,8 +25,13 @@ input:	/* empty */	{ }
 	| input line	{ }
 ;
 line:	NEWLINE		{ }
-	| exp IN me NEWLINE   { ignore ( model_check $3 $1 ); flush stdout } 
-/*	| exp IN me NEWLINE   { Printf.printf "%s\n" (string_from_ftree $1); flush stdout }  */
+	| exp IN me NEWLINE   { 
+		Printf.printf "BEFORE  %6.3f" (Sys.time()) ;
+		ignore ( model_check $3 $1 );
+		Printf.printf "AFTER  %6.3f\n\n" (Sys.time()) ;
+		 flush stdout }  
+/*	| exp IN me NEWLINE   { Printf.printf "%s\n" (string_from_ftree $1); 
+Printf.printf "AFTER: %'.3f\n" (Sys.time()); flush stdout ; flush stdout }  */
 exp:	ATOM			{ {op= (String.get ($1) 0); ch=[]} }
 	| exp AND exp		{ {op= '&'; ch=[$1; $3]} }
 	| exp OR exp		{ {op= '|'; ch=[$1; $3]} }
