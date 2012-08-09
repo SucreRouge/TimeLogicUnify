@@ -4,15 +4,16 @@
    trail = -> *)
 
 
-module StringSet=Set.Make(String)
-module StringMap=Set.Make(String)
-
 let append = fun a x -> let (l,e) = a in  e.(l) <- x; (l+1,e) 
 
 (* Now we start our mathematical definitions *)
 
 type label_t = LabelC of char | LabelS of bool array;;
+
+
 (*type tree = { l : label; c : tree list; };;*)
+
+
 type 'a tree = {l: 'a; c: 'a tree list}
 (*type 'a node = { ee: 'a; ec: int array }
 type 'a node = { ee: 'a; ec: int array }
@@ -24,78 +25,111 @@ type 'a array2 = {mutable a: 'a array; mutable len: int}
 type 'a dag_node = {n: 'a ; d:  int array}
 type 'a dag =  'a dag_node array2
 
+type array2ii = {a0: label_t dag; mutable a1: int array; mutable a2: int array }
 
-let new_dag = fun () -> {a=[| |]; len=0} 
+let new_array2 = 
+ fun () -> {a=[| |]; len=0} 
+let new_array2ii = fun () -> {a0 = new_array2(); a1=[| |]; a2=[| |]} 
 
+(*
 let new_dag_from = fun d -> if d.len = 0
 	then new_dag()
 	else {a=Array.make (Array.length d.a) d.a.(0); len=0}
-		
+*)		
 
 type 'a dagElem = int * 'a dag
 
-let append = fun x aa ->
-	 let l=aa.len in 
-		if l >= Array.length aa.a then
-			if l = 0 then 
-				aa.a <- [|x|]
-			else 
-				aa.a <- Array.append aa.a aa.a;
-	 aa.a.(l) <- x;
-	 aa.len <- l+1;
-	 l
+let array_double = fun a -> Array.append a a
 
-(*let adds = fun aam x -> let (aa,m)=aam in key if StringMap.mem s then StringMap.find   
-*)
+let append1 = fun l a x ->
+	let new_a = if l >= Array.length a 
+	then 
+		begin
+		if l = 0 then [|x|]
+		else (array_double a)
+		end
+	else a in 
+	(new_a.(l) <- x ; new_a) 
+;;
+
+let append = fun aa x ->
+	let l=aa.len in 
+	aa.a <- append1 l aa.a x ;
+	aa.len <- l+1;
+	l
+
+let appendii = fun aaa x ->
+	let aa=aaa.a0 in 
+	let l=aa.len in
+	aaa.a1 <- append1 l aaa.a1 (-1) ;
+	aaa.a2 <- append1 l aaa.a2 (-1) ;
+	append aa x 
+
+let array2_map f aa =
+	let bb = new_array2() in 
+	for i = 0 to aa.len-1 do
+		ignore (append bb (f aa.a.(i)))
+	done ;
+	bb
+
+let dag_map f aa = array2_map (fun dag_nd -> {dag_nd with n=(f dag_nd)}) aa
 
 let aa_to_array aa = Array.sub aa.a 0 aa.len 
 
 let arrayi_to_string = fun j f a -> String.concat j (Array.to_list (Array.mapi f a)) 
 let array_to_string  = fun j f a -> String.concat j (Array.to_list (Array.map  f a)) 
 let intarray_to_string = array_to_string ", " string_of_int
-let rec dag_from_tree_ d t = 
-	let children = List.map (dag_from_tree_ d) t.c in
-	append {n=t.l; d=(Array.of_list children)} d
+let boolarray_to_string = array_to_string "" (fun b -> if b then "T" else ".")
+let rec dag_from_tree_ h d t = 
+	let children = List.map (dag_from_tree_ h d) t.c in
+	let new_node = {n=t.l; d=(Array.of_list children)} in
+	try Hashtbl.find h new_node
+	with Not_found -> append d {n=t.l; d=(Array.of_list children)}
 
-let dag_from_tree = fun t -> let d = {a=[| |]; len=0} in 
-	let _ = dag_from_tree_ d t in
+let dag_from_tree t =
+	let h = Hashtbl.create 100 in
+	let d = {a=[| |]; len=0} in 
+	let _ = dag_from_tree_ h d t in
 	d
+
+let x = dag_from_tree {l="x"; c=[]}
+;;
 
 (* slow refactor *)
 (*
 let dag_to_string = fun f d -> Array.mapi (fun i dn -> ((int_to_string i) ^ " " ^ (f dn) ^ " " ^ (intarray_to_string dn.d) ^ "\n" )) (aa_to_array d)*)
-let print_dag = fun f d -> Array.mapi (fun i dn -> Printf.printf "%d %s %s\n" i (f dn.n) (intarray_to_string dn.d) ) (aa_to_array d)
+let print_dag = fun f d -> ignore ( Array.mapi (
+	fun i dn -> Printf.printf "%d %s %s\n" 
+		i
+		(f dn.n)
+		(intarray_to_string dn.d)
+		) (aa_to_array d))
 
-type melement = { op : label_t; mutable pIHM: int; mutable pMHI: int }
+type melement = label_t
 type formula_op = char 
 type formula_dag = formula_op dag
 type formula = formula_op dagElem
 type me_dag = melement dag
-type me_context = {med : me_dag; fd : formula_dag}
-type model_expression = {m : int ; md : me_dag; fd : formula_dag }
+type model_expression = {m : int ; mdii : array2ii; fd : formula_dag }
 
-let new_melement = fun o -> {op=LabelC o; pIHM=(-1); pMHI=(-1)} 
+let lead_or_trail_ = fun op me -> 
+	let m=me.m in 
+	let cache = if op = '<' then me.mdii.a1 else me.mdii.a2 in
+	if cache.(m) < 0 then cache.(m) <- appendii me.mdii {n=LabelC op; d=[|m|]};
+  {me with m=cache.(m)}
 
-let lead = fun e -> let e_node = e.md.a.(e.m).n in
-  if e_node.pMHI < 0 then e_node.pMHI <- append {n=new_melement '<'; d=[|e.m|]} e.md;
-  {e with m=e_node.pMHI}
+let (~<) = (lead_or_trail_ '<') (* lead  *)  
+let (~>) = (lead_or_trail_ '>') (* trail *)  
 
-let trail = fun e -> let e_node = e.md.a.(e.m).n in
-  if e_node.pIHM < 0 then e_node.pIHM <- append {n=new_melement '>'; d=[|e.m|]} e.md;
-  {e with m=e_node.pIHM}
+let letter_ =  fun mdii fd atoms -> {m=appendii mdii {n=LabelS atoms; d=[||]}; mdii=mdii; fd=fd} 
+let shuffle_ = fun mdii fd chld  -> {m=appendii mdii {n=LabelC 'S'  ; d=chld}; mdii=mdii; fd=fd}
 
-let shuffle_ = fun md fd a -> {m=(append {n=new_melement 'S'; d=a} md); md=md; fd=fd}
-let letter_ = fun md fd atoms -> {m=append {n={op=LabelS atoms; pIHM=(-1); pMHI=(-1)}; d=[||]} md; md=md; fd=fd} 
-let (~<) = lead 
-let (~>) = trail 
 let (=>) = fun x y -> (not x) || y
 let (<=) = fun x y -> x || (not y)
 
-let (+~) = fun e g -> if ( e.md == g.md && e.fd == g.fd ) 
-  then {e with m=append {n=new_melement '+'; d=[|e.m;g.m|]} e.md}
+let (+:) = fun e g -> if ( e.mdii == g.mdii && e.fd == g.fd ) 
+  then {e with m=appendii e.mdii {n=LabelC '+'; d=[|e.m;g.m|]}}
   else failwith "ME_Context_Mismatch"
-
-let (+:) = (+~)
 
 type cacheU = { pre_false: int ; pre_true: int; all_p: bool; some_q: bool }  
 
@@ -132,13 +166,13 @@ let swap_pair = fun a ->
 
 let mirror d = for k = 0 to d.len - 1 do 
 		let dak = d.a.(k) in
-		d.a.(k) <- match dak.n.op with 
+		d.a.(k) <- match dak.n with 
 			LabelC label -> (
                                 match label with  
                                         '+'   ->  swap_pair dak.d; dak
                                         (*ALT: '+'   ->  {dak with d=[|mI.(1); mI.(0)|]}*)
-                                        | '<' ->  {dak with n={dak.n with op=LabelC '>'}}
-                                        | '>' ->  {dak with n={dak.n with op=LabelC '<'}}
+                                        | '<' ->  {dak with n=LabelC '>'}
+                                        | '>' ->  {dak with n=LabelC '<'}
                                         | 'S' ->  dak
 					| _ -> failwith "Invalid_ME_Operator"
 				
@@ -156,7 +190,7 @@ let build_pre = fun d fd f ->
 	for k = 0 to d.len - 1
 	do 
 		let dak = d.a.(k) in
-		match dak.n.op with 
+		match dak.n with 
 			LabelC label -> 
 				let children = dak.d in 
 				all_q.(k)  <- Array.fold_left (fun x i -> x && all_q.(i) ) true  children;
@@ -181,9 +215,11 @@ let safe_set a i x = let c = (Array.copy a) in Array.set c i x ; c
 
 (* Should merge for performance *)
 let add_atom_Upq = fun  d_in fd f ->
-	let d_out = new_dag_from d_in in
-	let shuffle = (shuffle_ d_out fd) in
-	let letter = (letter_ d_out fd) in
+	let d_outii = new_array2ii () in
+	let d_out = d_outii.a0 in
+(*	let d_out = new_dag_from d_in in *)
+	let shuffle = (shuffle_ d_outii fd) in
+	let letter  = (letter_  d_outii fd) in
 	let pre = build_pre d_in fd f in
 	let _ = pre.(0).(0) + 1 in 
 	let t_cache = Array.make_matrix d_in.len 2 (-1) in
@@ -192,9 +228,9 @@ let add_atom_Upq = fun  d_in fd f ->
 			let _ = if t_cache.(i).(b) < 0 then t_cache.(i).(b) <- t_rec k b else () in
 			t_cache.(i).(b)
 		) in
-		let t = fun i b -> {m=t_ i b; md=d_out; fd=fd} in 
+		let t = fun i b -> {m=t_ i b; mdii=d_outii; fd=fd} in 
 		let dak = d_in.a.(k) in
-		( match dak.n.op with
+		( match dak.n with
 			LabelC label -> (
                                 let mI = dak.d in
 				let mI0 = mI.(0) in 
@@ -224,7 +260,7 @@ let add_atom_PC = fun d fd f bool_func ->
 	for k = 0 to d.len - 1
 	do 
 		let dak = d.a.(k) in
-		match dak.n.op with 
+		match dak.n with 
 			LabelC label -> ()
 			| LabelS atoms -> if bool_func (atoms)
 				then Array.set atoms f true
@@ -255,12 +291,31 @@ let add_atoms = fun d fd ->
 	for f = 0 to fd.len -1
 	do
 		d_out := add_atom (!d_out) fd f
-	done ; d_out
+	done ; (!d_out)
 		
-let ttttt=2	
-		 
-let _ = print_dag (fun xx -> xx) ( dag_from_tree {l="a"; c=[{l="b";c=[]}]} );
+let ttttt=2
 
+let label_to_string l = match l with 
+	LabelC c -> Char.escaped c
+	| LabelS a -> boolarray_to_string a
+	
+let do_model_check d fd =
+begin 
+	print_string "ME:\n" ;
+	print_dag label_to_string d;
+	print_string "\nFORMULA: \n" ; 
+	print_dag Char.escaped fd ;
+	let new_d = add_atoms d fd in
+	print_string "ME:\n" ;
+        print_dag label_to_string new_d
+end
+		 
+let my_dag = (dag_from_tree {l="x"; c=[]})
+;; 
+let my_dag = (dag_from_tree {l="x"; c=[{l="y";c=[]}; {l="y"; c=[]}]}) 
+;;
+let _ = print_dag (fun xx -> xx) ( dag_from_tree {l="x"; c=[{l="y";c=[]}; {l="z"; c=[]}]} )
+;;
 
 (*	
 let t_cache f a_true a_false i b = 
