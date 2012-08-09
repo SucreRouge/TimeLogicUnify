@@ -111,6 +111,13 @@ let (+:) = fun e g -> if ( e.mdii == g.mdii && e.fd == g.fd )
   then {e with m=appendii e.mdii {n=LabelC '+'; d=[|e.m;g.m|]}}
   else failwith "ME_Context_Mismatch"
 
+let dedup me alt = 
+	let aa = me.mdii.a0 in
+	let m  = me.m in
+	if m = aa.len - 1 && alt >= 0 && aa.a.(m) == aa.a.(alt) 
+		then (print_string "Yay! dedupd!"; alt)
+		else m 
+
 type cacheU = { pre_false: int ; pre_true: int; all_p: bool; some_q: bool }  
 
 let bool_to_int = fun b -> if b then 1 else 0
@@ -187,7 +194,7 @@ let add_atom_Upq = fun  d_in fd f ->
 		) in
 		let t = fun i b -> {m=t_ i b; mdii=d_outii; fd=fd} in 
 		let dak = d_in.a.(k) in
-		( match dak.n with
+		let new_me = match dak.n with
 			LabelC label -> (
                                 let mI = dak.d in
 				let mI0 = mI.(0) in
@@ -196,7 +203,11 @@ let add_atom_Upq = fun  d_in fd f ->
 				flush stdout;
                                 ( match label with  
                                         '+'   ->  ( (t mI0 (pre.(mI.(1)).(b))) +: (t mI.(1) b) ) 
-                                        | '<' ->  ( ( ~< ( t mI0 pre.(mI0).(b)) ) +: (t mI0 b) )
+                                        | '<' ->  let left = (t mI0 pre.(mI0).(b)) in
+						  let right = (t mI0 b) in 
+						  if (left=right)
+							then   ( ~< left ) 
+							else ( ( ~< left ) +: (right) )
                                         | '>' ->  ( ~> ( t mI0 pre.(mI0).(b)) )
                                         | 'S' ->  (shuffle (Array.map (fun i -> t_ i b) mI))
 					| _ -> failwith "Invalid_ME_Operator"
@@ -204,8 +215,9 @@ let add_atom_Upq = fun  d_in fd f ->
 			)
                         | LabelS atoms -> 
 				let atoms = if (b==1) then safe_set atoms f true else atoms in
-				letter atoms 
-		).m
+				letter atoms  in
+		dedup new_me t_cache.(k).(1-b)
+		
 	in
 	print_string "defined_t_rec\n";
 	ignore (t_rec (d_in.len-1) 0) ;
