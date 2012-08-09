@@ -4,12 +4,14 @@
    trail = -> *)
 
 
+
+module StringSet=Set.Make(String)
+
 let append = fun a x -> let (l,e) = a in  e.(l) <- x; (l+1,e) 
 
 (* Now we start our mathematical definitions *)
 
 type label_t = LabelC of char | LabelS of bool array;;
-
 
 (*type tree = { l : label; c : tree list; };;*)
 
@@ -317,6 +319,7 @@ let my_dag = (dag_from_tree {l="x"; c=[{l="y";c=[]}; {l="y"; c=[]}]})
 let _ = print_dag (fun xx -> xx) ( dag_from_tree {l="x"; c=[{l="y";c=[]}; {l="z"; c=[]}]} )
 ;;
 
+type parse_t = ParseC of char | ParseS of StringSet.t;;
 (*	
 let t_cache f a_true a_false i b = 
 	IF 
