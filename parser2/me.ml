@@ -16,7 +16,6 @@ type label_t = LabelC of char | LabelS of bool array;;
 (*type tree = { l : label; c : tree list; };;*)
 
 
-type 'a tree = {l: 'a; c: 'a tree list}
 
 type 'a array2 = {mutable a: 'a array; mutable len: int}
 type 'a dag_node = {n: 'a ; d:  int array}
@@ -27,6 +26,10 @@ type array2ii = {a0: label_t dag; mutable a1: int array; mutable a2: int array }
 let new_array2 = 
  fun () -> {a=[| |]; len=0} 
 let new_array2ii = fun () -> {a0 = new_array2(); a1=[| |]; a2=[| |]} 
+
+let array2_compact aa = {a=Array.sub aa.a 0 aa.len; len=aa.len}
+
+
 
 (*
 let new_dag_from = fun d -> if d.len = 0
@@ -77,21 +80,6 @@ let arrayi_to_string = fun j f a -> String.concat j (Array.to_list (Array.mapi f
 let array_to_string  = fun j f a -> String.concat j (Array.to_list (Array.map  f a)) 
 let intarray_to_string = array_to_string ", " string_of_int
 let boolarray_to_string = array_to_string "" (fun b -> if b then "T" else ".")
-let rec dag_from_tree_ h d t = 
-	let children = List.map (dag_from_tree_ h d) t.c in
-	let new_node = {n=t.l; d=(Array.of_list children)} in
-	try Hashtbl.find h new_node
-	with Not_found -> append d {n=t.l; d=(Array.of_list children)}
-
-let dag_from_tree t =
-	let h = Hashtbl.create 100 in
-	let d = {a=[| |]; len=0} in 
-	let _ = dag_from_tree_ h d t in
-	d
-
-let x = dag_from_tree {l="x"; c=[]}
-;;
-
 (*
 let dag_to_string = fun f d -> Array.mapi (fun i dn -> ((int_to_string i) ^ " " ^ (f dn) ^ " " ^ (intarray_to_string dn.d) ^ "\n" )) (aa_to_array d)*)
 let print_dag = fun f d -> ignore ( Array.mapi (
@@ -265,8 +253,6 @@ let add_atoms = fun d fd ->
 		d_out := add_atom (!d_out) fd f
 	done ; (!d_out)
 		
-let ttttt=2
-
 let label_to_string l = match l with 
 	LabelC c -> Char.escaped c
 	| LabelS a -> boolarray_to_string a
@@ -282,6 +268,29 @@ begin
         print_dag label_to_string new_d
 end
 		 
+(* Now some boring details for parsing *)
+type parse_t = ParseC of char | ParseS of StringSet.t;;
+
+let parse_to_label p fd = match p with
+	  ParseC c  -> LabelC c
+	| ParseS ss -> LabelS (Array.init fd.len ( fun i -> StringSet.mem fd.a.(i) ss ))
+type 'a tree = {l: 'a; c: 'a tree list}
+	
+let rec dag_from_tree_ h d t = 
+	let children = List.map (dag_from_tree_ h d) t.c in
+	let new_node = {n=t.l; d=(Array.of_list children)} in
+	try Hashtbl.find h new_node
+	with Not_found -> append d {n=t.l; d=(Array.of_list children)}
+
+let dag_from_tree t =
+	let h = Hashtbl.create 100 in
+	let d = {a=[| |]; len=0} in 
+	let _ = dag_from_tree_ h d t in
+	d
+
+let x = dag_from_tree {l="x"; c=[]}
+;;
+
 let my_dag = (dag_from_tree {l="x"; c=[]})
 ;; 
 let my_dag = (dag_from_tree {l="x"; c=[{l="y";c=[]}; {l="y"; c=[]}]}) 
@@ -289,4 +298,3 @@ let my_dag = (dag_from_tree {l="x"; c=[{l="y";c=[]}; {l="y"; c=[]}]})
 let _ = print_dag (fun xx -> xx) ( dag_from_tree {l="x"; c=[{l="y";c=[]}; {l="z"; c=[]}]} )
 ;;
 
-type parse_t = ParseC of char | ParseS of StringSet.t;;
