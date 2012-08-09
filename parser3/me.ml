@@ -1,11 +1,7 @@
-#!/usr/bin/env ocaml
-
 (* lead = <-
    trail = -> *)
 
 
-
-module StringSet=Set.Make(String)
 
 let append = fun a x -> let (l,e) = a in  e.(l) <- x; (l+1,e) 
 
@@ -72,7 +68,7 @@ let array2_map f aa =
 	done ;
 	bb
 
-let dag_map f aa = array2_map (fun dag_nd -> {dag_nd with n=(f dag_nd)}) aa
+let dag_map f aa = array2_map (fun dag_nd -> {dag_nd with n=(f dag_nd.n)}) aa
 
 let aa_to_array aa = Array.sub aa.a 0 aa.len 
 
@@ -90,7 +86,7 @@ let print_dag = fun f d -> ignore ( Array.mapi (
 		) (aa_to_array d))
 
 type melement = label_t
-type formula_op = char 
+type formula_op = string
 type formula_dag = formula_op dag
 type formula = formula_op dagElem
 type me_dag = melement dag
@@ -183,9 +179,10 @@ let add_atom_Upq = fun  d_in fd f ->
 	let pre = build_pre d_in fd f in
 	let _ = pre.(0).(0) + 1 in 
 	let t_cache = Array.make_matrix d_in.len 2 (-1) in
+	print_string "adding_atom\n";
 	let rec t_rec k b =
 		let t_ = fun i b -> (
-			let _ = if t_cache.(i).(b) < 0 then t_cache.(i).(b) <- t_rec k b else () in
+			let _ = if t_cache.(i).(b) < 0 then t_cache.(i).(b) <- t_rec i b else () in
 			t_cache.(i).(b)
 		) in
 		let t = fun i b -> {m=t_ i b; mdii=d_outii; fd=fd} in 
@@ -193,7 +190,10 @@ let add_atom_Upq = fun  d_in fd f ->
 		( match dak.n with
 			LabelC label -> (
                                 let mI = dak.d in
-				let mI0 = mI.(0) in 
+				let mI0 = mI.(0) in
+				print_string ((string_of_int k )^"--\n");
+				print_string ((intarray_to_string mI)^"\n");
+				flush stdout;
                                 ( match label with  
                                         '+'   ->  ( (t mI0 (pre.(mI.(1)).(b))) +: (t mI.(1) b) ) 
                                         | '<' ->  ( ( ~< ( t mI0 pre.(mI0).(b)) ) +: (t mI0 b) )
@@ -207,6 +207,7 @@ let add_atom_Upq = fun  d_in fd f ->
 				letter atoms 
 		).m
 	in
+	print_string "defined_t_rec\n";
 	ignore (t_rec (d_in.len-1) 0) ;
 	d_out 
 
@@ -233,16 +234,16 @@ let add_atom = fun d fd f ->
 	let pc = (add_atom_PC d fd f) in
 	match (Array.length pq) with
 		0 -> d
-		| 1 -> assert (f_op = '-') ; let p = pq.(0) in 
+		| 1 -> assert (f_op = "-") ; let p = pq.(0) in 
                         pc (fun atoms -> not atoms.(p))
 		| 2 -> let (p,q) = (pq.(0),pq.(1)) in ( match f_op with
-			  '&' -> pc (fun a -> a.(p) && a.(q)) 
-			| '|' -> pc (fun a -> a.(p) || a.(q))
-			| '=' -> pc (fun a -> a.(p) =  a.(q))
-			| '>' -> pc (fun a -> a.(p) => a.(q))
-			| '<' -> pc (fun a -> a.(p) <= a.(q))
-			| 'U' -> add_atom_Upq d fd f	
-			| 'S' -> add_atom_Spq d fd f
+			  "&" -> pc (fun a -> a.(p) && a.(q)) 
+			| "|" -> pc (fun a -> a.(p) || a.(q))
+			| "=" -> pc (fun a -> a.(p) =  a.(q))
+			| ">" -> pc (fun a -> a.(p) => a.(q))
+			| "<" -> pc (fun a -> a.(p) <= a.(q))
+			| "U" -> add_atom_Upq d fd f	
+			| "S" -> add_atom_Spq d fd f
 			| _   -> failwith "Invalid_Operator" )
 		| _ -> failwith "More_than_two_children_in_formula"
 
@@ -257,30 +258,22 @@ let label_to_string l = match l with
 	LabelC c -> Char.escaped c
 	| LabelS a -> boolarray_to_string a
 	
-let do_model_check d fd =
-begin 
-	print_string "ME:\n" ;
-	print_dag label_to_string d;
-	print_string "\nFORMULA: \n" ; 
-	print_dag Char.escaped fd ;
-	let new_d = add_atoms d fd in
-	print_string "ME:\n" ;
-        print_dag label_to_string new_d
-end
-		 
+	 
 (* Now some boring details for parsing *)
-type parse_t = ParseC of char | ParseS of StringSet.t;;
+type parse_t = ParseC of char | ParseS of string list;;
 
-let parse_to_label p fd = match p with
+let parse_to_label fd p = match p with
 	  ParseC c  -> LabelC c
-	| ParseS ss -> LabelS (Array.init fd.len ( fun i -> StringSet.mem fd.a.(i) ss ))
+	| ParseS ss -> LabelS (Array.init fd.len ( fun i -> List.mem fd.a.(i).n ss ))
+
 type 'a tree = {l: 'a; c: 'a tree list}
 	
 let rec dag_from_tree_ h d t = 
 	let children = List.map (dag_from_tree_ h d) t.c in
 	let new_node = {n=t.l; d=(Array.of_list children)} in
 	try Hashtbl.find h new_node
-	with Not_found -> append d {n=t.l; d=(Array.of_list children)}
+	with Not_found -> let new_id = append d new_node in
+		Hashtbl.add h new_node new_id ; new_id
 
 let dag_from_tree t =
 	let h = Hashtbl.create 100 in
@@ -298,3 +291,18 @@ let my_dag = (dag_from_tree {l="x"; c=[{l="y";c=[]}; {l="y"; c=[]}]})
 let _ = print_dag (fun xx -> xx) ( dag_from_tree {l="x"; c=[{l="y";c=[]}; {l="z"; c=[]}]} )
 ;;
 
+let do_model_check formula_tree me_tree =
+begin 
+(*	let fd = array2_compact (dag_from_tree formula_tree) in *)
+	let fd = dag_from_tree formula_tree in
+	let parse_dag = (dag_from_tree me_tree) in
+	let d  = dag_map (parse_to_label fd) (parse_dag) in 
+	print_string "ME:\n" ;
+	print_dag label_to_string d;
+	print_string "\nFORMULA: \n" ; 
+	print_dag (fun x->x) fd ;
+	let new_d = add_atoms d fd in
+	print_string "ME:\n" ;
+        print_dag label_to_string new_d
+end
+	

@@ -6,31 +6,23 @@
    and raises End_of_file on EOF. *)
 
 {
-  open Calc
+  open Me_parser
 }
 let lower = ['a'-'z']
 rule token = parse
   | [' ' '\t']	{ token lexbuf }
   | '\n'	{ NEWLINE }
-  | '^'		{ AND }
-  | '&'		{ AND }
-  | '|'		{ OR }
-  | '-'		{ NEG }
-  | '~'		{ NEG }
-  | 'U'		{ UNTIL }
-  | 'S'		{ SINCE }
+  | ('<'|'>') as ch { UNARY(ch) }
   | '('		{ LPAREN }
   | ')'		{ RPAREN }
   | ','		{ COMMA }
-  | lower+ as ch	{ ATOM (ch) }
+  | lower+ as str{ ATOM (str) }
   | '{'         { LBRACE }
   | '}'         { RBRACE }
   | '[' 	{ LSQUARE }
   | ']'		{ RSQUARE }
   | ';'		{ SEMICOLON }
   | '+'		{ PLUS }
-  | '<'		{ LT }
-  | '>'		{ GT }
-  | 'I' 'N'	{ IN }
-  | _		{ token lexbuf }
-  | eof		{ raise End_of_file }
+  | _ as c 	{ Printf.printf "Unrecognized character: %c\n" c; raise (Failure "")  }
+  | eof 	{ EOF }
+  (* | _		{ token lexbuf } *)

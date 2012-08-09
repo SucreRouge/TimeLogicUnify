@@ -1,10 +1,10 @@
 TARGET = mechecker.cgi
 
-mechecker.cgi: mechecker.ml calc.ml lexer.ml main.ml
-	ocamlopt -o mechecker.cgi mechecker.ml calc.ml lexer.ml main.ml
+mechecker.cgi: depend me.ml  phi_lexer.ml phi_parser.ml  me_parser.ml me_parser.mli me_lexer.ml main.ml phi_parser.cmi me_parser.cmi
+	ocamlopt -o mechecker.cgi  me.ml phi_parser.ml phi_lexer.ml  me_lexer.ml me_parser.ml main.ml
 
-calc: lexer.cmo calc.cmo main.cmo mechecker.cmo
-	ocamlc -o $@ mechecker.cmo lexer.cmo calc.cmo main.cmo 
+run: 
+	./mechecker.cgi
 
 depend:
 	ocamldep *.ml *.mli > .depend
@@ -17,7 +17,7 @@ clean:
 
 .ml.cmo:
 	ocamlc -c $<
-.mli.cmi:
+.mli.cmi: me.cmx
 	ocamlc -c $<
 .mll.ml:
 	ocamllex $<

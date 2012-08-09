@@ -6,15 +6,16 @@
    and raises End_of_file on EOF. *)
 
 {
-  open Calc
+open Phi_parser
+open Char
+include Char
 }
 let lower = ['a'-'z']
+let biary = ('&'|'|'|'='|'<'|'>'|'Z')
 rule token = parse
   | [' ' '\t']	{ token lexbuf }
-  | '\n'	{ NEWLINE }
-  | '^'		{ AND }
-  | '&'		{ AND }
-  | '|'		{ OR }
+  | biary as ch { BINARY(Char.escaped ch)}
+  | '^'		{ BINARY("&")}
   | '-'		{ NEG }
   | '~'		{ NEG }
   | 'U'		{ UNTIL }
@@ -22,15 +23,8 @@ rule token = parse
   | '('		{ LPAREN }
   | ')'		{ RPAREN }
   | ','		{ COMMA }
-  | lower+ as ch	{ ATOM (ch) }
-  | '{'         { LBRACE }
-  | '}'         { RBRACE }
-  | '[' 	{ LSQUARE }
-  | ']'		{ RSQUARE }
-  | ';'		{ SEMICOLON }
-  | '+'		{ PLUS }
-  | '<'		{ LT }
-  | '>'		{ GT }
-  | 'I' 'N'	{ IN }
-  | _		{ token lexbuf }
-  | eof		{ raise End_of_file }
+  | lower+ as ch{ ATOM (ch) }
+  | _ as c 	{ Printf.printf "Unrecognized character: %c\n" c; raise (Failure "")  }
+  | eof		{ EOF }
+
+  (* | _	'	{ token lexbuf } *)
