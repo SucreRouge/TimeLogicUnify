@@ -23,7 +23,14 @@ otype 'a dag = 'a node array2;
 type 'a array2 = {mutable a: 'a array; mutable len: int}
 type 'a dag_node = {n: 'a ; d:  int array}
 type 'a dag =  'a dag_node array2
+
+
 let new_dag = fun () -> {a=[| |]; len=0} 
+
+let new_dag_from = fun d -> if d.len = 0
+	then new_dag()
+	else {a=Array.make (Array.length d.a) d.a.(0); len=0}
+		
 
 type 'a dagElem = int * 'a dag
 
@@ -73,15 +80,22 @@ let lead = fun e -> let e_node = e.md.a.(e.m).n in
   if e_node.pMHI < 0 then e_node.pMHI <- append {n=new_melement '<'; d=[|e.m|]} e.md;
   {e with m=e_node.pMHI}
 
-let (~<) = lead 
-
 let trail = fun e -> let e_node = e.md.a.(e.m).n in
   if e_node.pIHM < 0 then e_node.pIHM <- append {n=new_melement '>'; d=[|e.m|]} e.md;
   {e with m=e_node.pIHM}
 
-let (+:) = fun e g -> if ( e.md == g.md && e.fd == g.fd ) 
-  then append {n=new_melement '+'; d=[|e.m;g.m|]} e.md
+let shuffle_ = fun md fd a -> {m=(append {n=new_melement 'S'; d=a} md); md=md; fd=fd}
+let letter_ = fun md fd atoms -> {m=append {n={op=LabelS atoms; pIHM=(-1); pMHI=(-1)}; d=[||]} md; md=md; fd=fd} 
+let (~<) = lead 
+let (~>) = trail 
+let (=>) = fun x y -> (not x) || y
+let (<=) = fun x y -> x || (not y)
+
+let (+~) = fun e g -> if ( e.md == g.md && e.fd == g.fd ) 
+  then {e with m=append {n=new_melement '+'; d=[|e.m;g.m|]} e.md}
   else failwith "ME_Context_Mismatch"
+
+let (+:) = (+~)
 
 type cacheU = { pre_false: int ; pre_true: int; all_p: bool; some_q: bool }  
 
@@ -111,15 +125,38 @@ let build_cacheU d fd f = let ca = Array.make d.len {pre_false=false; pre_true=f
 
 let bool_to_int = fun b -> if b then 1 else 0
 
-let build_pre = fun d fd ->
+let swap_pair = fun a -> 
+	let a0 = a.(0) in
+	let a1 = a.(1) in 
+        a.(0) <- a1; a.(1) <- a0
+
+let mirror d = for k = 0 to d.len - 1 do 
+		let dak = d.a.(k) in
+		d.a.(k) <- match dak.n.op with 
+			LabelC label -> (
+                                match label with  
+                                        '+'   ->  swap_pair dak.d; dak
+                                        (*ALT: '+'   ->  {dak with d=[|mI.(1); mI.(0)|]}*)
+                                        | '<' ->  {dak with n={dak.n with op=LabelC '>'}}
+                                        | '>' ->  {dak with n={dak.n with op=LabelC '<'}}
+                                        | 'S' ->  dak
+					| _ -> failwith "Invalid_ME_Operator"
+				
+			)
+                        | LabelS atoms -> dak
+	done
+
+
+let build_pre = fun d fd f ->
 	let pre = (Array.make_matrix (d.len) 2 (-1)) in
 	let all_q = Array.make d.len false in
 	let some_p = Array.make d.len false in
-	let (p,q) = (fd.d.(0),fd.d.(1)) in
+	let pq = (fd.a.(f).d) in
+	let (p,q) = (pq.(0),pq.(1)) in
 	for k = 0 to d.len - 1
 	do 
 		let dak = d.a.(k) in
-		match dak.n with 
+		match dak.n.op with 
 			LabelC label -> 
 				let children = dak.d in 
 				all_q.(k)  <- Array.fold_left (fun x i -> x && all_q.(i) ) true  children;
@@ -137,34 +174,94 @@ let build_pre = fun d fd ->
 				  pre.(k).(1) <- pre_ 1;
 				  all_q.(k) <- atoms.(q);
 				  some_p.(k) <- atoms.(p) )
-	done
+	done ;
+	pre
 
-let ttt=2
-(*	
-let add_atom_Upq_ = fun d_out d_in t_true t_false fd p q i ->
-	let pre = build_pre d_in fd in
+let safe_set a i x = let c = (Array.copy a) in Array.set c i x ; c
+
+(* Should merge for performance *)
+let add_atom_Upq = fun  d_in fd f ->
+	let d_out = new_dag_from d_in in
+	let shuffle = (shuffle_ d_out fd) in
+	let letter = (letter_ d_out fd) in
+	let pre = build_pre d_in fd f in
+	let _ = pre.(0).(0) + 1 in 
+	let t_cache = Array.make_matrix d_in.len 2 (-1) in
 	let rec t_rec k b =
-		let t = fun i b -> let t_cache = if b then t_true else t_false in 
-			if t_cache.(i) < 0 then 
-				t_cache.(i) <- t_rec k b;
-			t_cache.(i)
-		let dak = d.a.(k) in
-		match dak.n with
-			LabelC label ->
-                                let mI = dak.d in 
-                                match label with 
-                                        '+'   ->  t(mI.(0), pre(mI.(1), b) +: t(mI.(1),b) 
-                                        | '<' ->  pre_i ( child.(0), b )
-                                        | '>' ->  pre_i ( child.(0), b )
-                                        | _   ->  (b || some_p) && all_q in
-                                { pre_false = pre false; pre_true = pre true; all_q = all_q; some_p = some_p}
-                        | LabelS atoms ->
-                                let pre = fun b -> atoms.(p) || ( b  && atoms.(q) ) in
-                                { pre_false = pre false; pre_true = pre true; all_q = atoms.(q); some_p = atoms.(p)}
-		t 
-*)
+		let t_ = fun i b -> (
+			let _ = if t_cache.(i).(b) < 0 then t_cache.(i).(b) <- t_rec k b else () in
+			t_cache.(i).(b)
+		) in
+		let t = fun i b -> {m=t_ i b; md=d_out; fd=fd} in 
+		let dak = d_in.a.(k) in
+		( match dak.n.op with
+			LabelC label -> (
+                                let mI = dak.d in
+				let mI0 = mI.(0) in 
+                                ( match label with  
+                                        '+'   ->  ( (t mI0 (pre.(mI.(1)).(b))) +: (t mI.(1) b) ) 
+                                        | '<' ->  ( ( ~< ( t mI0 pre.(mI0).(b)) ) +: (t mI0 b) )
+                                        | '>' ->  ( ~> ( t mI0 pre.(mI0).(b)) )
+                                        | 'S' ->  (shuffle (Array.map (fun i -> t_ i b) mI))
+					| _ -> failwith "Invalid_ME_Operator"
+				)
+			)
+                        | LabelS atoms -> 
+				let atoms = if (b==1) then safe_set atoms f true else atoms in
+				letter atoms 
+		).m
+	in
+	ignore (t_rec (d_in.len-1) 0) ;
+	d_out 
 
-	
+let add_atom_Spq = fun  d_in fd f ->
+	let _ = mirror d_in in 
+	let d_out = add_atom_Upq d_in fd f in
+	let _ = mirror d_out in
+	d_out
+
+let add_atom_PC = fun d fd f bool_func ->
+	for k = 0 to d.len - 1
+	do 
+		let dak = d.a.(k) in
+		match dak.n.op with 
+			LabelC label -> ()
+			| LabelS atoms -> if bool_func (atoms)
+				then Array.set atoms f true
+				else ()
+	done ; d
+
+let add_atom = fun d fd f ->
+	let pq = (fd.a.(f).d) in
+	let f_op = fd.a.(f).n in 
+	let pc = (add_atom_PC d fd f) in
+	match (Array.length pq) with
+		0 -> d
+		| 1 -> assert (f_op = '-') ; let p = pq.(0) in 
+                        pc (fun atoms -> not atoms.(p))
+		| 2 -> let (p,q) = (pq.(0),pq.(1)) in ( match f_op with
+			  '&' -> pc (fun a -> a.(p) && a.(q)) 
+			| '|' -> pc (fun a -> a.(p) || a.(q))
+			| '=' -> pc (fun a -> a.(p) =  a.(q))
+			| '>' -> pc (fun a -> a.(p) => a.(q))
+			| '<' -> pc (fun a -> a.(p) <= a.(q))
+			| 'U' -> add_atom_Upq d fd f	
+			| 'S' -> add_atom_Spq d fd f
+			| _   -> failwith "Invalid_Operator" )
+		| _ -> failwith "More_than_two_children_in_formula"
+
+let add_atoms = fun d fd ->
+	let d_out = ref d in 
+	for f = 0 to fd.len -1
+	do
+		d_out := add_atom (!d_out) fd f
+	done ; d_out
+		
+let ttttt=2	
+		 
+let _ = print_dag (fun xx -> xx) ( dag_from_tree {l="a"; c=[{l="b";c=[]}]} );
+
+
 (*	
 let t_cache f a_true a_false i b = 
 	IF 
