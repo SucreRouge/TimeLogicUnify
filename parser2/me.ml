@@ -17,11 +17,6 @@ type label_t = LabelC of char | LabelS of bool array;;
 
 
 type 'a tree = {l: 'a; c: 'a tree list}
-(*type 'a node = { ee: 'a; ec: int array }
-type 'a node = { ee: 'a; ec: int array }
-type 'a array2 = { ae: 'a array; al: int }
-otype 'a dag = 'a node array2;
-*)
 
 type 'a array2 = {mutable a: 'a array; mutable len: int}
 type 'a dag_node = {n: 'a ; d:  int array}
@@ -97,7 +92,6 @@ let dag_from_tree t =
 let x = dag_from_tree {l="x"; c=[]}
 ;;
 
-(* slow refactor *)
 (*
 let dag_to_string = fun f d -> Array.mapi (fun i dn -> ((int_to_string i) ^ " " ^ (f dn) ^ " " ^ (intarray_to_string dn.d) ^ "\n" )) (aa_to_array d)*)
 let print_dag = fun f d -> ignore ( Array.mapi (
@@ -134,30 +128,6 @@ let (+:) = fun e g -> if ( e.mdii == g.mdii && e.fd == g.fd )
   else failwith "ME_Context_Mismatch"
 
 type cacheU = { pre_false: int ; pre_true: int; all_p: bool; some_q: bool }  
-
-(*
-let build_cacheU d fd f = let ca = Array.make d.len {pre_false=false; pre_true=false; all_q = false; some_p = false} in
-	let pre_i = fun i b -> if b then ca.(i).pre_true else ca.(i).pre_false in
-	let allp_i = fun i -> ca.(i).all_p in 
-	let (p,q) = (fd.d.(0),fd.d(1)) in
-	for i = 0 to d.len - 1
-	do 
-		let dai = d.a.(i) in
-		ca.(i) <- match dai.n with 
-			LabelC label -> 
-				let child = dai.d in 
-				let all_q  = Array.fold_left (fun x a -> x && ca.(i).all_q ) true  child in
-				let some_p = Array.fold_left (fun x a -> x || ca.(i).some_p) false child in
-				let pre = fun b -> match label with 
-					'+'   ->  pre_i ( child.(0), pre_i ( child.(1), b))
-					| '>' ->  pre_i ( child.(0), b )
-					| _   ->  (b || some_p) && all_q in
-				{ pre_false = pre false; pre_true = pre true; all_q = all_q; some_p = some_p}
-			| LabelS atoms ->
-				let pre = fun b -> atoms.(p) || ( b  && atoms.(q) ) in
-				{ pre_false = pre false; pre_true = pre true; all_q = atoms.(q); some_p = atoms.(p)}
-	done		
-*)
 
 let bool_to_int = fun b -> if b then 1 else 0
 
@@ -320,85 +290,3 @@ let _ = print_dag (fun xx -> xx) ( dag_from_tree {l="x"; c=[{l="y";c=[]}; {l="z"
 ;;
 
 type parse_t = ParseC of char | ParseS of StringSet.t;;
-(*	
-let t_cache f a_true a_false i b = 
-	IF 
-	if a.(i) < 0 then
-		a.(i) <- f i;
-	a.(i) 
-		 
-let rec tau_ d_out d_in t_true t_false fd p q it_true t_false 
-let add_atom_Upq d p q  
-let add_atom_Upq_ = fun d_out d_in t_true t_false fd p q i ->
-	let pre = fun i b -> if b then ca.(i).pre_true else ca.(i).pre_false in
-	let pre i b = 
-	let rec t_rec k b =
-		let t = fun i b -> let t_cache = if b then t_true else t_false in 
-			if t_cache.(i) < 0 then 
-				t_cache.(i) <- t_rec k b;
-			t_cache.(i)
-		let dai = d.a.(k) in
-		match dai.n with
-			LabelC label ->
-                                let child = dai.d in 
-                                match label with 
-					let i = child.(0) in 
-                                        '+'   ->  let j = child.(1) in t(i, +: j) 
-                                        | '>' ->  pre_i ( child.(0), b )
-                                        | _   ->  (b || some_p) && all_q in
-                                { pre_false = pre false; pre_true = pre true; all_q = all_q; some_p = some_p}
-                        | LabelS atoms ->
-                                let pre = fun b -> atoms.(p) || ( b  && atoms.(q) ) in
-                                { pre_false = pre false; pre_true = pre true; all_q = atoms.(q); some_p = atoms.(p)}
-		t 
-	
-*)
-  
-
-
-
-(*type me = int * me_context *)
-
-(*type me = int * me_context *)
-(*
-
-*)
-(*
-
-
-let (!<) = fun e -> let e_node = e.mc.med.a.(e.m).n in
-  if e_node.pMHI < 0 then e_node.pMHI <- append {n=new_melement '<'; d=[|e.m|]} e.mc.med;
-  {m=e_node.pMHI; mc = e.mc};
-*)
- 
-
-
-(*let rec string_dag_from_tree_ d t = 
-	let children = List.map (dag_from_tree_ d) t.c in
-	append d (Array.of_list children)
-*)
-
-
-
-
-(*
-
-type me = int * melement
-
-
-let ttt={l='a';c=[]}
-
-
-
-type fcell = { fcOp : char; fcCh : int array; }
-type formula = { fId : int; fSpace : int * fcell array }  
-
-(*let fU a b = *)
-
-type melement = { eOp : char; eCh : int array; eIMH : int ; eHMI : int  }
-type me = { meId : int; meSpace : melement array }
-
-let new_melement = fun o c -> {eOp=o; eCh=c; eIMH = -1 ; eHMI = -1}
-
-ddlet _ = print_dag (fun xx -> xx) ( dag_from_tree {l="a"; c=[{l="b";c=[]}]} );
-*)
