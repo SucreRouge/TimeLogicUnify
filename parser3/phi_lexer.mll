@@ -11,20 +11,22 @@ open Char
 include Char
 }
 let lower = ['a'-'z']
+let atom  = (['a'-'z']|'_')+
 let biary = ('&'|'|'|'='|'<'|'>'|'Z')
+let pre2 = ('U'|'S')
 rule token = parse
   | [' ' '\t']	{ token lexbuf }
-  | biary as ch { BINARY(Char.escaped ch)}
+  | biary as c { BINARY(Char.escaped c) }
   | '^'		{ BINARY("&")}
   | '-'		{ NEG }
   | '~'		{ NEG }
-  | 'U'		{ UNTIL }
+  | pre2 as c   { PREFIX(Char.escaped c) }
   | 'S'		{ SINCE }
   | '('		{ LPAREN }
   | ')'		{ RPAREN }
   | ','		{ COMMA }
-  | lower+ as ch{ ATOM (ch) }
-  | _ as c 	{ Printf.printf "Unrecognized character: %c\n" c; raise (Failure "")  }
+  | lower+ as c { ATOM (c) }
+  | _ as c 	{ Printf.printf "Ignoring unrecognized character: %c\n" c ; token lexbuf}
   | eof		{ EOF }
 
   (* | _	'	{ token lexbuf } *)

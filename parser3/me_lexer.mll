@@ -12,7 +12,10 @@ let lower = ['a'-'z']
 rule token = parse
   | [' ' '\t']	{ token lexbuf }
   | '\n'	{ NEWLINE }
-  | ('<'|'>') as ch { UNARY(ch) }
+  | "<-"         { XLT }
+  | '<'         { LT }
+  | '>'         { GT }
+  | "->"         { XGT }
   | '('		{ LPAREN }
   | ')'		{ RPAREN }
   | ','		{ COMMA }
@@ -23,6 +26,6 @@ rule token = parse
   | ']'		{ RSQUARE }
   | ';'		{ SEMICOLON }
   | '+'		{ PLUS }
-  | _ as c 	{ Printf.printf "Unrecognized character: %c\n" c; raise (Failure "")  }
+  | _ as c 	{ Printf.printf "Ignoring unrecognized character: %c in me\n" c; token lexbuf}
   | eof 	{ EOF }
   (* | _		{ token lexbuf } *)

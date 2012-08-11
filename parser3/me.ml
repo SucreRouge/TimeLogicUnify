@@ -197,18 +197,17 @@ let add_atom_Upq = fun  d_in fd f ->
 		let new_me = match dak.n with
 			LabelC label -> (
                                 let mI = dak.d in
-				let mI0 = mI.(0) in
 				print_string ((string_of_int k )^"--\n");
 				print_string ((intarray_to_string mI)^"\n");
 				flush stdout;
                                 ( match label with  
-                                        '+'   ->  ( (t mI0 (pre.(mI.(1)).(b))) +: (t mI.(1) b) ) 
-                                        | '<' ->  let left = (t mI0 pre.(mI0).(b)) in
-						  let right = (t mI0 b) in 
+                                        '+'   ->  ( (t mI.(0) (pre.(mI.(1)).(b))) +: (t mI.(1) b) ) 
+                                        | '<' ->  let left = (t mI.(0) pre.(mI.(0)).(b)) in
+						  let right = (t mI.(0) b) in 
 						  if (left=right)
 							then   ( ~< left ) 
 							else ( ( ~< left ) +: (right) )
-                                        | '>' ->  ( ~> ( t mI0 pre.(mI0).(b)) )
+                                        | '>' ->  ( ~> ( t mI.(0) pre.(mI.(0)).(b)) )
                                         | 'S' ->  (shuffle (Array.map (fun i -> t_ i b) mI))
 					| _ -> failwith "Invalid_ME_Operator"
 				)
