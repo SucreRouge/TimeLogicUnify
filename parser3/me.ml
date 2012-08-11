@@ -147,8 +147,9 @@ type formula_op = string
 type formula_dag = formula_op dag
 type formula = formula_op dagElem
 type me_dag = melement dag
-type model_expression = {m : int ; mdii : array2ii; fd : formula_dag }
-
+(*type model_expression = {m : int ; mdii : array2ii; fd : formula_dag }
+*)
+(*
 let lead_or_trail_ = fun op me -> 
 	let m=me.m in 
 	let cache = if op = '<' then me.mdii.a1 else me.mdii.a2 in
@@ -161,18 +162,13 @@ let (~>) = (lead_or_trail_ '>') (* trail *)
 
 let letter_ =  fun mdii fd atoms -> {m=appendii mdii {n=LabelS atoms; d=[||]}; mdii=mdii; fd=fd} 
 let shuffle_ = fun mdii fd chld  -> {m=appendii mdii {n=LabelC 'S'  ; d=chld}; mdii=mdii; fd=fd}
-
+*)
 let (=>) = fun x y -> (not x) || y
 let (<=) = fun x y -> x || (not y)
 
-let (+:) = fun e g -> if ( e.mdii == g.mdii && e.fd == g.fd ) 
-  then {e with m=appendii e.mdii {n=LabelC '+'; d=[|e.m;g.m|]}}
-  else failwith "ME_Context_Mismatch"
-
-let dedup me alt = 
-	let aa = me.mdii.a0 in
+let dedup mdii m alt = 
+	let aa = mdii.a0 in
 	let aaa = aa.a in 
-	let m  = me.m in
 	if  m = aa.len - 1 && alt >= 0 && (aaa.(m).n = aaa.(alt).n) && (aaa.(m).d = aaa.(alt).d)
 		then (print_string "Yay! dedupd!"; aa.len <- m; alt)
 		else m 
@@ -235,23 +231,38 @@ let build_pre = fun d fd f ->
 
 let safe_set a i x = let c = (Array.copy a) in Array.set c i x ; c
 
+let max_growth = 8
+;;
 (* Should merge for performance *)
 let add_atom_Upq = fun  d_in fd f ->
-	let d_outii = new_array2ii () in
-	let d_out = d_outii.a0 in
+	let mdii = new_array2ii () in
+	let lead_cache =  Array.make (d_in.len*max_growth+1) (-1) in
+	let trail_cache = Array.make (d_in.len*max_growth+1) (-1) in
+	let d_out = mdii.a0 in
+	let lead_or_trail_ = fun cache op m -> ( 
+		(*let cache = if op = '<' then me.mdii.a1 else me.mdii.a2 in *)
+		(Printf.printf "op: %c cache.(%d)=%d\n" op m cache.(m)); flush stdout;
+		if cache.(m) < 0 then cache.(m) <- appendii mdii {n=LabelC op; d=[|m|]};
+	  	cache.(m) )in
+	let (~<) = (lead_or_trail_ lead_cache '<') (* lead  *) in 
+	let (~>) = (lead_or_trail_ trail_cache '>') (* trail *) in  
+	let (+:) = fun e g -> appendii mdii {n=LabelC '+'; d=[|e;g|]} in 
+
+	let letter =  fun atoms -> appendii mdii {n=LabelS atoms; d=[||]} in
+	let shuffle = fun chld  -> appendii mdii {n=LabelC 'S'  ; d=chld} in
 (*	let d_out = new_dag_from d_in in *)
-	let shuffle = (shuffle_ d_outii fd) in
-	let letter  = (letter_  d_outii fd) in
+(*	let shuffle = (shuffle_ d_outii fd) in
+	let letter  = (letter_  d_outii fd) in *)
 	let pre = build_pre d_in fd f in
 	let _ = pre.(0).(0) + 1 in 
 	let t_cache = Array.make_matrix d_in.len 2 (-1) in
 	print_string "adding_atom\n";
 	let rec t_rec k b =
-		let t_ = fun i b -> (
+		let t = fun i b -> (
 			let _ = if t_cache.(i).(b) < 0 then t_cache.(i).(b) <- t_rec i b else () in
 			t_cache.(i).(b)
-		) in
-		let t = fun i b -> {m=t_ i b; mdii=d_outii; fd=fd} in 
+		) in(*
+		let t = fun i b -> {m=t_ i b; mdii=d_outii; fd=fd} in*) 
 		let dak = d_in.a.(k) in
 		let new_me = match dak.n with
 			LabelC label -> (
@@ -259,7 +270,7 @@ let add_atom_Upq = fun  d_in fd f ->
 				print_string ((string_of_int k )^"--\n");
 				print_string ((intarray_to_string mI)^"\n");
 				flush stdout;
-                                ( match label with  
+                                0 + ( match label with  
                                         '+'   ->  ( (t mI.(0) (pre.(mI.(1)).(b))) +: (t mI.(1) b) ) 
                                         | '<' ->  let left = (t mI.(0) pre.(mI.(0)).(b)) in
 						  let right = (t mI.(0) b) in 
@@ -267,14 +278,14 @@ let add_atom_Upq = fun  d_in fd f ->
 							then   ( ~< left ) 
 							else ( ( ~< left ) +: (right) )
                                         | '>' ->  ( ~> ( t mI.(0) pre.(mI.(0)).(b)) )
-                                        | 'S' ->  (shuffle (Array.map (fun i -> t_ i b) mI))
+                                        | 'S' ->  (shuffle (Array.map (fun i -> t i b) mI))
 					| _ -> failwith "Invalid_ME_Operator"
 				)
 			)
                         | LabelS atoms -> 
 				let atoms = if (b==1) then safe_set atoms f true else atoms in
 				letter atoms  in
-		dedup new_me t_cache.(k).(1-b)
+		dedup mdii new_me t_cache.(k).(1-b)
 		
 	in
 	print_string "defined_t_rec\n";
