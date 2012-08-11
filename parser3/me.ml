@@ -67,6 +67,7 @@ let array2_map f aa =
 		ignore (append bb (f aa.a.(i)))
 	done ;
 	bb
+let array2_iter f aa = ignore ( array2_map f aa )
 
 let dag_map f aa = array2_map (fun dag_nd -> {dag_nd with n=(f dag_nd.n)}) aa
 
@@ -78,12 +79,68 @@ let intarray_to_string = array_to_string ", " string_of_int
 let boolarray_to_string = array_to_string "" (fun b -> if b then "T" else ".")
 (*
 let dag_to_string = fun f d -> Array.mapi (fun i dn -> ((int_to_string i) ^ " " ^ (f dn) ^ " " ^ (intarray_to_string dn.d) ^ "\n" )) (aa_to_array d)*)
+
+(* print_dag f d prints the dag d using function f to convert nodes to strings *)
 let print_dag = fun f d -> ignore ( Array.mapi (
 	fun i dn -> Printf.printf "%d %s %s\n" 
 		i
 		(f dn.n)
 		(intarray_to_string dn.d)
 		) (aa_to_array d))
+
+let formula_printer node child_s =
+	match (Array.length child_s) with 
+	  0 -> node
+	| 1 -> node ^ child_s.(0)
+	| 2 -> let p, q = child_s.(0), child_s.(1) in
+		( match node with 
+		  "U"| "S" -> node ^ "(" ^ p ^ ", " ^ q ^ ")"
+		| _ -> "(" ^ p ^ node ^ q ^ ")" ) 
+	| _ -> failwith "Too many children"
+
+let letter_to_string names letter =
+	let l = ref [] in 
+	Array.iteri ( fun i b -> if b then l := names.(i)::!l ) letter;
+	"{" ^ (String.concat ", " (List.rev !l)) ^ "}"
+
+let me_printer names l c =
+	match l with 
+	  LabelC '+' -> "(" ^ c.(0) ^ "+" ^ c.(1) ^ ")"
+	| LabelC '>' -> ">" ^ c.(0) 
+	| LabelC '<' -> "<" ^ c.(0)
+	| LabelC 'S' -> "[" ^ (array_to_string "; " (fun x->x) c) ^ "]" 
+	| LabelC chr -> failwith "Unknown ME op " ^ (String.make 1 chr)
+	| LabelS a   -> letter_to_string names a
+
+let pretty_print_dag store_array repeats  prefix printer dag =
+	let freq = Array.make dag.len 0 in 
+	array2_iter ( fun elem ->
+		Array.iter ( fun child -> freq.(child) <- freq.(child) + 1 ) elem.d 
+	) dag ;
+	let id i =  prefix ^ string_of_int i in 
+	let fmt r_ i = printer dag.a.(i).n (Array.map r_ dag.a.(i).d) in
+	let rec r i = 
+		let str = if freq.(i) > repeats 
+			then id i
+			else fmt r i in 
+		if (Array.length store_array) > i then store_array.(i) <- str;
+		str  in
+	print_string (fmt r (dag.len-1)); 
+	ignore (r (dag.len-1)); (* Just to make sure that store_array if full *)
+	for i =  dag.len - 2 downto 0 do
+		 if freq.(i) > repeats then print_string ("\n\t" ^ (id i) ^ "= " ^ (fmt r i)) 
+	done
+
+let pretty_print_formula fd =
+	let names = Array.make fd.len "" in
+	pretty_print_dag names max_int "T" formula_printer fd;
+	names
+
+let pretty_print_me names repeats fd =
+	pretty_print_dag [||] repeats "M" (me_printer names) fd
+	
+
+
 
 type melement = label_t
 type formula_op = string
@@ -95,6 +152,7 @@ type model_expression = {m : int ; mdii : array2ii; fd : formula_dag }
 let lead_or_trail_ = fun op me -> 
 	let m=me.m in 
 	let cache = if op = '<' then me.mdii.a1 else me.mdii.a2 in
+	(Printf.printf "op: %c cache.(%d)=%d\n" op m cache.(m));
 	if cache.(m) < 0 then cache.(m) <- appendii me.mdii {n=LabelC op; d=[|m|]};
   {me with m=cache.(m)}
 
@@ -113,9 +171,10 @@ let (+:) = fun e g -> if ( e.mdii == g.mdii && e.fd == g.fd )
 
 let dedup me alt = 
 	let aa = me.mdii.a0 in
+	let aaa = aa.a in 
 	let m  = me.m in
-	if m = aa.len - 1 && alt >= 0 && aa.a.(m) == aa.a.(alt) 
-		then (print_string "Yay! dedupd!"; alt)
+	if  m = aa.len - 1 && alt >= 0 && (aaa.(m).n = aaa.(alt).n) && (aaa.(m).d = aaa.(alt).d)
+		then (print_string "Yay! dedupd!"; aa.len <- m; alt)
 		else m 
 
 type cacheU = { pre_false: int ; pre_true: int; all_p: bool; some_q: bool }  
@@ -258,16 +317,19 @@ let add_atom = fun d fd f ->
 			| _   -> failwith "Invalid_Operator" )
 		| _ -> failwith "More_than_two_children_in_formula"
 
+	
+let label_to_string l = match l with 
+	LabelC c -> Char.escaped c
+	| LabelS a -> boolarray_to_string a
+	
 let add_atoms = fun d fd ->
 	let d_out = ref d in 
 	for f = 0 to fd.len -1
 	do
+		print_string "\nDAG:";
+        	print_dag label_to_string (!d_out); 
 		d_out := add_atom (!d_out) fd f
 	done ; (!d_out)
-		
-let label_to_string l = match l with 
-	LabelC c -> Char.escaped c
-	| LabelS a -> boolarray_to_string a
 	
 	 
 (* Now some boring details for parsing *)
@@ -307,13 +369,23 @@ begin
 (*	let fd = array2_compact (dag_from_tree formula_tree) in *)
 	let fd = dag_from_tree formula_tree in
 	let parse_dag = (dag_from_tree me_tree) in
-	let d  = dag_map (parse_to_label fd) (parse_dag) in 
-	print_string "ME:\n" ;
+	let md  = dag_map (parse_to_label fd) (parse_dag) in 
+	print_string "Input in canonical syntax: \n";
+	let names = pretty_print_formula fd in
+	print_string " : ";
+	pretty_print_me names max_int md ;
+	print_string "NAMES: \n";
+	Array.iter (fun s -> print_string (s ^ "\n")) names;
+(*	print_string "ME:\n" ;
 	print_dag label_to_string d;
-	print_string "\nFORMULA: \n" ; 
-	print_dag (fun x->x) fd ;
-	let new_d = add_atoms d fd in
-	print_string "ME:\n" ;
-        print_dag label_to_string new_d
+	print_string "\nFORMULA: \n" ;  
+	print_dag (fun x->x) fd ; *)
+	let new_me = add_atoms md fd in
+(*	print_string "ME:\n" ;
+        print_dag label_to_string new_d *)
+	print_string "\nResulting DAG:";
+        print_dag label_to_string new_me; 
+	print_string "\nResulting ME:";
+	pretty_print_me names 1 new_me 
 end
 	
