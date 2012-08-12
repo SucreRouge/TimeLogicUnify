@@ -231,7 +231,31 @@ let build_pre = fun d fd f ->
 
 let safe_set a i x = let c = (Array.copy a) in Array.set c i x ; c
 
-let max_growth = 8
+let max_growth = 3
+(* This is the maximum growth in the size of the me node array as a factor
+ * size of array that we will add the formula Upq as an atom to.
+ * 
+ * Take an ME of the form "<K" in the input array.
+ *
+ * Assume that K has already been added to the output array; 
+ * that we add is of the form {<I,<J,<I+J} for some I, J st.
+ *      {I,J} = {t(K,T), t(K,F)}
+ * Althouth we do not know whether I= t(K,T) or I= t(K,F)
+ * We know that we do not add both <I+J and <J+I as there is no
+ * ME I such that for all b in {T,F} pre(I,b) = (not b)  
+ *
+ * Hence an ME of the form "<K" will add at most 3 new nodes.
+ * Any other ME K will only add at most two MEs: t(K,T) and t(K,F)
+ * We may add one temporary element to the output array, but this
+ * isn't a problem since not all nodes can be "<K" nodes.
+ *
+ * BTW, this gives a |M|*3^|phi| bound on size of the the model.
+ * Refining this bound to a |phi||M|*2^|phi| bound is left as an 
+ * exercise for the reader.     
+ *)
+
+
+
 ;;
 (* Should merge for performance *)
 let add_atom_Upq = fun  d_in fd f ->
