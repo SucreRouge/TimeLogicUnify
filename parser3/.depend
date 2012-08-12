@@ -1,0 +1,13 @@
+main.cmo: phi_parser.cmo phi_lexer.cmo me_parser.cmi me_lexer.cmo me.cmo
+main.cmx: phi_parser.cmx phi_lexer.cmx me_parser.cmx me_lexer.cmx me.cmx
+me.cmo:
+me.cmx:
+me_lexer.cmo: me_parser.cmi
+me_lexer.cmx: me_parser.cmx
+me_parser.cmo: me.cmo me_parser.cmi
+me_parser.cmx: me.cmx me_parser.cmi
+phi_lexer.cmo: phi_parser.cmo
+phi_lexer.cmx: phi_parser.cmx
+phi_parser.cmo: me.cmo
+phi_parser.cmx: me.cmx
+me_parser.cmi: me.cmo
