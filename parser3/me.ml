@@ -83,7 +83,7 @@ let boolarray_to_string = array_to_string "" (fun b -> if b then "T" else ".")
 let dag_to_string = fun f d -> Array.mapi (fun i dn -> ((int_to_string i) ^ " " ^ (f dn) ^ " " ^ (intarray_to_string dn.d) ^ "\n" )) (aa_to_array d)*)
 
 (* print_dag f d prints the dag d using function f to convert nodes to strings *)
-let print_dag = fun f d -> ignore ( Array.mapi (
+let print_dag = fun f d -> if d.len > 1000 then print_string "[HUGE]" else ignore ( Array.mapi (
 	fun i dn -> Printf.printf "%d %s %s\n" 
 		i
 		(f dn.n)
@@ -114,7 +114,7 @@ let me_printer names l c =
 	| LabelC chr -> failwith "Unknown ME op " ^ (String.make 1 chr)
 	| LabelS a   -> letter_to_string names a
 
-let pretty_print_dag store_array repeats  prefix printer dag =
+let pretty_print_dag_ store_array repeats  prefix printer dag =
 	let freq = Array.make dag.len 0 in 
 	array2_iter ( fun elem ->
 		Array.iter ( fun child -> freq.(child) <- freq.(child) + 1 ) elem.d 
@@ -132,6 +132,13 @@ let pretty_print_dag store_array repeats  prefix printer dag =
 	for i =  dag.len - 2 downto 0 do
 		 if freq.(i) > repeats then print_string ("\n\t" ^ (id i) ^ "= " ^ (fmt r i)) 
 	done
+
+let pretty_print_dag store_array repeats  prefix printer dag =
+	if dag.len > 100 then
+		print_string "[HUGE]\n"
+	else
+		 pretty_print_dag_ store_array repeats  prefix printer dag
+
 
 let pretty_print_formula fd =
 	let names = Array.make fd.len "" in

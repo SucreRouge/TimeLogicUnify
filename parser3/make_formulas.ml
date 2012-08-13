@@ -18,5 +18,5 @@ let rec formula i = (if i<=1 then alpha 1 else alpha i ^ "|" ^ (formula (i-1) ))
 
 ;;
 
-let ii = 9 in
+let ii = (int_of_string Sys.argv.(1)) in
 printf "%s : %s\n" (formula ii) (me ii)
