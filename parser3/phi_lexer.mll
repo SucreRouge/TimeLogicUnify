@@ -14,6 +14,8 @@ let lower = ['a'-'z']
 let atom  = (['a'-'z']|'_')+
 let biary = ('&'|'|'|'='|'<'|'>'|'Z')
 let pre2 = ('U'|'S')
+let digit = ['0'-'9']
+let atm   = lower (lower|digit)* 
 rule token = parse
   | [' ' '\t']	{ token lexbuf }
   | biary as c { BINARY(Char.escaped c) }
@@ -25,7 +27,7 @@ rule token = parse
   | '('		{ LPAREN }
   | ')'		{ RPAREN }
   | ','		{ COMMA }
-  | lower+ as c { ATOM (c) }
+  | atm    as c { ATOM (c) }
   | _ as c 	{ Printf.printf "Ignoring unrecognized character: %c\n" c ; token lexbuf}
   | eof		{ EOF }
 
