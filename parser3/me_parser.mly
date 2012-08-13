@@ -10,10 +10,10 @@ include Me
 %token <string> ATOM
 %token <char> UNARY
 
-%left COMMA
-%left SEMICOLON 
 %left PLUS 
 %left XLT LT GT XGT 
+%left SEMICOLON 
+%left COMMA
 
 %start me
 %type <Me.parse_t Me.tree> me
@@ -31,11 +31,26 @@ shuflist:  /* empty */		{ [] }
 	| m COMMA shuflist	{ $1::$3 }
 	| m shuflist		{ $1::$2  }
 ;
+good_shuflist:
+	| m SEMICOLON good_shuflist {$1::$3}
+	| m {[$1]}
 atomlist:  /* empty */		{[]}
 	| ATOM COMMA atomlist	{ $1::$3 }
 	| ATOM atomlist	{ $1::$2 }
 ;
-m:	  ATOM			{ {l=ParseS [$1];c=[]} }
+good_atomlist: 
+	| ATOM COMMA atomlist	{ $1::$3 }
+	| ATOM 	{ [$1] }
+;
+weak_shuflist:
+	| m SEMICOLON good_shuflist { {l=ParseC 'S';c=$1::$3} }
+;
+weak_atomlist:
+	| good_atomlist { {l=ParseS $1;c=[]} }
+;
+m:	 /* ATOM			{ {l=ParseS [$1];c=[]} } */
+          weak_atomlist	{ $1 }
+        | weak_shuflist	{ $1 }
 	| LBRACE atomlist RBRACE	{ {l=ParseS $2;c=[]} }
 	| LSQUARE shuflist RSQUARE	{ {l=ParseC 'S';c=$2} }
 	| LSQUARE RSQUARE	{ {l=ParseC 'S';c=[]} }

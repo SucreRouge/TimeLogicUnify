@@ -1,7 +1,5 @@
-:x
-:q
 
-main: me.ml  phi_lexer.ml phi_parser.ml  me_parser.ml me_parser.mli me_lexer.ml main.ml me_parser.cmo me_parser.cmo
+main: me.ml  phi_lexer.ml phi_parser.ml  me_parser.ml me_parser.mli me_lexer.ml main.ml phi_parser.cmi me_parser.cmi me_parser.cmo me_parser.cmo
 	ocamlc.opt -o main  me.ml phi_parser.ml phi_lexer.ml  me_lexer.ml me_parser.ml main.ml
 
 install: mechecker.cgi
@@ -22,7 +20,7 @@ depend:
 	ocamldep *.ml *.mli > .depend
 
 clean:
-	rm -rf *.cmi *.cmo $(TARGET)
+	rm -rf *.cmi *.cmo *.cmx $(TARGET)
 	rm -rf calc.ml calc.mli lexer.ml lexer.mli
 
 .SUFFIXES: .ml .mli .mll .mly .cmo .cmi

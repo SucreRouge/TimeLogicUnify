@@ -249,6 +249,7 @@ try
 	exit 0;*)
      	Printf.printf "Content-type: text/plain\n\n";
 	let qs = Sys.getenv "QUERY_STRING" in
+	Me.max_size := 1000;
 	( try 
     		  do_model_check_string (fixstr qs); flush stdout;
 	with Parsing.Parse_error -> Printf.printf "Parse Error!\n"

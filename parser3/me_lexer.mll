@@ -9,6 +9,8 @@
   open Me_parser
 }
 let lower = ['a'-'z']
+let digit = ['0'-'9']
+let atm   = lower (lower|digit)* 
 rule token = parse
   | [' ' '\t' '\n']	{ token lexbuf }
   | "<-"         { XLT }
@@ -18,7 +20,7 @@ rule token = parse
   | '('		{ LPAREN }
   | ')'		{ RPAREN }
   | ','		{ COMMA }
-  | lower+ as str{ ATOM (str) }
+  | atm as str{ ATOM (str) }
   | '{'         { LBRACE }
   | '}'         { RBRACE }
   | '[' 	{ LSQUARE }

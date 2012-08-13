@@ -1,7 +1,9 @@
 (* lead = <-
    trail = -> *)
 
-
+(* we may want to cap the size of the DAGs when used as a server
+ * to prevent denials of service *)
+let max_size = ref max_int;;
 
 let append = fun a x -> let (l,e) = a in  e.(l) <- x; (l+1,e) 
 
@@ -254,11 +256,12 @@ let max_growth = 3
  * exercise for the reader.     
  *)
 
-
-
-;;
-(* Should merge for performance *)
 let add_atom_Upq = fun  d_in fd f ->
+	if d_in.len > !max_size then
+	begin
+		Printf.printf "Size %d > %d of ME I_%d (of %d) exceeds soft-coded limit.\n Contact john@csse.uwa.edu.au if you really want to compute this result." d_in.len (!max_size) f fd.len; flush stdout;
+		exit 0 
+	end;
 	let mdii = new_array2ii () in
 	let lead_cache =  Array.make (d_in.len*max_growth+1) (-1) in
 	let trail_cache = Array.make (d_in.len*max_growth+1) (-1) in
@@ -406,6 +409,7 @@ begin
 	let names = pretty_print_formula fd in
 	print_string " : ";
 	pretty_print_me names max_int md ;
+	print_char '\n';
 	(*print_string "NAMES: \n";
 	Array.iter (fun s -> print_string (s ^ "\n")) names;*)
 (*	print_string "ME:\n" ;
@@ -415,7 +419,7 @@ begin
 	let pre_time = Sys.time() in
 	let new_me = add_atoms md fd in
 	let post_time = Sys.time() in
-      	Printf.printf "\nCpu time used: %6.3f to model check, %6.3f total \n"
+      	Printf.printf "Cpu time used: %6.3f to model check, %6.3f total \n"
 		 (post_time-.pre_time) post_time; flush stdout ;
 
 (*	print_string "ME:\n" ;
@@ -423,9 +427,10 @@ begin
 (*	print_string "\nResulting DAG:";
         print_dag label_to_string new_me; *)
         let sat_str = if satisfied new_me fd then "IS" else "is NOT" in
-	print_string "\n\n------------------------------------";
+	print_string "\n------------------------------------";
         Printf.printf "\nThe formula %s satisfied in: " sat_str;
 	(*print_string "\nResulting ME:";*)
-	pretty_print_me names 1 new_me 
+	pretty_print_me names 1 new_me ;
+        Printf.printf "\nME size (in -> out): %d -> %d\n" md.len new_me.len;
 end
 	
