@@ -3,6 +3,9 @@ TARGET = mechecker.cgi
 mechecker.cgi: mechecker.ml calc.ml lexer.ml main.ml
 	ocamlopt -o mechecker.cgi mechecker.ml calc.ml lexer.ml main.ml
 
+install: mechecker.cgi
+	cp mechecker.cgi /usr/lib/cgi-bin 
+	
 calc: lexer.cmo calc.cmo main.cmo mechecker.cmo
 	ocamlc -o $@ mechecker.cmo lexer.cmo calc.cmo main.cmo 
 

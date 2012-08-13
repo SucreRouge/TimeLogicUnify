@@ -133,7 +133,7 @@ let rec model_check_ me ft  =
 		| '-' -> ( tree_not me2 (List.hd ch_strings) )
 		| _ -> me2 in
 (*	print_string "x.. " ; print_ftree ft; println_tree (me2);*)
-	if (new_me = me2) then () else (print_string "... " ; println_tree (new_me));
+	if (new_me = me2) then () else (print_string "... " ; println_tree (new_me) ; flush stdout);
 	new_me;;
 
 let model_check me ft =
