@@ -3,7 +3,7 @@ open Me
 include Me
 %}
 
-%token NEWLINE EOF
+%token EOF
 %token LPAREN RPAREN
 %token COMMA OR
 %token LBRACE RBRACE SEMICOLON LSQUARE RSQUARE GT LT IN PLUS XGT XLT

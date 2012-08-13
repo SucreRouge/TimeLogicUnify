@@ -175,14 +175,19 @@ let robust_parse fixers_ par lex s_ =
 		else ();
 	result
 
-let log_dir= (Sys.getenv "HOME") ^ "/.config/"
+let log_dir= try 
+	(Sys.getenv "HOME") ^ "/.config/"
+with Not_found -> "/var/www/.config/"
 
 let print_count = fun () -> Printf.printf "\nThis ME checker has been used %s times\n" 
 (try 
         let stats_fname = log_dir ^ "mechecker_stats.txt" in
-        let input = open_in stats_fname in
-        let old_count = input_line input in 
-        close_in input;
+        let old_count = try
+        	let input = open_in stats_fname in
+		let cnt = input_line input in 
+		close_in input;
+		cnt;
+	with _ -> "0" in
         let count = string_of_int (1+ int_of_string (old_count)) in
         let output = open_out stats_fname in
         output_string output count;
@@ -208,13 +213,18 @@ let do_model_check_string s =
                         Me.do_model_check formula_tree me_tree;
                         status := "ok" 
 		with Parsing.Parse_error-> print_string "Could not parse ME.\n")
-        with Parsing.Parse_error-> print_string "Could not parse Formula.\n");	
+        with 
+	  Parsing.Parse_error-> print_string "Could not parse Formula.\n"
+        | Not_found -> print_string "Is there a `:' in your input? \nIt is needed to seperate the formula from the me\n")
+	;	
         print_count ();
         log (log_dir ^ "mechecker_" ^ !status ^ ".log") 
                 (string_map (fun c->if c='\n' then ' ' else c) s)
+
 ;;
 
 let main () =
+  print_string "main loop";
   try
     while true do
       try 
@@ -224,8 +234,7 @@ let main () =
 	do_model_check_string (line)
       with
 	  Parsing.Parse_error -> Printf.printf "Parse Error!\n" 
-       	| Not_found -> print_string "Divider `:' not found in input.";
-      	Printf.printf "%f\n" (Sys.time()); flush stdout ;
+       	| Not_found -> print_string "Divider `:' not found in input."
     done;
 (*    let _ = print_string ((Sys.getenv "QUERY_STRING")^"\n\n") ; flush stdout in *)
 (*    let _ = print_string ((fixstr (Sys.getenv "QUERY_STRING")^"\n")) ; flush stdout in
@@ -234,12 +243,17 @@ let main () =
   *)     
   with End_of_file -> (print_string "EOF\n" ; flush stdout; exit 0)
 
-let _ = try
+let _ = 
+try
 (*	fix_braces "f)";
 	exit 0;*)
+     	Printf.printf "Content-type: text/plain\n\n";
 	let qs = Sys.getenv "QUERY_STRING" in
-     	let _ = Printf.printf "Content-type: text/plain\n\n" in
-	try 
+	( try 
     		  do_model_check_string (fixstr qs); flush stdout;
 	with Parsing.Parse_error -> Printf.printf "Parse Error!\n"
-with Not_found -> Printexc.print main ()
+		| Not_found -> failwith "QUERY_STRING missing `='?\n" )
+with 
+	Not_found -> Printexc.print main () 
+	|  _ -> printf "Unexpected error\n"
+

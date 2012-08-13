@@ -10,8 +10,7 @@
 }
 let lower = ['a'-'z']
 rule token = parse
-  | [' ' '\t']	{ token lexbuf }
-  | '\n'	{ NEWLINE }
+  | [' ' '\t' '\n']	{ token lexbuf }
   | "<-"         { XLT }
   | '<'         { LT }
   | '>'         { GT }

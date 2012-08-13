@@ -170,7 +170,7 @@ let dedup mdii m alt =
 	let aa = mdii.a0 in
 	let aaa = aa.a in 
 	if  m = aa.len - 1 && alt >= 0 && (aaa.(m).n = aaa.(alt).n) && (aaa.(m).d = aaa.(alt).d)
-		then (print_string "Yay! dedupd!"; aa.len <- m; alt)
+		then (aa.len <- m; alt)
 		else m 
 
 type cacheU = { pre_false: int ; pre_true: int; all_p: bool; some_q: bool }  
@@ -264,8 +264,8 @@ let add_atom_Upq = fun  d_in fd f ->
 	let trail_cache = Array.make (d_in.len*max_growth+1) (-1) in
 	let d_out = mdii.a0 in
 	let lead_or_trail_ = fun cache op m -> ( 
-		(*let cache = if op = '<' then me.mdii.a1 else me.mdii.a2 in *)
-		(Printf.printf "op: %c cache.(%d)=%d\n" op m cache.(m)); flush stdout;
+		(*let cache = if op = '<' then me.mdii.a1 else me.mdii.a2 in 
+		(Printf.printf "op: %c cache.(%d)=%d\n" op m cache.(m)); flush stdout; *)
 		if cache.(m) < 0 then cache.(m) <- appendii mdii {n=LabelC op; d=[|m|]};
 	  	cache.(m) )in
 	let (~<) = (lead_or_trail_ lead_cache '<') (* lead  *) in 
@@ -278,11 +278,10 @@ let add_atom_Upq = fun  d_in fd f ->
 (*	let shuffle = (shuffle_ d_outii fd) in
 	let letter  = (letter_  d_outii fd) in *)
 	let pre = build_pre d_in fd f in
-	let _ = pre.(0).(0) + 1 in 
 	let t_cache = Array.make_matrix d_in.len 2 (-1) in
 	let rec t_rec k b =
 		let t = fun i b -> (
-			let _ = if t_cache.(i).(b) < 0 then t_cache.(i).(b) <- t_rec i b else () in
+			if t_cache.(i).(b)<0 then t_cache.(i).(b) <- t_rec i b; 
 			t_cache.(i).(b)
 		) in(*
 		let t = fun i b -> {m=t_ i b; mdii=d_outii; fd=fd} in*) 
@@ -313,9 +312,9 @@ let add_atom_Upq = fun  d_in fd f ->
 	d_out 
 
 let add_atom_Spq = fun  d_in fd f ->
-	let _ = mirror d_in in 
+	mirror d_in; 
 	let d_out = add_atom_Upq d_in fd f in
-	let _ = mirror d_out in
+	mirror d_out;
 	d_out
 
 let add_atom_PC = fun d fd f bool_func ->
@@ -394,18 +393,8 @@ let rec dag_from_tree_ h d t =
 let dag_from_tree t =
 	let h = Hashtbl.create 100 in
 	let d = {a=[| |]; len=0} in 
-	let _ = dag_from_tree_ h d t in
+	ignore (dag_from_tree_ h d t);
 	d
-
-let x = dag_from_tree {l="x"; c=[]}
-;;
-
-let my_dag = (dag_from_tree {l="x"; c=[]})
-;; 
-let my_dag = (dag_from_tree {l="x"; c=[{l="y";c=[]}; {l="y"; c=[]}]}) 
-;;
-let _ = print_dag (fun xx -> xx) ( dag_from_tree {l="x"; c=[{l="y";c=[]}; {l="z"; c=[]}]} )
-;;
 
 let do_model_check formula_tree me_tree =
 begin 
@@ -423,7 +412,12 @@ begin
 	print_dag label_to_string d;
 	print_string "\nFORMULA: \n" ;  
 	print_dag (fun x->x) fd ; *)
+	let pre_time = Sys.time() in
 	let new_me = add_atoms md fd in
+	let post_time = Sys.time() in
+      	Printf.printf "\nCpu time used: %6.3f to model check, %6.3f total \n"
+		 (post_time-.pre_time) post_time; flush stdout ;
+
 (*	print_string "ME:\n" ;
         print_dag label_to_string new_d *)
 (*	print_string "\nResulting DAG:";

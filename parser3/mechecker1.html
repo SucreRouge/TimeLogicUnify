@@ -1,0 +1,8 @@
+<html>
+<style>cal {font-family:cursive,roman;}</style>
+<h3>Model Checker for General Linear Time</h3>
+<p>This model checker takes as input a formula &phi; 
+ and a model expression <cal>I</cal>. We specify a problem by saying "&phi; : <cal>I</cal>". The format of &phi; and <cal>I</cal> are defined by the following BNF notation where p is any lowercase letter: <br/>
+ &nbsp;&nbsp;&nbsp; &phi; := p <cal>|</cal> &phi; & &phi; <cal>|</cal> -&phi; <cal>|</cal> U(&phi;,&phi;) <cal>|</cal> S(&phi;,&phi;) <cal>|</cal> (&phi;) <br/>
+ &nbsp;<cal>I</cal> := {p,p,...,p} <cal>|</cal> <cal>I</cal> + <cal>I</cal>  <cal>|</cal> &gt;<cal>I</cal> <cal>|</cal> &lt;<cal>I</cal> <cal>|</cal> [<cal>I</cal>;<cal>I</cal>;...;<cal>I</cal>] <cal>|</cal> (<cal>I</cal>) </p>
+Note that we have used "[" and "]" for shuffles here to distinguish shuffles from leads and trails. Queries are logged, and may be used for debugging and research purposes. <br/>^<font size="tiny"><a href="mechecker_plain.html">hide</a>^</font><br/> 
