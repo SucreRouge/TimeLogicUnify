@@ -10,7 +10,10 @@ include Me
 %token <string> BINARY
 %token <string> PREFIX 
 
-%left UNTIL SINCE AND NEG COMMA 
+%left COMMA
+%left SEMICOLON
+%left BINARY UNTIL SINCE
+%left PREFIX
 
 %start formula
 %type <string Me.tree> formula
@@ -34,4 +37,3 @@ ifix:  ATOM			{ {l= $1; c=[]} }
 	| LPAREN ifix RPAREN	{ $2 }
 ;
 %%
-

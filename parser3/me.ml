@@ -280,7 +280,6 @@ let add_atom_Upq = fun  d_in fd f ->
 	let pre = build_pre d_in fd f in
 	let _ = pre.(0).(0) + 1 in 
 	let t_cache = Array.make_matrix d_in.len 2 (-1) in
-	print_string "adding_atom\n";
 	let rec t_rec k b =
 		let t = fun i b -> (
 			let _ = if t_cache.(i).(b) < 0 then t_cache.(i).(b) <- t_rec i b else () in
@@ -291,8 +290,6 @@ let add_atom_Upq = fun  d_in fd f ->
 		let new_me = match dak.n with
 			LabelC label -> (
                                 let mI = dak.d in
-				print_string ((string_of_int k )^"--\n");
-				print_string ((intarray_to_string mI)^"\n");
 				flush stdout;
                                 0 + ( match label with  
                                         '+'   ->  ( (t mI.(0) (pre.(mI.(1)).(b))) +: (t mI.(1) b) ) 
@@ -312,7 +309,6 @@ let add_atom_Upq = fun  d_in fd f ->
 		dedup mdii new_me t_cache.(k).(1-b)
 		
 	in
-	print_string "defined_t_rec\n";
 	ignore (t_rec (d_in.len-1) 0) ;
 	d_out 
 
@@ -332,6 +328,18 @@ let add_atom_PC = fun d fd f bool_func ->
 				then Array.set atoms f true
 				else ()
 	done ; d
+
+let satisfied = fun d fd ->
+        let sat = ref false in
+	for k = 0 to d.len - 1
+	do 
+		let dak = d.a.(k) in
+		match dak.n with 
+			LabelC label -> ()
+			| LabelS atoms -> if atoms.(fd.len-1)
+				then sat := true 
+	done ; 
+        ! sat
 
 let add_atom = fun d fd f ->
 	let pq = (fd.a.(f).d) in
@@ -361,8 +369,8 @@ let add_atoms = fun d fd ->
 	let d_out = ref d in 
 	for f = 0 to fd.len -1
 	do
-		print_string "\nDAG:";
-        	print_dag label_to_string (!d_out); 
+(*		print_string "\nDAG:";
+        	print_dag label_to_string (!d_out);  *) 
 		d_out := add_atom (!d_out) fd f
 	done ; (!d_out)
 	
@@ -409,8 +417,8 @@ begin
 	let names = pretty_print_formula fd in
 	print_string " : ";
 	pretty_print_me names max_int md ;
-	print_string "NAMES: \n";
-	Array.iter (fun s -> print_string (s ^ "\n")) names;
+	(*print_string "NAMES: \n";
+	Array.iter (fun s -> print_string (s ^ "\n")) names;*)
 (*	print_string "ME:\n" ;
 	print_dag label_to_string d;
 	print_string "\nFORMULA: \n" ;  
@@ -418,9 +426,12 @@ begin
 	let new_me = add_atoms md fd in
 (*	print_string "ME:\n" ;
         print_dag label_to_string new_d *)
-	print_string "\nResulting DAG:";
-        print_dag label_to_string new_me; 
-	print_string "\nResulting ME:";
+(*	print_string "\nResulting DAG:";
+        print_dag label_to_string new_me; *)
+        let sat_str = if satisfied new_me fd then "IS" else "is NOT" in
+	print_string "\n\n------------------------------------";
+        Printf.printf "\nThe formula %s satisfied in: " sat_str;
+	(*print_string "\nResulting ME:";*)
 	pretty_print_me names 1 new_me 
 end
 	

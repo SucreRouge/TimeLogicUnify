@@ -49,7 +49,6 @@ let string_map f = string_maps (fun c -> String.make 1 (f c))
 let split_every_char = string_maps (fun c -> (String.make 1 c ^ " "))
 let v_to_or =  string_map (fun c -> if c='v' then '|' else c)
 
-let _ = print_string (split_every_char "abcdef!\n") 
 (*	let out = Buffer.create (2 * String.length s) in 
 	let add = (Buffer.add_char out) in 
 	(String.iter s) (fun c -> add c; add ' ') ;
@@ -176,18 +175,44 @@ let robust_parse fixers_ par lex s_ =
 		else ();
 	result
 
+let log_dir= (Sys.getenv "HOME") ^ "/.config/"
+
+let print_count = fun () -> Printf.printf "\nThis ME checker has been used %s times\n" 
+(try 
+        let stats_fname = log_dir ^ "mechecker_stats.txt" in
+        let input = open_in stats_fname in
+        let old_count = input_line input in 
+        close_in input;
+        let count = string_of_int (1+ int_of_string (old_count)) in
+        let output = open_out stats_fname in
+        output_string output count;
+        close_out output;
+        count
+with _ -> "UNKNOWN")
+        
+let log f_name s =
+        let oc = open_out_gen [Open_creat; Open_text; Open_append] 0o600 f_name
+        in
+          output_string oc (s^"\n");
+            close_out oc  
+
 let do_model_check_string s =
-	try 
+        let status = ref "bad" in
+	( try 
 		let (formula_s, me_s) = split_string s in
 		let formula_tree = robust_parse [split_every_char; v_to_or] Phi_parser.formula Phi_lexer.token formula_s in
 		(*print_string (formula_s ^ "\n");*)
 		(try 
 			let me_tree = robust_parse [] Me_parser.me Me_lexer.token me_s in
 			(*print_string (me_s ^ "\n"); *)
-			Me.do_model_check formula_tree me_tree
-		with Parsing.Parse_error -> print_string "Could not parse ME: ")
-	with Parsing.Parse_error -> print_string "Could not parse Formula: "	
-	
+                        Me.do_model_check formula_tree me_tree;
+                        status := "ok" 
+		with Parsing.Parse_error-> print_string "Could not parse ME.\n")
+        with Parsing.Parse_error-> print_string "Could not parse Formula.\n");	
+        print_count ();
+        log (log_dir ^ "mechecker_" ^ !status ^ ".log") 
+                (string_map (fun c->if c='\n' then ' ' else c) s)
+;;
 
 let main () =
   try

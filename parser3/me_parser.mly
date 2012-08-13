@@ -10,14 +10,18 @@ include Me
 %token <string> ATOM
 %token <char> UNARY
 
+%left COMMA
+%left SEMICOLON 
 %left PLUS 
+%left XLT LT GT XGT 
 
 %start me
 %type <Me.parse_t Me.tree> me
 
 %%
 me:	m EOF			{ $1 }
-	| m2 EOF		{ $1 }
+	| m2 EOF		{ $1 } 
+/*	| m3 EOF		{ $1 }  */
 ;
 
 /* Now to define "m", based on our canonical syntax */
@@ -40,6 +44,7 @@ m:	  ATOM			{ {l=ParseS [$1];c=[]} }
 	| GT m			{ {l=ParseC '>'; c=[$2]} }
 	| XLT m			{ {l=ParseC '<'; c=[$2]} }
 	| XGT m			{ {l=ParseC '>'; c=[$2]} }
+	| LPAREN m RPAREN	{ $2 }
 ;
 
 /* Now we define m2, Like m but it uses <...> for shuffles and <-, -> for <,  > */
@@ -57,11 +62,12 @@ m2:	  ATOM			{ {l=ParseS [$1];c=[]} }
 	| m2 PLUS m2		{ {l=ParseC '+'; c=[$1;$3] } }
 	| XLT m2		{ {l=ParseC '<'; c=[$2]} }
 	| XGT m2		{ {l=ParseC '>'; c=[$2]} } 
+	| LPAREN m2 RPAREN	{ $2 }
 ;
 
 /* we also define m3 here, this is like m2, but use postfix notation, 
    we won't actually use m3, since it would confuse ocamlyacc to have
-   too many alternative syntaxes */
+   too many alternative syntaxes 
 
 shuflist3: 
 	| m3 SEMICOLON shuflist3	{ $1::$3 }
@@ -76,4 +82,5 @@ m3:	  ATOM			{ {l=ParseS [$1];c=[]} }
 	| m3 PLUS m3		{ {l=ParseC '+'; c=[$1;$3] } }
 	| m3 XLT		{ {l=ParseC '<'; c=[$1]} }
 	| m3 XGT		{ {l=ParseC '>'; c=[$1]} } 
-;
+	| LPAREN m3 RPAREN	{ $2 }
+; */
