@@ -23,17 +23,21 @@ formula: phi EOF		{ $1 }
 	 | ifix EOF		{ $1 }
 ;
 phi:  ATOM			{ {l= $1; c=[]} }
+	| LPAREN phi RPAREN	{ $2 }
 	| NEG phi		{ {l= "-"; c=[$2]} }
 	| phi BINARY phi	{ {l= $2 ; c=[$1; $3]} }
 	| PREFIX LPAREN phi COMMA phi RPAREN{ {l= $1; c=[$3;$5]} }
 	| PREFIX phi COMMA phi { {l= $1; c=[$2;$4]} }
 	| PREFIX phi phi { {l= $1; c=[$2;$3]} }
-	| LPAREN phi RPAREN	{ $2 }
 ;
 ifix:  ATOM			{ {l= $1; c=[]} }
+	| LPAREN ifix RPAREN	{ $2 }
 	| NEG ifix		{ {l= "-"; c=[$2]} }
 	| ifix BINARY ifix	{ {l= $2 ; c=[$1; $3]} }
-	| ifix PREFIX ifix	{ {l= $2 ; c=[$1; $3]} }
-	| LPAREN ifix RPAREN	{ $2 }
+	| ifix PREFIX ifix	{ {l= $2 ; c=[$3; $1]} } 
+        /* perhaps it would be better to define our data structures such
+         * that c=[$1;$3] for ifix "PREFIX" operators and instead have
+         * c=[$3;$1] for phi "PREFIX" operators
+         */
 ;
 %%
