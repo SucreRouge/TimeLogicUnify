@@ -3,12 +3,13 @@ main: me.ml  phi_lexer.ml phi_parser.ml  me_parser.ml me_parser.mli me_lexer.ml 
 	ocamlc.opt -o main  me.ml phi_parser.ml phi_lexer.ml  me_lexer.ml me_parser.ml main.ml
 
 www_: 
+	mkdir -p www
 	bash -c "(echo '<html>' ; cat mechecker2.html) > www/mechecker_plain.html"
 	bash -c "cat mechecker1.html mechecker2.html > www/mechecker.html"
 	git archive --prefix=mechecker HEAD -o www/mechecker_src.tar.gz
 
 # Install as cgi-bin, to a linux machine with e.g. apache installed
-install: www mechecker.cgi
+install: www_ mechecker.cgi
 	cp mechecker.cgi /usr/lib/cgi-bin
 	#bash -c "(echo '<html>' ; cat mechecker2.html) > /var/www/mechecker_plain.html"
 	#bash -c "cat mechecker1.html mechecker2.html > /var/www/mechecker.html"
