@@ -228,12 +228,42 @@ let build_pre = fun d fd f ->
 				let children = dak.d in 
 				all_q.(k)  <- Array.fold_left (fun x i -> x && all_q.(i) ) true  children;
 				some_p.(k) <- Array.fold_left (fun x i -> x || some_p.(i)) false children;
-				let mI = children in 
-				let pre_ = fun b -> match label with 
-					'+'   ->  pre.(mI.(0)).(pre.(mI.(1)).(b))
+				let mI = children in
+                                if  (mI.(0) >= k ) then (
+                                        print_dag label_to_string d;
+                                        printf "0k %d %d\n" mI.(0) k;
+                                        assert false
+                                );
+                                let pre_ = fun b -> (
+                                        printf ">mI0 %d\n" mI.(0);
+                                        assert (mI.(0) > -1);
+                                        assert (mI.(0) < d.len);
+                                        printf "+mI0 %d\n" mI.(0);
+                                        match label with 
+					'+'   ->  
+                                                printf "!mI0 %d\n" mI.(0);
+                                                assert (Array.length mI = 2);
+                                                assert (mI.(1) > -1);
+                                                assert (mI.(1) < d.len);
+                                                printf "#mI1 %d %d\n" mI.(1) b;
+                                                ignore (pre.(mI.(1)));
+                                                printf "XmI1 %d %d %d %d\n" mI.(1) b pre.(mI.(1)).(b) k; 
+                                                assert (pre.(mI.(1)).(b) = 0 || pre.(mI.(1)).(b) = 1);
+                                                printf "##mI0 %d\n" mI.(0);
+                                                pre.(mI.(0)).(pre.(mI.(1)).(b))
 					| '>' ->  pre.(mI.(0)).(b)
-					| _   ->  bool_to_int (((b==1) || some_p.(k)) && all_q.(k)) in
-				( pre.(k).(0) <- pre_ 0;
+					| _   ->  bool_to_int (((b==1) ||
+                                        some_p.(k)) && all_q.(k))
+                                        ) in
+                                ( assert (k < Array.length pre) ;
+                                  printf "mI0 %d\n" mI.(0);
+                                  let pre_0 = pre_ 0 in
+                                  printf ">>mI0 %d\n" mI.(0);
+                                  let pre_1 = pre_ 1 in
+                                  assert (pre_0 > -1);
+                                  assert (pre_1 > -1);
+                                  printf ">>>mI0 %d\n" mI.(0);
+                                  pre.(k).(0) <- pre_ 0;
 				  pre.(k).(1) <- pre_ 1 )
 			| LabelS atoms ->
 				let pre_ = fun b -> bool_to_int (atoms.(p) || ( (b==1)  && atoms.(q) )) in
@@ -272,7 +302,9 @@ let max_growth = 3
 (* INPUTS: d_in, a dag (Directed Acyclic Graph) of an ME
  * 	fd a dag of a formula *)
 let add_atom_Upq = fun  d_in fd f ->
-	if d_in.len > !max_size then
+        printf "\n\nD_IN 0 ---------\n";
+        print_dag label_to_string d_in;
+        if d_in.len > !max_size then
 	begin
 		Printf.printf "Size %d > %d of ME I_%d (of %d) exceeds soft-coded limit.\n Contact john@csse.uwa.edu.au if you really want to compute this result." d_in.len (!max_size) f fd.len; flush stdout;
 		exit 0 
@@ -284,11 +316,16 @@ let add_atom_Upq = fun  d_in fd f ->
 	let lead_or_trail_ = fun cache op m -> ( 
 		(*let cache = if op = '<' then me.mdii.a1 else me.mdii.a2 in 
 		(Printf.printf "op: %c cache.(%d)=%d\n" op m cache.(m)); flush stdout; *)
-		if cache.(m) < 0 then cache.(m) <- appendii mdii {n=LabelC op; d=[|m|]};
+		if (cache.(m) < 0) then (
+                        cache.(m) <- appendii mdii {n=LabelC op; d=[|m|]};
+                        printf "m%c%d -> %d\n" op m cache.(m));
 	  	cache.(m) )in
 	let (~<) = (lead_or_trail_ lead_cache '<') (* lead  *) in 
 	let (~>) = (lead_or_trail_ trail_cache '>') (* trail *) in  
-	let (+:) = fun e g -> appendii mdii {n=LabelC '+'; d=[|e;g|]} in 
+	let (+:) = fun e g -> 
+                assert (e < mdii.a0.len);
+                assert (g < mdii.a0.len);
+                appendii mdii {n=LabelC '+'; d=[|e;g|]} in 
 
 	let letter =  fun atoms -> appendii mdii {n=LabelS atoms; d=[||]} in
 	let shuffle = fun chld  -> appendii mdii {n=LabelC 'S'  ; d=chld} in
@@ -302,7 +339,9 @@ let add_atom_Upq = fun  d_in fd f ->
 	 * 	   b 0 if preUpq is false, other wise 1 *)
 	let rec t_rec k b =
 		let t = fun i b -> (
-			if t_cache.(i).(b)<0 then t_cache.(i).(b) <- t_rec i b; 
+                        if t_cache.(i).(b)<0 then 
+                                (t_cache.(i).(b) <- t_rec i b;
+                                printf "ib %d %d -> i %d\n" i b t_cache.(i).(b));
 			t_cache.(i).(b)
 		) in(*
 		let t = fun i b -> {m=t_ i b; mdii=d_outii; fd=fd} in*) 
@@ -327,6 +366,7 @@ let add_atom_Upq = fun  d_in fd f ->
 						);
                                                 let left = (t mI.(0) pre.(mI.(0)).(b)) in
 						let right = (t mI.(0) b) in 
+						(*if (left=right)*)
 						if (left=right)
 							then   ( ~< left ) 
 							else ( ( ~< left ) +: (right) )
@@ -344,12 +384,23 @@ let add_atom_Upq = fun  d_in fd f ->
 		
 	in
 	ignore (t_rec (d_in.len-1) 0) ;
+       printf "\n\nD_OUT 0 ---------\n";
+        print_dag label_to_string d_out;
 	d_out 
 
 let add_atom_Spq = fun  d_in fd f ->
+        printf "\n\n\n";
+        printf "\n\nD_IN 1 ---------\n";
+        print_dag label_to_string d_in;
 	mirror d_in; 
+        printf "\n\nD_IN 2 ---------\n";
+        print_dag label_to_string d_in;
 	let d_out = add_atom_Upq d_in fd f in
+        printf "\n\nD_OUT 1 ---------\n";
+        print_dag label_to_string d_out;
 	mirror d_out;
+        printf "\n\nD_OUT 2 ---------\n";
+        print_dag label_to_string d_out;
 	d_out
 
 let add_atom_PC = fun d fd f bool_func ->
