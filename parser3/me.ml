@@ -4,12 +4,14 @@
 (* we may want to cap the size of the DAGs when used as a server
  * to prevent denials of service *)
 let max_size = ref max_int;;
-
+let printf=Printf.printf
 let append = fun a x -> let (l,e) = a in  e.(l) <- x; (l+1,e) 
 
 (* Now we start our mathematical definitions *)
 
 type label_t = LabelC of char | LabelS of bool array;;
+	
+
 
 (*type tree = { l : label; c : tree list; };;*)
 
@@ -81,9 +83,13 @@ let intarray_to_string = array_to_string ", " string_of_int
 let boolarray_to_string = array_to_string "" (fun b -> if b then "T" else ".")
 (*
 let dag_to_string = fun f d -> Array.mapi (fun i dn -> ((int_to_string i) ^ " " ^ (f dn) ^ " " ^ (intarray_to_string dn.d) ^ "\n" )) (aa_to_array d)*)
+let label_to_string l = match l with 
+	LabelC c -> Char.escaped c
+	| LabelS a -> boolarray_to_string a
 
+let max_print_size=ref 1000
 (* print_dag f d prints the dag d using function f to convert nodes to strings *)
-let print_dag = fun f d -> if d.len > 1000 then print_string "[HUGE]" else ignore ( Array.mapi (
+let print_dag = fun f d -> if d.len > !max_print_size then print_string "[HUGE]" else ignore ( Array.mapi (
 	fun i dn -> Printf.printf "%d %s %s\n" 
 		i
 		(f dn.n)
@@ -263,6 +269,8 @@ let max_growth = 3
  * exercise for the reader.     
  *)
 
+(* INPUTS: d_in, a dag (Directed Acyclic Graph) of an ME
+ * 	fd a dag of a formula *)
 let add_atom_Upq = fun  d_in fd f ->
 	if d_in.len > !max_size then
 	begin
@@ -289,6 +297,9 @@ let add_atom_Upq = fun  d_in fd f ->
 	let letter  = (letter_  d_outii fd) in *)
 	let pre = build_pre d_in fd f in
 	let t_cache = Array.make_matrix d_in.len 2 (-1) in
+
+	(* Inputs: k, an index into d_in,
+	 * 	   b 0 if preUpq is false, other wise 1 *)
 	let rec t_rec k b =
 		let t = fun i b -> (
 			if t_cache.(i).(b)<0 then t_cache.(i).(b) <- t_rec i b; 
@@ -300,18 +311,32 @@ let add_atom_Upq = fun  d_in fd f ->
 			LabelC label -> (
                                 let mI = dak.d in
 				flush stdout;
-                                0 + ( match label with  
+                                let ret = 0 + ( match label with  
                                         '+'   ->  ( (t mI.(0) (pre.(mI.(1)).(b))) +: (t mI.(1) b) ) 
-                                        | '<' ->  let left = (t mI.(0) pre.(mI.(0)).(b)) in
-						  let right = (t mI.(0) b) in 
-						  if (left=right)
+                                        | '<' ->  
+						if (mI.(0) = k) then (
+							max_print_size:=9000000;
+                                                        printf "\n---------------------------------------\n" ;
+                                                        printf "\n\nINPUT DAG:\n" ;
+        	                                        print_dag label_to_string (d_in);
+                                                        printf "\n\nOUTPUT DAG:\n" ;
+        	                                        print_dag label_to_string (d_out);
+                                                        printf "\n---------------\n" ;
+							printf "%d %d c%d" k mI.(0) lead_cache.(k); 
+							assert false
+						);
+                                                let left = (t mI.(0) pre.(mI.(0)).(b)) in
+						let right = (t mI.(0) b) in 
+						if (left=right)
 							then   ( ~< left ) 
 							else ( ( ~< left ) +: (right) )
                                         | '>' ->  ( ~> ( t mI.(0) pre.(mI.(0)).(b)) )
                                         | 'S' ->  (shuffle (Array.map (fun i -> t i b) mI))
 					| _ -> failwith "Invalid_ME_Operator"
-				)
-			)
+				) in
+                                (*assert (ret != k);*)
+                                ret
+			) 
                         | LabelS atoms -> 
 				let atoms = if (b==1) then safe_set atoms f true else atoms in
 				letter atoms  in
@@ -369,11 +394,6 @@ let add_atom = fun d fd f ->
 			| _   -> failwith "Invalid_Operator" )
 		| _ -> failwith "More_than_two_children_in_formula"
 
-	
-let label_to_string l = match l with 
-	LabelC c -> Char.escaped c
-	| LabelS a -> boolarray_to_string a
-	
 let add_atoms = fun d fd ->
 	let d_out = ref d in 
 	for f = 0 to fd.len -1
