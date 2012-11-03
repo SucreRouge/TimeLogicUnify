@@ -7,6 +7,8 @@ let max_size = ref max_int;;
 let printf=Printf.printf
 let append = fun a x -> let (l,e) = a in  e.(l) <- x; (l+1,e) 
 
+let debug = Printf.ifprintf stderr
+
 (* Now we start our mathematical definitions *)
 
 type label_t = LabelC of char | LabelS of bool array;;
@@ -58,15 +60,15 @@ let append = fun aa x ->
 	aa.len <- l+1;
 	l
 
-let appendii_ = fun aaa x ->
+let appendii = fun aaa x ->
 	let aa=aaa.a0 in 
 	let l=aa.len in
 	aaa.a1 <- append1 l aaa.a1 (-1) ;
 	aaa.a2 <- append1 l aaa.a2 (-1) ;
-        printf "aa.len = %d\n" aa.len;
+        debug "aa.len = %d\n" aa.len;
         let ret = append aa x in
-        printf "aa.len = %d\n" aa.len;
-        printf "aii ret = %d\n" ret;
+        debug "aa.len = %d\n" aa.len;
+        debug "aii ret = %d\n" ret;
         ret 
 
 
@@ -101,6 +103,8 @@ let print_dag = fun f d -> if d.len > !max_print_size then print_string "[HUGE]"
 		(f dn.n)
 		(intarray_to_string dn.d)
 		) (aa_to_array d))
+(* DISABLE print_dag, as it is only used for debugging *)
+let print_dag = fun f d -> ()
 
 let formula_printer node child_s =
 	match (Array.length child_s) with 
@@ -241,34 +245,28 @@ let build_pre = fun d fd f ->
                                         assert false
                                 );
                                 let pre_ = fun b -> (
-                                        printf ">mI0 %d\n" mI.(0);
+                                        debug ">mI0 %d\n" mI.(0);
                                         assert (mI.(0) > -1);
                                         assert (mI.(0) < d.len);
-                                        printf "+mI0 %d\n" mI.(0);
+                                        debug "+mI0 %d\n" mI.(0);
                                         match label with 
 					'+'   ->  
-                                                printf "!mI0 %d\n" mI.(0);
+                                                debug "!mI0 %d\n" mI.(0);
                                                 assert (Array.length mI = 2);
                                                 assert (mI.(1) > -1);
                                                 assert (mI.(1) < d.len);
-                                                printf "#mI1 %d %d\n" mI.(1) b;
                                                 ignore (pre.(mI.(1)));
-                                                printf "XmI1 %d %d %d %d\n" mI.(1) b pre.(mI.(1)).(b) k; 
                                                 assert (pre.(mI.(1)).(b) = 0 || pre.(mI.(1)).(b) = 1);
-                                                printf "##mI0 %d\n" mI.(0);
                                                 pre.(mI.(0)).(pre.(mI.(1)).(b))
 					| '>' ->  pre.(mI.(0)).(b)
 					| _   ->  bool_to_int (((b==1) ||
                                         some_p.(k)) && all_q.(k))
                                         ) in
                                 ( assert (k < Array.length pre) ;
-                                  printf "mI0 %d\n" mI.(0);
                                   let pre_0 = pre_ 0 in
-                                  printf ">>mI0 %d\n" mI.(0);
                                   let pre_1 = pre_ 1 in
                                   assert (pre_0 > -1);
                                   assert (pre_1 > -1);
-                                  printf ">>>mI0 %d\n" mI.(0);
                                   pre.(k).(0) <- pre_ 0;
 				  pre.(k).(1) <- pre_ 1 )
 			| LabelS atoms ->
@@ -308,7 +306,6 @@ let max_growth = 3
 (* INPUTS: d_in, a dag (Directed Acyclic Graph) of an ME
  * 	fd a dag of a formula *)
 let add_atom_Upq = fun  d_in fd f ->
-        printf "\n\nD_IN 0 ---------\n";
         print_dag label_to_string d_in;
         if d_in.len > !max_size then
 	begin
@@ -319,14 +316,14 @@ let add_atom_Upq = fun  d_in fd f ->
 
         (* appendmdii appends "x" to mdii unless x already exists at
          * "possible_duplicate". It will return an index to x *)
-        let possible_duplicate = ref -1 in
+        let possible_duplicate = ref (-1) in
         let appendmdii x = 
 	        let aa = mdii.a0 in
 	        let aaa = aa.a in 
-                let alt = !possible_duplicate
+                let alt = !possible_duplicate in
 	        if (alt >= 0 &&
-                        (aaa.(m).n = aaa.(alt).n) &&
-                        (aaa.(m).d = aaa.(alt).d))
+                        (x.n = aaa.(alt).n) &&
+                        (x.d = aaa.(alt).d))
                 then alt
                 else appendii mdii x in
 	let lead_cache =  Array.make (d_in.len*max_growth+1) (-1) in
@@ -335,9 +332,8 @@ let add_atom_Upq = fun  d_in fd f ->
 	let lead_or_trail_ = fun cache op m -> ( 
 		(*let cache = if op = '<' then me.mdii.a1 else me.mdii.a2 in 
 		(Printf.printf "op: %c cache.(%d)=%d\n" op m cache.(m)); flush stdout; *)
-		if (cache.(m) < 0) then (
+		if (cache.(m) < 0) then 
                         cache.(m) <- appendmdii {n=LabelC op; d=[|m|]};
-                        printf "m%c%d -> %d\n" op m cache.(m));
 	  	cache.(m) )in
 	let (~<) = (lead_or_trail_ lead_cache '<') (* lead  *) in 
 	let (~>) = (lead_or_trail_ trail_cache '>') (* trail *) in  
@@ -357,10 +353,12 @@ let add_atom_Upq = fun  d_in fd f ->
 	(* Inputs: k, an index into d_in,
 	 * 	   b 0 if preUpq is false, other wise 1 *)
 	let rec t_rec k b =
+                (* it is possible that the value of b does not affect the ME
+                 * so t_rec k (1-b) is a possible duplicate *)
+                possible_duplicate := t_cache.(k).(1-b);
 		let t = fun i b -> (
                         if t_cache.(i).(b)<0 then 
-                                (t_cache.(i).(b) <- t_rec i b;
-                                printf "ib %d %d -> i %d\n" i b t_cache.(i).(b));
+                                (t_cache.(i).(b) <- t_rec i b;);
 			t_cache.(i).(b)
 		) in(*
 		let t = fun i b -> {m=t_ i b; mdii=d_outii; fd=fd} in*) 
@@ -399,28 +397,17 @@ let add_atom_Upq = fun  d_in fd f ->
                         | LabelS atoms -> 
 				let atoms = if (b==1) then safe_set atoms f true else atoms in
 				letter atoms  in
-                newme
+                new_me
 		(*dedup mdii new_me t_cache.(k).(1-b) *)
 		
 	in
 	ignore (t_rec (d_in.len-1) 0) ;
-       printf "\n\nD_OUT 0 ---------\n";
-        print_dag label_to_string d_out;
 	d_out 
 
 let add_atom_Spq = fun  d_in fd f ->
-        printf "\n\n\n";
-        printf "\n\nD_IN 1 ---------\n";
-        print_dag label_to_string d_in;
 	mirror d_in; 
-        printf "\n\nD_IN 2 ---------\n";
-        print_dag label_to_string d_in;
 	let d_out = add_atom_Upq d_in fd f in
-        printf "\n\nD_OUT 1 ---------\n";
-        print_dag label_to_string d_out;
 	mirror d_out;
-        printf "\n\nD_OUT 2 ---------\n";
-        print_dag label_to_string d_out;
 	d_out
 
 let add_atom_PC = fun d fd f bool_func ->
