@@ -336,7 +336,7 @@ let add_atom_Upq = fun  d_in fd f ->
 		(*let cache = if op = '<' then me.mdii.a1 else me.mdii.a2 in 
 		(Printf.printf "op: %c cache.(%d)=%d\n" op m cache.(m)); flush stdout; *)
 		if (cache.(m) < 0) then (
-                        cache.(m) <- appendii mdii {n=LabelC op; d=[|m|]};
+                        cache.(m) <- appendmdii {n=LabelC op; d=[|m|]};
                         printf "m%c%d -> %d\n" op m cache.(m));
 	  	cache.(m) )in
 	let (~<) = (lead_or_trail_ lead_cache '<') (* lead  *) in 
@@ -344,10 +344,10 @@ let add_atom_Upq = fun  d_in fd f ->
 	let (+:) = fun e g -> 
                 assert (e < mdii.a0.len);
                 assert (g < mdii.a0.len);
-                appendii mdii {n=LabelC '+'; d=[|e;g|]} in 
+                appendmdii {n=LabelC '+'; d=[|e;g|]} in 
 
-	let letter =  fun atoms -> appendii mdii {n=LabelS atoms; d=[||]} in
-	let shuffle = fun chld  -> appendii mdii {n=LabelC 'S'  ; d=chld} in
+	let letter =  fun atoms -> appendmdii {n=LabelS atoms; d=[||]} in
+	let shuffle = fun chld  -> appendmdii {n=LabelC 'S'  ; d=chld} in
 (*	let d_out = new_dag_from d_in in *)
 (*	let shuffle = (shuffle_ d_outii fd) in
 	let letter  = (letter_  d_outii fd) in *)
@@ -399,7 +399,8 @@ let add_atom_Upq = fun  d_in fd f ->
                         | LabelS atoms -> 
 				let atoms = if (b==1) then safe_set atoms f true else atoms in
 				letter atoms  in
-		dedup mdii new_me t_cache.(k).(1-b)
+                newme
+		(*dedup mdii new_me t_cache.(k).(1-b) *)
 		
 	in
 	ignore (t_rec (d_in.len-1) 0) ;
