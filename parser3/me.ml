@@ -58,12 +58,18 @@ let append = fun aa x ->
 	aa.len <- l+1;
 	l
 
-let appendii = fun aaa x ->
+let appendii_ = fun aaa x ->
 	let aa=aaa.a0 in 
 	let l=aa.len in
 	aaa.a1 <- append1 l aaa.a1 (-1) ;
 	aaa.a2 <- append1 l aaa.a2 (-1) ;
-	append aa x 
+        printf "aa.len = %d\n" aa.len;
+        let ret = append aa x in
+        printf "aa.len = %d\n" aa.len;
+        printf "aii ret = %d\n" ret;
+        ret 
+
+
 
 let array2_map f aa =
 	let bb = new_array2() in 
@@ -184,7 +190,7 @@ let (<=) = fun x y -> x || (not y)
 let dedup mdii m alt = 
 	let aa = mdii.a0 in
 	let aaa = aa.a in 
-	if  m = aa.len - 1 && alt >= 0 && (aaa.(m).n = aaa.(alt).n) && (aaa.(m).d = aaa.(alt).d)
+	if  false && m = aa.len - 1 && alt >= 0 && (aaa.(m).n = aaa.(alt).n) && (aaa.(m).d = aaa.(alt).d)
 		then (aa.len <- m; alt)
 		else m 
 
@@ -310,6 +316,19 @@ let add_atom_Upq = fun  d_in fd f ->
 		exit 0 
 	end;
 	let mdii = new_array2ii () in
+
+        (* appendmdii appends "x" to mdii unless x already exists at
+         * "possible_duplicate". It will return an index to x *)
+        let possible_duplicate = ref -1 in
+        let appendmdii x = 
+	        let aa = mdii.a0 in
+	        let aaa = aa.a in 
+                let alt = !possible_duplicate
+	        if (alt >= 0 &&
+                        (aaa.(m).n = aaa.(alt).n) &&
+                        (aaa.(m).d = aaa.(alt).d))
+                then alt
+                else appendii mdii x in
 	let lead_cache =  Array.make (d_in.len*max_growth+1) (-1) in
 	let trail_cache = Array.make (d_in.len*max_growth+1) (-1) in
 	let d_out = mdii.a0 in
