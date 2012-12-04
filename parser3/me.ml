@@ -11,13 +11,28 @@ let debug = Printf.ifprintf stderr
 
 (* Now we start our mathematical definitions *)
 
-type label_t = LabelC of char | LabelS of bool array;;
+
+(* A very light bitarray implementation *)
+	(*let powers = [|1;2;4;8;16;32;64;128|];;
+	(*let bitarray_t = string;;*)
+	let bitcreate siz = let nbytes = (siz+7)/8 in let s = (String.create nbytes) in String.fill s 0 nbytes (Char.chr 0) ; s
+	let bitget s i = (Char.code (String.get s (i/8)) land powers.(i mod 8)) != 0
+	let bitset s i = String.set s (i/8) (Char.chr (Char.code (String.get s (i/8)) lor powers.(i mod 8)))
+	let bittoarray s = let m = (String.length s)*8 in let a = Array.create m false in for i = 0 to (m-1) do if bitget s i then a.(i) <- true done ; a
+	let bitinit n f = let s = bitcreate n in for i = 0 to (n-1) do (if (f i) then (bitset s i)) done ; s*)
+
+	(*let bitarray_t = string;;*)
+	let bitcreate siz = let nbytes = (siz+7)/8 in let s = (String.create nbytes) in String.fill s 0 nbytes (Char.chr 0) ; s
+	let bitget s i = (Char.code (String.get s (i/8)) land (1 lsl (i mod 8))) != 0
+	let bitset s i = String.set s (i/8) (Char.chr (Char.code (String.get s (i/8)) lor (1 lsl (i mod 8))))
+	let bittoarray s = let m = (String.length s)*8 in let a = Array.create m false in for i = 0 to (m-1) do if bitget s i then a.(i) <- true done ; a
+	let bitinit n f = let s = bitcreate n in for i = 0 to (n-1) do (if (f i) then (bitset s i)) done ; s
+
+type label_t = LabelC of char | LabelS of string;;
 	
 
 
 (*type tree = { l : label; c : tree list; };;*)
-
-
 
 type 'a array2 = {mutable a: 'a array; mutable len: int}
 type 'a dag_node = {n: 'a ; d:  int array}
@@ -48,7 +63,8 @@ let append1 = fun l a x ->
 	then 
 		begin
 		if l = 0 then [|x|]
-		else (array_double a)
+		else (array_double a
+(* A very light bitarray implementation *))
 		end
 	else a in 
 	(new_a.(l) <- x ; new_a) 
@@ -93,7 +109,7 @@ let boolarray_to_string = array_to_string "" (fun b -> if b then "T" else ".")
 let dag_to_string = fun f d -> Array.mapi (fun i dn -> ((int_to_string i) ^ " " ^ (f dn) ^ " " ^ (intarray_to_string dn.d) ^ "\n" )) (aa_to_array d)*)
 let label_to_string l = match l with 
 	LabelC c -> Char.escaped c
-	| LabelS a -> boolarray_to_string a
+	| LabelS a -> boolarray_to_string (bittoarray a)
 
 let max_print_size=ref 1000
 (* print_dag f d prints the dag d using function f to convert nodes to strings *)
@@ -128,7 +144,7 @@ let me_printer names l c =
 	| LabelC '<' -> "<" ^ c.(0)
 	| LabelC 'S' -> "[" ^ (array_to_string "; " (fun x->x) c) ^ "]" 
 	| LabelC chr -> failwith "Unknown ME op " ^ (String.make 1 chr)
-	| LabelS a   -> letter_to_string names a
+	| LabelS a   -> letter_to_string names (bittoarray a)
 
 let pretty_print_dag_ store_array repeats  prefix printer dag =
 	let freq = Array.make dag.len 0 in 
@@ -270,15 +286,16 @@ let build_pre = fun d fd f ->
                                   pre.(k).(0) <- pre_ 0;
 				  pre.(k).(1) <- pre_ 1 )
 			| LabelS atoms ->
-				let pre_ = fun b -> bool_to_int (atoms.(p) || ( (b==1)  && atoms.(q) )) in
+				(*let atoms = bittoarray atoms_ in*)
+				let pre_ = fun b -> bool_to_int ((bitget atoms p) || ( (b==1)  && (bitget atoms q) )) in
 				( pre.(k).(0) <- pre_ 0;
 				  pre.(k).(1) <- pre_ 1;
-				  all_q.(k) <- atoms.(q);
-				  some_p.(k) <- atoms.(p) )
+				  all_q.(k) <- (bitget atoms q);
+				  some_p.(k) <- (bitget atoms p) )
 	done ;
 	pre
 
-let safe_set a i x = let c = (Array.copy a) in Array.set c i x ; c
+let safe_set a i = let c = (String.copy a) in bitset c i ; c
 
 let max_growth = 3
 (* This is the maximum growth in the size of the me node array as a factor
@@ -395,7 +412,7 @@ let add_atom_Upq = fun  d_in fd f ->
                                 ret
 			) 
                         | LabelS atoms -> 
-				let atoms = if (b==1) then safe_set atoms f true else atoms in
+				let atoms = if (b==1) then safe_set atoms f else atoms in
 				letter atoms  in
                 new_me
 		(*dedup mdii new_me t_cache.(k).(1-b) *)
@@ -417,7 +434,7 @@ let add_atom_PC = fun d fd f bool_func ->
 		match dak.n with 
 			LabelC label -> ()
 			| LabelS atoms -> if bool_func (atoms)
-				then Array.set atoms f true
+				then bitset atoms f
 				else ()
 	done ; d
 
@@ -428,7 +445,7 @@ let satisfied = fun d fd ->
 		let dak = d.a.(k) in
 		match dak.n with 
 			LabelC label -> ()
-			| LabelS atoms -> if atoms.(fd.len-1)
+			| LabelS atoms -> if bitget atoms (fd.len-1)
 				then sat := true 
 	done ; 
         ! sat
@@ -440,13 +457,13 @@ let add_atom = fun d fd f ->
 	match (Array.length pq) with
 		0 -> d
 		| 1 -> assert (f_op = "-") ; let p = pq.(0) in 
-                        pc (fun atoms -> not atoms.(p))
+                        pc (fun atoms -> not (bitget atoms p))
 		| 2 -> let (p,q) = (pq.(0),pq.(1)) in ( match f_op with
-			  "&" -> pc (fun a -> a.(p) && a.(q)) 
-			| "|" -> pc (fun a -> a.(p) || a.(q))
-			| "=" -> pc (fun a -> a.(p) =  a.(q))
-			| ">" -> pc (fun a -> a.(p) => a.(q))
-			| "<" -> pc (fun a -> a.(p) <= a.(q))
+			  "&" -> pc (fun a -> (bitget a p) && (bitget a q)) 
+			| "|" -> pc (fun a -> (bitget a p) || (bitget a q))
+			| "=" -> pc (fun a -> (bitget a p) =  (bitget a q))
+			| ">" -> pc (fun a -> (bitget a p) => (bitget a q))
+			| "<" -> pc (fun a -> (bitget a p) <= (bitget a q))
 			| "U" -> add_atom_Upq d fd f	
 			| "S" -> add_atom_Spq d fd f
 			| _   -> failwith "Invalid_Operator" )
@@ -458,6 +475,7 @@ let add_atoms = fun d fd ->
 	do
 (*		print_string "\nDAG:";
         	print_dag label_to_string (!d_out);  *) 
+        	Printf.printf "a%d %d\n" f (!d_out).len;
 		d_out := add_atom (!d_out) fd f
 	done ; (!d_out)
 	
@@ -467,7 +485,7 @@ type parse_t = ParseC of char | ParseS of string list;;
 
 let parse_to_label fd p = match p with
 	  ParseC c  -> LabelC c
-	| ParseS ss -> LabelS (Array.init fd.len ( fun i -> List.mem fd.a.(i).n ss ))
+	| ParseS ss -> LabelS (bitinit fd.len ( fun i -> List.mem fd.a.(i).n ss ))
 
 type 'a tree = {l: 'a; c: 'a tree list}
 	
