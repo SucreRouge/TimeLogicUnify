@@ -6,7 +6,7 @@ www_:
 	mkdir -p www
 	bash -c "(echo '<html>' ; cat mechecker2.html) > www/mechecker_plain.html"
 	bash -c "cat mechecker1.html mechecker2.html > www/mechecker.html"
-	git archive --prefix=mechecker HEAD -o www/mechecker_src.tar.gz
+	git archive --prefix=mechecker/ HEAD -o www/mechecker_src.tar.gz
 
 # Install as cgi-bin, to a linux machine with e.g. apache installed
 install: www_ mechecker.cgi
@@ -25,6 +25,7 @@ mechecker.cgi_: me.cmo me.cmx mechecker.cgi
 
 mechecker.cgi: me.ml  phi_lexer.ml phi_parser.ml  me_parser.ml me_parser.mli me_lexer.ml main.ml phi_parser.cmi me_parser.cmi
 	ocamlopt.opt -g -o mechecker.cgi  me.ml phi_parser.ml phi_lexer.ml  me_lexer.ml me_parser.ml main.ml
+	#ocamlopt.opt -g -o mechecker.cgi  me.ml phi_parser.ml phi_lexer.ml  me_lexer.ml me_parser.ml main.ml
 
 run: main
 	rlwrap ./main
@@ -39,11 +40,14 @@ clean:
 .SUFFIXES: .ml .mli .mll .mly .cmo .cmi
 
 .ml.cmo:
-	ocamlc.opt -c $<
+	ocamlc -c $<
+	#ocamlc.opt -c $<
 .mli.cmi: 
-	ocamlc.opt -c $<
+	ocamlc -c $<
+	#ocamlc.opt -c $<
 .mll.ml:
-	ocamllex.opt $<
+	ocamllex $<
+	#ocamllex.opt $<
 .mly.ml:
 	ocamlyacc -v $<
 .mly.mli:

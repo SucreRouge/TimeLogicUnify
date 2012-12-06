@@ -3,13 +3,20 @@ do_one () {
 
 	if [ ! -e "$f" ]
 	 then
+		echo "$1 $2 $3 $4" > output/inprogress
 		ocaml make_random_formulas_$1.ml $2 $3 $4 | /usr/bin/time ./main 2> output/set_$1_$2_$3_$4.err > output/set_$1_$2_$3_$4.out
+		rm output/inprogress
 	fi
 }
 mkdir -p output 
 
 sudo cpufreq-set -g performance
 cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_governors
+
+if [ -e output/inprogress ]
+then 
+	do_one `cat output/inprogress`
+fi
 
 for type in 6sX 6s
 do
