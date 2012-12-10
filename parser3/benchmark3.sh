@@ -38,10 +38,11 @@ cut -f1,2,8,14- < output/table_$1.txt > output/table_cut_$1.txt
 (echo '\begin{tabular}{|c|r@{.}l|c|c|c|c|} \hline'
 tr '\t' '&' <  output/table_cut_$1.txt | sed 's/&/ & /g
 s/[.]/\&/g
+s/max_mb/MB/g
 s/_/\\_/g
 s/$/\\\\/g
 2i\\\\hline 
-s/user/\\multicolumn{2}{c|}{user}/' 
+s/user/\\multicolumn{2}{c|}{CPU}/' 
 echo \\hline
 echo '\end{tabular}') > output/table_cut_$1.tex
 }
