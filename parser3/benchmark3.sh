@@ -5,12 +5,12 @@ orig () {
 }
 
 pow10 () {
-	echo set_6sX_$((10**$i))
+	echo set_6sX_100_$((10**$i))_0
 }
 
 do_table () {
 F=output/table_$1.txt
-rm $F
+rm $F || true
 
 (
 echo -n "i "
@@ -22,28 +22,32 @@ echo origme finalme formula
 for i in $2
 do
 echo -n "$i " 
- < output/$i.err  tr '\n+' '  '  | sed 's/...XXXmaxr/maxr/
+f=`$1 $i`
+ < output/$f.err  tr '\n+' '  '  | sed 's/...XXXmaxr/maxr/
 s/[()[:alpha:]]//g
 s/0://g'
- < output/$i.out  grep ME.size | sed 's/.*:.//g
+ < output/$f.out  grep ME.size | sed 's/.*:.//g
 s/ -> / /g' | tr '\n' ' '
-echo " $((`cat output/$i.out | grep ^a | tail -n1 | sed s/a// | sed 's/ .*//'` + 1))"
+echo " $((`cat output/$f.out | grep ^a | tail -n1 | sed s/a// | sed 's/ .*//'` + 1))"
 done | python fix_time.py
-) | tr ' ' '\t' | tee output/table.txt
+) | tr ' ' '\t' | tee output/table_$1.txt
 
 #cut -f1-5,8,11,14- < output/table.txt > output/table_cut.txt
-cut -f1,2,8,14- < output/table.txt > output/table_cut.txt
+cut -f1,2,8,14- < output/table_$1.txt > output/table_cut_$1.txt
 
 (echo '\begin{tabular}{|c|r@{.}l|c|c|c|c|} \hline'
-tr '\t' '&' <  output/table_cut.txt | sed 's/&/ & /g
+tr '\t' '&' <  output/table_cut_$1.txt | sed 's/&/ & /g
 s/[.]/\&/g
 s/_/\\_/g
 s/$/\\\\/g
 2i\\\\hline 
 s/user/\\multicolumn{2}{c|}{user}/' 
 echo \\hline
-echo '\end{tabular}') > output/table_cut.tex
+echo '\end{tabular}') > output/table_cut_$1.tex
+}
 
+do_table orig "`seq 21`"
+do_table pow10 "`seq 7`"
 
 #cat < 
 #cut -f1-5,8,11,14- output/table.txt
