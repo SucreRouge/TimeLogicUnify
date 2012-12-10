@@ -8,6 +8,11 @@ pow10 () {
 	echo set_6sX_100_$((10**$i))_0
 }
 
+squarepow2 () {
+	pow2=$((2**$i))
+	echo set_6sX_${pow2}_${pow2}_99
+}
+
 do_table () {
 F=output/table_$1.txt
 rm $F || true
@@ -33,12 +38,19 @@ done | python fix_time.py
 ) | tr ' ' '\t' | tee output/table_$1.txt
 
 #cut -f1-5,8,11,14- < output/table.txt > output/table_cut.txt
-cut -f1,2,8,14- < output/table_$1.txt > output/table_cut_$1.txt
+#cut -f1,2,8,14,15,16 < output/table_$1.txt | awk '{ print $2 "\t" $1 }' > output/table_cut_$1.txt
+< output/table_$1.txt awk '{ print $1 "\t" $16 "\t" $14 "\t" $15 "\t" $8 "\t" $2 }' > output/table_cut_$1.txt
+#cut -f1,16,14,15,8,2 < output/table_$1.txt > output/table_cut_$1.txt
 
-(echo '\begin{tabular}{|c|r@{.}l|c|c|c|c|} \hline'
+#(echo '\begin{tabular}{|c|r@{.}l|c|c|c|c|} \hline'
+(echo '\begin{tabular}{|c|c|c|c|c|r@{.}l|} \hline'
 tr '\t' '&' <  output/table_cut_$1.txt | sed 's/&/ & /g
+s/finalme/FinalME/g
+s/^i/$i$/g
+s/formula/Formula/g
 s/[.]/\&/g
 s/max_mb/MB/g
+s/origme/InputME/g
 s/_/\\_/g
 s/$/\\\\/g
 2i\\\\hline 
@@ -49,6 +61,7 @@ echo '\end{tabular}') > output/table_cut_$1.tex
 
 do_table orig "`seq 21`"
 do_table pow10 "`seq 7`"
+do_table squarepow2 "`seq 1 15`"
 
 #cat < 
 #cut -f1-5,8,11,14- output/table.txt
