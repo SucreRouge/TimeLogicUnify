@@ -1,6 +1,15 @@
 
 
-F=output/table.txt
+orig () {
+	echo $1
+}
+
+pow10 () {
+	echo set_6sX_$((10**$i))
+}
+
+do_table () {
+F=output/table_$1.txt
 rm $F
 
 (
@@ -10,7 +19,7 @@ s/maxresidentk/max_mb/
 s/pagefaults/pf/'
 echo origme finalme formula
 
-for i in `seq 21`
+for i in $2
 do
 echo -n "$i " 
  < output/$i.err  tr '\n+' '  '  | sed 's/...XXXmaxr/maxr/
