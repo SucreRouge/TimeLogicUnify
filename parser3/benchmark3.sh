@@ -8,6 +8,10 @@ pow10 () {
 	echo set_6sX_100_$((10**$i))_0
 }
 
+pow10f () {
+	echo set_6sX_$((10**$i))_100_2
+}
+
 squarepow2 () {
 	pow2=$((2**$i))
 	echo set_6sX_${pow2}_${pow2}_99
@@ -61,6 +65,7 @@ echo '\end{tabular}') > output/table_cut_$1.tex
 
 do_table orig "`seq 21`"
 do_table pow10 "`seq 7`"
+do_table pow10f "`seq 6`"
 do_table squarepow2 "`seq 1 15`"
 
 #cat < 

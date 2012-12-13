@@ -471,6 +471,7 @@ let add_atom = fun d fd f ->
 
 let add_atoms = fun d fd ->
 	let d_out = ref d in 
+        Printf.printf "Formula DAG size: %d\n" fd.len;
 	for f = 0 to fd.len -1
 	do
 (*		print_string "\nDAG:";
