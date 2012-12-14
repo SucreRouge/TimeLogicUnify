@@ -2,16 +2,16 @@
 # grep size output/*6s_100_*.out |/usr/bin/sort -n -k6 ; grep user output/*6s_100_*.err | /usr/bin/sort -t_ -n -k3
 
 cd output || true
-for f in set_6sX_32768_32768_99.out
+#for f in set_6sX_32768_32768_99.out
 #for f in output/set_6sX_100_1000000_0.out
-#for f in output/set_6sX_1000000_100_2.out
+for f in set_6sX_1000000_100_2.out
 do
 	siz0=`< $f grep '^a0' | cut -f2 -d' '`
 	ff=`echo $f | sed "s/.out//
 s/_/,/g"`
 	echo $siz0
 	#grep '^a' output/set_6sX_1000000_100_2.out | sed s/^a// | awk '{ print ( ( '$siz0' * ( ( $1 + 6 ) ^ 0.5 ) ) / $2)  "\t" $1 "\t" $2 }'
-	grep '^a' $f | sed s/^a// | awk '{ print ($1^0.5) " " ( $2 / ( '$siz0' )) }' > tmp_
+	grep '^a' $f | grep "0 " | sed s/^a// | awk '{ print ($1^0.5) " " ( $2 / ( '$siz0' )) }' > tmp_
 	#gnuplot -p -e "f(x) = m*sqrt(x+c);
 	cd ..
 	
