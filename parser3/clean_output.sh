@@ -8,3 +8,6 @@ done
 D=`date +%F`
 tar -zcf output_clean_$D.tar.gz output_clean
 scp output_clean_$D.tar.gz $GMx:
+exit
+
+
