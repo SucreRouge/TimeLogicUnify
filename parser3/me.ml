@@ -5,7 +5,6 @@
  * to prevent denials of service *)
 let max_size = ref max_int;;
 let printf=Printf.printf
-let append = fun a x -> let (l,e) = a in  e.(l) <- x; (l+1,e) 
 
 let debug = Printf.ifprintf stderr
 
@@ -13,15 +12,6 @@ let debug = Printf.ifprintf stderr
 
 
 (* A very light bitarray implementation *)
-	(*let powers = [|1;2;4;8;16;32;64;128|];;
-	(*let bitarray_t = string;;*)
-	let bitcreate siz = let nbytes = (siz+7)/8 in let s = (String.create nbytes) in String.fill s 0 nbytes (Char.chr 0) ; s
-	let bitget s i = (Char.code (String.get s (i/8)) land powers.(i mod 8)) != 0
-	let bitset s i = String.set s (i/8) (Char.chr (Char.code (String.get s (i/8)) lor powers.(i mod 8)))
-	let bittoarray s = let m = (String.length s)*8 in let a = Array.create m false in for i = 0 to (m-1) do if bitget s i then a.(i) <- true done ; a
-	let bitinit n f = let s = bitcreate n in for i = 0 to (n-1) do (if (f i) then (bitset s i)) done ; s*)
-
-	(*let bitarray_t = string;;*)
 	let bitcreate siz = let nbytes = (siz+7)/8 in let s = (String.create nbytes) in String.fill s 0 nbytes (Char.chr 0) ; s
 	let bitget s i = (Char.code (String.get s (i/8)) land (1 lsl (i mod 8))) != 0
 	let bitset s i = String.set s (i/8) (Char.chr (Char.code (String.get s (i/8)) lor (1 lsl (i mod 8))))
@@ -32,50 +22,45 @@ type label_t = LabelC of char | LabelS of string;;
 	
 
 
-(*type tree = { l : label; c : tree list; };;*)
-
+(* An "Array2" is an improved array that can be resized inplace 
+   not that "len" may be less than the length of the underlying
+   array a, as a may not be full. *)
 type 'a array2 = {mutable a: 'a array; mutable len: int}
-type 'a dag_node = {n: 'a ; d:  int array}
-type 'a dag =  'a dag_node array2
+type 'a dag_node = {n: 'a ; d:  int array} (* a node in our Directed Acyclic Graphs *)
+type 'a dag =  'a dag_node array2 (* A DAG is a resizable array of Nodes *)
+type 'a dagElem = int * 'a dag (* To refer to the element of a DAG we use an integer index into the array/DAG, and a pointer to the DAG itself*)
 
-type array2ii = {a0: label_t dag; mutable a1: int array; mutable a2: int array }
-
+(* A resizable array, with a pairs of integers associated with each element*)
+type array2ii = {a0: label_t dag; mutable a1: int array; mutable a2: int array } 
 let new_array2 = 
  fun () -> {a=[| |]; len=0} 
 let new_array2ii = fun () -> {a0 = new_array2(); a1=[| |]; a2=[| |]} 
-
 let array2_compact aa = {a=Array.sub aa.a 0 aa.len; len=aa.len}
 
 
-
-(*
-let new_dag_from = fun d -> if d.len = 0
-	then new_dag()
-	else {a=Array.make (Array.length d.a) d.a.(0); len=0}
-*)		
-
-type 'a dagElem = int * 'a dag
-
 let array_double = fun a -> Array.append a a
 
+(* Takes an array a, of which l elements are used, and returns an array which 
+   has x appended. This will be a if a is not yet full *)
 let append1 = fun l a x ->
 	let new_a = if l >= Array.length a 
 	then 
 		begin
 		if l = 0 then [|x|]
-		else (array_double a
-(* A very light bitarray implementation *))
+		else (array_double a)
 		end
 	else a in 
 	(new_a.(l) <- x ; new_a) 
 ;;
 
+(* appends x to an array2 aa *)
 let append = fun aa x ->
 	let l=aa.len in 
 	aa.a <- append1 l aa.a x ;
 	aa.len <- l+1;
 	l
 
+(* appends x to an array2ii, and sets the integers associated with x to -1*)
 let appendii = fun aaa x ->
 	let aa=aaa.a0 in 
 	let l=aa.len in
@@ -88,7 +73,7 @@ let appendii = fun aaa x ->
         ret 
 
 
-
+(* Like Array.map (and .iter), but for array2 *)
 let array2_map f aa =
 	let bb = new_array2() in 
 	for i = 0 to aa.len-1 do
@@ -111,7 +96,8 @@ let label_to_string l = match l with
 	LabelC c -> Char.escaped c
 	| LabelS a -> boolarray_to_string (bittoarray a)
 
-let max_print_size=ref 1000
+let max_print_size=ref 1000 (* We don't print a DAG if it has more elements than this*)
+
 (* print_dag f d prints the dag d using function f to convert nodes to strings *)
 let print_dag = fun f d -> if d.len > !max_print_size then print_string "[HUGE]" else ignore ( Array.mapi (
 	fun i dn -> Printf.printf "%d %s %s\n" 
@@ -181,8 +167,6 @@ let pretty_print_me names repeats fd =
 	pretty_print_dag [||] repeats "M" (me_printer names) fd
 	
 
-
-
 type melement = label_t
 type formula_op = string
 type formula_dag = formula_op dag
@@ -207,22 +191,15 @@ let shuffle_ = fun mdii fd chld  -> {m=appendii mdii {n=LabelC 'S'  ; d=chld}; m
 let (=>) = fun x y -> (not x) || y
 let (<=) = fun x y -> x || (not y)
 
-let dedup mdii m alt = 
-	let aa = mdii.a0 in
-	let aaa = aa.a in 
-	if  false && m = aa.len - 1 && alt >= 0 && (aaa.(m).n = aaa.(alt).n) && (aaa.(m).d = aaa.(alt).d)
-		then (aa.len <- m; alt)
-		else m 
-
-type cacheU = { pre_false: int ; pre_true: int; all_p: bool; some_q: bool }  
-
 let bool_to_int = fun b -> if b then 1 else 0
 
+(* Swaps first two elements of an array *)
 let swap_pair = fun a -> 
 	let a0 = a.(0) in
 	let a1 = a.(1) in 
         a.(0) <- a1; a.(1) <- a0
 
+(* returns the DAG d representing an ME with the order of time reversed *)
 let mirror d = for k = 0 to d.len - 1 do 
 		let dak = d.a.(k) in
 		d.a.(k) <- match dak.n with 
@@ -239,16 +216,21 @@ let mirror d = for k = 0 to d.len - 1 do
                         | LabelS atoms -> dak
 	done
 
+(* Inputs d, fd: DAGS representing an ME and a Formula resp.
+          f: An index into fd, representing the subformula we want to add as an atom 
 
+	  returns an array pre such that pre.(i).(b) represents the statment pre(I,|-) from the paper,
+          but where the ME I is represented by an integer index "i" into the ME dag d, and |- is
+          represented by an integer b which is 1 iff |- is true. *)
 let build_pre = fun d fd f ->
 	let pre = (Array.make_matrix (d.len) 2 (-1)) in
 	let all_q = Array.make d.len false in
 	let some_p = Array.make d.len false in
 	let pq = (fd.a.(f).d) in
-	let (p,q) = (pq.(0),pq.(1)) in
+	let (p,q) = (pq.(0),pq.(1)) in (* the subformulas p and q of U(p,q) *)
 	for k = 0 to d.len - 1
 	do 
-		let dak = d.a.(k) in
+		let dak = d.a.(k) in (* dak is kth node in ME "d"*)
 		match dak.n with 
 			LabelC label -> 
 				let children = dak.d in 
@@ -295,6 +277,7 @@ let build_pre = fun d fd f ->
 	done ;
 	pre
 
+(* returns a bitarray a with the ith element set. It does not alter original array *)
 let safe_set a i = let c = (String.copy a) in bitset c i ; c
 
 let max_growth = 3
@@ -415,7 +398,6 @@ let add_atom_Upq = fun  d_in fd f ->
 				let atoms = if (b==1) then safe_set atoms f else atoms in
 				letter atoms  in
                 new_me
-		(*dedup mdii new_me t_cache.(k).(1-b) *)
 		
 	in
 	ignore (t_rec (d_in.len-1) 0) ;
@@ -505,7 +487,6 @@ let dag_from_tree t =
 
 let do_model_check formula_tree me_tree =
 begin 
-(*	let fd = array2_compact (dag_from_tree formula_tree) in *)
 	let fd = dag_from_tree formula_tree in
 	let parse_dag = (dag_from_tree me_tree) in
 	let md  = dag_map (parse_to_label fd) (parse_dag) in 
@@ -514,12 +495,6 @@ begin
 	print_string " : ";
 	pretty_print_me names max_int md ;
 	print_char '\n';
-	(*print_string "NAMES: \n";
-	Array.iter (fun s -> print_string (s ^ "\n")) names;*)
-(*	print_string "ME:\n" ;
-	print_dag label_to_string d;
-	print_string "\nFORMULA: \n" ;  
-	print_dag (fun x->x) fd ; *)
 	let pre_time = Sys.time() in
 	let new_me = add_atoms md fd in
 	let post_time = Sys.time() in
@@ -533,7 +508,6 @@ begin
         let sat_str = if satisfied new_me fd then "IS" else "is NOT" in
 	print_string "\n------------------------------------";
         Printf.printf "\nThe formula %s satisfied in: " sat_str;
-	(*print_string "\nResulting ME:";*)
 	pretty_print_me names 1 new_me ;
         Printf.printf "\nME size (in -> out): %d -> %d\n" md.len new_me.len;
 end
