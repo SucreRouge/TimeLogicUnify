@@ -13,7 +13,7 @@ You make instead want to run it via a command editor, e.g.
 
 To install the Web Version:
   install apache or similar and do
-    	make www
+    	make install
  
   You should then be able to access:  
 	http://<yourserver>/mechecker.html
