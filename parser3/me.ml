@@ -172,22 +172,7 @@ type formula_op = string
 type formula_dag = formula_op dag
 type formula = formula_op dagElem
 type me_dag = melement dag
-(*type model_expression = {m : int ; mdii : array2ii; fd : formula_dag }
-*)
-(*
-let lead_or_trail_ = fun op me -> 
-	let m=me.m in 
-	let cache = if op = '<' then me.mdii.a1 else me.mdii.a2 in
-	(Printf.printf "op: %c cache.(%d)=%d\n" op m cache.(m));
-	if cache.(m) < 0 then cache.(m) <- appendii me.mdii {n=LabelC op; d=[|m|]};
-  {me with m=cache.(m)}
 
-let (~<) = (lead_or_trail_ '<') (* lead  *)  
-let (~>) = (lead_or_trail_ '>') (* trail *)  
-
-let letter_ =  fun mdii fd atoms -> {m=appendii mdii {n=LabelS atoms; d=[||]}; mdii=mdii; fd=fd} 
-let shuffle_ = fun mdii fd chld  -> {m=appendii mdii {n=LabelC 'S'  ; d=chld}; mdii=mdii; fd=fd}
-*)
 let (=>) = fun x y -> (not x) || y
 let (<=) = fun x y -> x || (not y)
 
@@ -289,7 +274,7 @@ let max_growth = 3
  * Assume that K has already been added to the output array; 
  * that we add is of the form {<I,<J,<I+J} for some I, J st.
  *      {I,J} = {t(K,T), t(K,F)}
- * Althouth we do not know whether I= t(K,T) or I= t(K,F)
+ * Although we do not know whether I= t(K,T) or I= t(K,F)
  * We know that we do not add both <I+J and <J+I as there is no
  * ME I such that for all b in {T,F} pre(I,b) = (not b)  
  *
@@ -403,12 +388,17 @@ let add_atom_Upq = fun  d_in fd f ->
 	ignore (t_rec (d_in.len-1) 0) ;
 	d_out 
 
+(* Adds an atom of the form S(p,q), indexed by f in DAG fd, to d_in to produce
+ * d_out *)
 let add_atom_Spq = fun  d_in fd f ->
 	mirror d_in; 
 	let d_out = add_atom_Upq d_in fd f in
 	mirror d_out;
 	d_out
 
+(* Adds a Propositional formula indexed by f in fd to "d" and returns result
+ * Also takes bool_func as an argument, a function from letters to bools which is true when
+ * the formula indexed by f is true *)
 let add_atom_PC = fun d fd f bool_func ->
 	for k = 0 to d.len - 1
 	do 
@@ -420,6 +410,8 @@ let add_atom_PC = fun d fd f bool_func ->
 				else ()
 	done ; d
 
+(* Returns true iff the largest/last formula in fd is true some where within the
+ * ME represented by the dag d *)
 let satisfied = fun d fd ->
         let sat = ref false in
 	for k = 0 to d.len - 1
@@ -432,6 +424,7 @@ let satisfied = fun d fd ->
 	done ; 
         ! sat
 
+(* adds the fth formula in fd as an atom to d *)
 let add_atom = fun d fd f ->
 	let pq = (fd.a.(f).d) in
 	let f_op = fd.a.(f).n in 
@@ -451,6 +444,7 @@ let add_atom = fun d fd f ->
 			| _   -> failwith "Invalid_Operator" )
 		| _ -> failwith "More_than_two_children_in_formula"
 
+(* Adds all formulas in fd as atoms to d *)
 let add_atoms = fun d fd ->
 	let d_out = ref d in 
         Printf.printf "Formula DAG size: %d\n" fd.len;
@@ -485,6 +479,10 @@ let dag_from_tree t =
 	ignore (dag_from_tree_ h d t);
 	d
 
+(* Model checks the formula represented by formula_tree against me_tree 
+ * De-duplicating the tree into a DAG is not strictly linear time in the length
+ * of the input me_tree, but also is optional, and not really part of the
+ * modelchecking procedure itself. *)
 let do_model_check formula_tree me_tree =
 begin 
 	let fd = dag_from_tree formula_tree in
