@@ -1,0 +1,26 @@
+
+
+-- INSTALLING -- 
+Here are some quick install instructions for Linux (& CygWin)
+
+To install command line version:
+  Install an OCaml Compiler then do:
+	make && ./main
+
+Running main directly may be rather unuser-friendly.
+You make instead want to run it via a command editor, e.g.
+	rlwrap ./main  
+
+To install the Web Version:
+  install apache or similar and do
+    	make install
+ 
+  You should then be able to access:  
+	http://<yourserver>/mechecker.html
+
+-- IMPORTANT FILES --
+        main.ml: the top level source file, mostly a wrapper around ...
+	me.ml: the file that has the actual model-checker
+	benchmarkset.sh: Run this to regenerate the benchmarks
+	make_graphs.sh: Run this to remake graphs
+	
