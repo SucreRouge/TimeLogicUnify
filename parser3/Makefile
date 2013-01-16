@@ -1,6 +1,6 @@
 OCAMLC=ocamlopt
 
-main: me.ml  phi_lexer.ml phi_parser.ml  me_parser.ml me_parser.mli me_lexer.ml main.ml phi_parser.cmi me_parser.cmi me_parser.cmo me_parser.cmo
+main: precheck me.ml  phi_lexer.ml phi_parser.ml  me_parser.ml me_parser.mli me_lexer.ml main.ml phi_parser.cmi me_parser.cmi me_parser.cmo me_parser.cmo
 	$(OCAMLC) -o main  me.ml phi_parser.ml phi_lexer.ml  me_lexer.ml me_parser.ml main.ml
 
 www_: 
@@ -8,6 +8,10 @@ www_:
 	bash -c "(echo '<html>' ; cat mechecker2.html) > www/mechecker_plain.html"
 	bash -c "cat mechecker1.html mechecker2.html > www/mechecker.html"
 	(git archive --prefix=mechecker/ HEAD -o www/mechecker_src.tar && gzip -f -9 www/mechecker_src.tar) || cp ../mechecker_src.tar.gz www
+
+precheck:
+	which $(OCAMLC) || (echo "The $(OCAMLC) compiler was not found.\nUsing 'make OCAMLC=ocamlc' in place of 'make' may help (but will cause slower bytecode to be used)" && false) 
+
 
 # Install as cgi-bin, to a linux machine with e.g. apache installed
 install: www_ mechecker.cgi
@@ -24,7 +28,7 @@ install_home: www_
 
 mechecker.cgi_: me.cmo me.cmx mechecker.cgi
 
-mechecker.cgi: me.ml  phi_lexer.ml phi_parser.ml  me_parser.ml me_parser.mli me_lexer.ml main.ml phi_parser.cmi me_parser.cmi
+mechecker.cgi: precheck me.ml  phi_lexer.ml phi_parser.ml  me_parser.ml me_parser.mli me_lexer.ml main.ml phi_parser.cmi me_parser.cmi
 	$(OCAMLC) -o mechecker.cgi  me.ml phi_parser.ml phi_lexer.ml  me_lexer.ml me_parser.ml main.ml
 	#ocamlopt.opt -g -o mechecker.cgi  me.ml phi_parser.ml phi_lexer.ml  me_lexer.ml me_parser.ml main.ml
 
