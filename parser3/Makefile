@@ -7,7 +7,7 @@ www_:
 	bash -c "(echo '<html>' ; cat mechecker2.html) > www/mechecker_plain.html"
 	bash -c "cat mechecker1.html mechecker2.html > www/mechecker.html"
 	git archive --prefix=mechecker/ HEAD -o www/mechecker_src.tar
-	gzip -9 www/mechecker_src.tar
+	gzip -f -9 www/mechecker_src.tar
 
 # Install as cgi-bin, to a linux machine with e.g. apache installed
 install: www_ mechecker.cgi
