@@ -8,7 +8,7 @@ for f in set_6sX_1000000_100_2.out
 do
 	siz0=`< $f grep '^a0' | cut -f2 -d' '`
 	ff=`echo $f | sed "s/.out//
-s/_/,/g"`
+s/_/-/g"`
 	echo $siz0
 	#grep '^a' output/set_6sX_1000000_100_2.out | sed s/^a// | awk '{ print ( ( '$siz0' * ( ( $1 + 6 ) ^ 0.5 ) ) / $2)  "\t" $1 "\t" $2 }'
 	grep '^a' $f | grep "0 " | sed s/^a// | awk '{ print ($1^0.5) " " ( $2 / ( '$siz0' )) }' > tmp_
