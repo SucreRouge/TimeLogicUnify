@@ -44,8 +44,9 @@ let do_commands commands timeout concurrent=
                                (* Race condition? *)
                                ignore (Unix.alarm 0);
                                let endtime = Unix.gettimeofday() in
+                               let i = Hashtbl.find pid in 
                                running_times.(i) <- endtime - start_times(i);
-                               list_remove pid;
+                               running := list_remove i (!running);
                                Hashtbl.remove pid2i pid)
                        with
                                | Failure "timeout" -> (
@@ -59,7 +60,6 @@ let do_commands commands timeout concurrent=
                                         print_string "Can't kill a pid, will just forget it\n";
                                         running = List.tl running;
                                 );
-
                                 Unix.sleep 1)
                                | e ->
                                 (* clear the still-pending alarm *)
