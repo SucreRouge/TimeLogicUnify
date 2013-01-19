@@ -1,3 +1,4 @@
+#!/usr/bin/env ocaml
 (* See: http://pleac.sourceforge.net/pleac_ocaml/processmanagementetc.html*)
 #load "unix.cma";;
 
@@ -13,8 +14,8 @@ let start_command command =
 let do_commands commands timeout concurrent=
         let running = ref [] in
         let inprogress = ref true in
-        let killed = Array.length commands 0 in
         let num_commands = Array.length commands in
+        let killed = Array.make num_commands 0 in
         let start_times = Array.make num_commands 0.0 in
         let run_times = Array.make num_commands 0.0 in
         let pids = Array.make num_commands (-1) in
@@ -23,61 +24,60 @@ let do_commands commands timeout concurrent=
         Sys.set_signal Sys.sigalrm
             (Sys.Signal_handle (fun _ -> failwith "timeout"));
         while (!inprogress) do (
-               while (next_command < num_commands and (List.length (!running)) < concurrent) do (
-                    let pid = start_command command in
+               (* while ((next_command<num_commands) and ((List.length(!running)) < concurrent)) do ( *)
+               while (((!next_command)<num_commands) && ((List.length(!running)) < concurrent)) do (
                     let i = (!next_command) in
-                    running := running @ [pid];
+                    let pid = start_command commands.(i) in
+                    running := (!running) @ [pid];
                     start_times.(i) <- Unix.gettimeofday();
                             pids.(i) <- pid;
                             Hashtbl.replace pid2i pid i;      
                             next_command := ((!next_command)+1)
                ) done;
-               if (running = []) then (
-                       !inprogress := false
+               if ((!running) = []) then (
+                       inprogress := false
                ) else (
-                       let i = List.hd running in
-                       let sleep = ceil (timeout - ((Unix.gettimeofday()) -
-                       start_times.(i)))
+                       let i = List.hd (!running) in
+                       let sleep = 0 + int_of_float (ceil (timeout -. ((Unix.gettimeofday()) -.  start_times.(i)))) in
                        ignore (Unix.alarm sleep);
-                       try 
+                       ( try 
                                (let (pid,status) = Unix.wait() in
                                (* Race condition? *)
                                ignore (Unix.alarm 0);
                                let endtime = Unix.gettimeofday() in
-                               let i = Hashtbl.find pid in 
-                               running_times.(i) <- endtime - start_times(i);
+                               let i = Hashtbl.find pid2i pid in 
+                               run_times.(i) <- endtime -. start_times.(i);
                                running := list_remove i (!running);
                                Hashtbl.remove pid2i pid)
                        with
-                               | Failure "timeout" -> (
+                               Failure "timeout" -> (
                                 (* timed out; do what you will here *)
                                 let sigxcpu = 24 in
                                 let sigkill = 9 in
+                                let pid = pids.(i) in
                                 Unix.kill pid (if killed.(i) > 1 then sigkill else
                                         sigxcpu);
-                                killed.(i) := killed.(i) + 1;
+                                killed.(i) <- killed.(i) + 1;
                                 if killed.(i) > 3 then (
                                         print_string "Can't kill a pid, will just forget it\n";
-                                        running = List.tl running;
+                                        running := List.tl (!running);
                                 );
                                 Unix.sleep 1)
                                | e ->
                                 (* clear the still-pending alarm *)
-                                ignore (Unix.alarm 0);
+                                ignore (Unix.alarm 0)
                                 (* propagate unexpected exception *)
                                 (* Should perhaps clean up running procs?*)
-                                raise e
+                       )
                )
-                               
-                                
+        ) done;
+        run_times
+        
 
-
-               );
-
-
+let () =  ignore (do_commands [|[|"echo"; "foo"|]|] 2.0 1)
                    
                
-
+(*
 
         
 
@@ -100,4 +100,4 @@ let () =
         (* propagate unexpected exception *)
         raise e
 (* Run a command while blocking interrupt signals. *)
-
+*)
