@@ -1,6 +1,6 @@
-#!/usr/bin/env ocaml
+(* #!/usr/bin/env ocaml 
 (* See: http://pleac.sourceforge.net/pleac_ocaml/processmanagementetc.html*)
-#load "unix.cma";;
+#load "unix.cma";; *)
 
 let list_remove e l = (List.fold_right (fun e2 l2 -> if e2=e then l2 else e2::l2) l []) ;;
 
@@ -28,7 +28,7 @@ let do_commands commands timeout concurrent=
                while (((!next_command)<num_commands) && ((List.length(!running)) < concurrent)) do (
                     let i = (!next_command) in
                     let pid = start_command commands.(i) in
-                    running := (!running) @ [pid];
+                    running := (!running) @ [i];
                     start_times.(i) <- Unix.gettimeofday();
                             pids.(i) <- pid;
                             Hashtbl.replace pid2i pid i;      
@@ -38,9 +38,13 @@ let do_commands commands timeout concurrent=
                        inprogress := false
                ) else (
                        let i = List.hd (!running) in
-                       let sleep = 0 + int_of_float (ceil (timeout -. ((Unix.gettimeofday()) -.  start_times.(i)))) in
-                       ignore (Unix.alarm sleep);
+                       let time_remaining t i = (timeout -. (t -.  start_times.(i))) in
+                       let sleepi = int_of_float (ceil (time_remaining (Unix.gettimeofday()) i)) in
+                       (*ignore (Unix.alarm sleep);*)
+                       ignore (Unix.alarm (if sleepi > 0 then sleepi else 1));
+                       (*ignore (Unix.alarm 1);  test *)
                        ( try 
+                               (*if sleep > 0 then () else failwith "timeout"; *)
                                (let (pid,status) = Unix.wait() in
                                (* Race condition? *)
                                ignore (Unix.alarm 0);
@@ -54,6 +58,14 @@ let do_commands commands timeout concurrent=
                                 (* timed out; do what you will here *)
                                 let sigxcpu = 24 in
                                 let sigkill = 9 in
+                                let t = Unix.gettimeofday() in
+                                let rec kill_out_of_time l = (
+                                        match l with 
+                                        [] -> () 
+                                        | i::r -> if (time_remaining t i > 0.0)
+                                        then ()
+                                        else (
+                                        
                                 let pid = pids.(i) in
                                 Unix.kill pid (if killed.(i) > 1 then sigkill else
                                         sigxcpu);
@@ -62,6 +74,10 @@ let do_commands commands timeout concurrent=
                                         print_string "Can't kill a pid, will just forget it\n";
                                         running := List.tl (!running);
                                 );
+                                kill_out_of_time r;
+                                )
+                                ) in 
+                                kill_out_of_time (!running);
                                 Unix.sleep 1)
                                | e ->
                                 (* clear the still-pending alarm *)
@@ -73,8 +89,21 @@ let do_commands commands timeout concurrent=
         ) done;
         run_times
         
+          
 
-let () =  ignore (do_commands [|[|"echo"; "foo"|]|] 2.0 1)
+let main x =  ignore (do_commands [|
+        [|"/usr/bin/yes"; "bar"|];
+        [|"/usr/bin/yes"; "foo"|];
+        [|"/usr/bin/yes"; "baz"|];
+        [|"/usr/bin/yes"; "BAZ"|];
+        |] 1.9 3)
+
+let () =
+        Printexc.record_backtrace true;
+        try
+                Printexc.print main ()
+        with
+                e -> Printexc.print_backtrace stdout;
                    
                
 (*
