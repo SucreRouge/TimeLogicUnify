@@ -5,6 +5,18 @@
 let list_remove e l = (List.fold_right (fun e2 l2 -> if e2=e then l2 else e2::l2) l []) ;;
 
 
+(* TODO
+ * Parser Txt2tree
+ *    Tree2txt
+ *       Spaces? Transform?
+ * Contradictions
+ * Run
+ * Cache
+ *)
+
+type 'a tree = { l : 'a; c : 'a tree list; };;
+let test_tree = {l = "&"; c = [{l = "p"; c = []}; {l = "q"; c = []}]};;
+
 let start_command command = 
   match Unix.fork () with
     | 0 ->
