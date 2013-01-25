@@ -18,10 +18,11 @@ let digit = ['0'-'9']
 let atm   = lower (lower|digit)* 
 rule token = parse
   | [' ' '\t']	{ token lexbuf }
-  | biary as c { BINARY(Char.escaped c) }
-  | '^'		{ BINARY("&")}
-  | '-'		{ NEG }
-  | '~'		{ NEG }
+  | biary as c  { BINARY(Char.escaped c) }
+  | '^'		{ BINARY("&") }
+  | '-'		{ UNI("-") }
+  | '~'		{ UNI("~") }
+  | ['A' 'E' 'F' 'G'] as c { UNI(Char.escaped c) } 
   | pre2 as c   { PREFIX(Char.escaped c) }
   | 'S'		{ SINCE }
   | '('		{ LPAREN }
