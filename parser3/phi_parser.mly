@@ -5,7 +5,8 @@ include Me
 
 %token LPAREN RPAREN
 %token UNTIL SINCE EOF
-%token SEMICOLON NEG COMMA
+%token SEMICOLON COMMA
+%token <string> UNI
 %token <string> ATOM
 %token <string> BINARY
 %token <string> PREFIX 

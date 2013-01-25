@@ -114,9 +114,9 @@ let log_dir= try
 	(Sys.getenv "HOME") ^ "/.config/"
 with Not_found -> "/var/www/.config/"
 
-let print_count = fun () -> Printf.printf "\nThis ME checker has been used %s times\n" 
+let print_count = fun name file -> Printf.printf "\nThis %s has been used %s times\n" name
 (try 
-        let stats_fname = log_dir ^ "mechecker_stats.txt" in
+        let stats_fname = log_dir ^ file in
         let old_count = try
         	let input = open_in stats_fname in
 		let cnt = input_line input in 
@@ -152,7 +152,7 @@ let do_model_check_string s =
 	  Parsing.Parse_error-> print_string "Could not parse Formula.\n"
         | Not_found -> print_string "Is there a `:' in your input? \nIt is needed to seperate the formula from the me\n")
 	;	
-        print_count ();
+        print_count "ME checker" "mechecker_stats.txt";
         log (log_dir ^ "mechecker_" ^ !status ^ ".log") 
                 (string_map (fun c->if c='\n' then ' ' else c) s)
 
