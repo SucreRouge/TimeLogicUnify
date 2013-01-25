@@ -1,7 +1,7 @@
 OCAMLC=ocamlopt
 
-main: precheck me.ml  phi_lexer.ml phi_parser.ml  me_parser.ml me_parser.mli me_lexer.ml main.ml phi_parser.cmi me_parser.cmi me_parser.cmo me_parser.cmo
-	$(OCAMLC) -o main  me.ml phi_parser.ml phi_lexer.ml  me_lexer.ml me_parser.ml main.ml
+main: precheck me.ml mainlib.ml phi_lexer.ml phi_parser.ml  me_parser.ml me_parser.mli me_lexer.ml main.ml phi_parser.cmi me_parser.cmi me_parser.cmo me_parser.cmo
+	$(OCAMLC) -o main me.ml phi_parser.ml phi_lexer.ml  me_lexer.ml me_parser.ml mainlib.ml main.ml  
 
 www_: 
 	mkdir -p www
@@ -29,8 +29,8 @@ install_home: www_
 mechecker.cgi_: me.cmo me.cmx mechecker.cgi
 
 mechecker.cgi: precheck me.ml  phi_lexer.ml phi_parser.ml  me_parser.ml me_parser.mli me_lexer.ml main.ml phi_parser.cmi me_parser.cmi
-	$(OCAMLC) -o mechecker.cgi  me.ml phi_parser.ml phi_lexer.ml  me_lexer.ml me_parser.ml main.ml
-	#ocamlopt.opt -g -o mechecker.cgi  me.ml phi_parser.ml phi_lexer.ml  me_lexer.ml me_parser.ml main.ml
+	$(OCAMLC) -o mechecker.cgi me.ml phi_parser.ml phi_lexer.ml  me_lexer.ml me_parser.ml mainlib.ml main.ml  
+	#ocamlopt.opt -g -o mechecker.cgi  mainlib.ml me.ml phi_parser.ml phi_lexer.ml  me_lexer.ml me_parser.ml main.ml
 
 run: main
 	rlwrap ./main
