@@ -495,6 +495,7 @@ begin
 	print_char '\n';
 	let pre_time = Sys.time() in
 	let new_me = add_atoms md fd in
+        let sat_str = if satisfied new_me fd then "IS" else "is NOT" in
 	let post_time = Sys.time() in
       	Printf.printf "Cpu time used: %6.3f to model check, %6.3f total \n"
 		 (post_time-.pre_time) post_time; flush stdout ;
@@ -503,7 +504,6 @@ begin
         print_dag label_to_string new_d *)
 (*	print_string "\nResulting DAG:";
         print_dag label_to_string new_me; *)
-        let sat_str = if satisfied new_me fd then "IS" else "is NOT" in
 	print_string "\n------------------------------------";
         Printf.printf "\nThe formula %s satisfied in: " sat_str;
 	pretty_print_me names 1 new_me ;

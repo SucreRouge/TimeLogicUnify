@@ -1,6 +1,11 @@
 %{
+(*
+ * We really shouldn't have to require Me here
 open Me
 include Me
+type 'a tree = {l: 'a; c: 'a tree list}
+*)
+open Me
 %}
 
 %token LPAREN RPAREN
