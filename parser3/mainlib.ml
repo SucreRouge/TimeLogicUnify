@@ -99,6 +99,7 @@ let fix_braces str =
 ;;
 
 let robust_parse fixers_ par lex s_ =
+
 	let rec parse fixers s =
 		try (s, par lex (Lexing.from_string s))
 		with Parsing.Parse_error -> match fixers with
@@ -135,6 +136,15 @@ let log f_name s =
         in
           output_string oc (s^"\n");
             close_out oc  
-		
+
 let robust_parse_formula = robust_parse [split_every_char; v_to_or] Phi_parser.formula Phi_lexer.token 
 
+let check_lang lang_name bad_ops f = List.iter ( fun op -> 
+       let c = String.get op 0 in
+       if (String.contains f c) then (
+              printf "Formula contains %c but %s is not allowed in %s\n" c op lang_name;
+              raise Parsing.Parse_error
+       )
+ ) bad_ops 
+let parse_ctls_formula f = check_lang "CTL*" ["Since"]                      f ; robust_parse_formula f
+let parse_rtl_formula  f = check_lang "RTL"  ["All Paths"; "Exists a Path"] f ; robust_parse_formula f
