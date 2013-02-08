@@ -2,7 +2,9 @@ OCAMLC=ocamlopt
 
 main: precheck me.ml mainlib.ml phi_lexer.ml phi_parser.ml  me_parser.ml me_parser.mli me_lexer.ml main.ml phi_parser.cmi me_parser.cmi me_parser.cmo me_parser.cmo
 	$(OCAMLC) -o main me.ml phi_parser.ml phi_lexer.ml  me_lexer.ml me_parser.ml mainlib.ml main.ml  
-	$(OCAMLC) -o unify me.ml phi_parser.ml phi_lexer.ml  me_lexer.ml me_parser.ml mainlib.ml unify.ml  
+
+unify: precheck me.ml do_parallel.ml mainlib.ml unify.ml phi_lexer.ml phi_parser.ml  me_parser.ml me_parser.mli me_lexer.ml main.ml phi_parser.cmi me_parser.cmi me_parser.cmo me_parser.cmo
+	$(OCAMLC) -o unify me.ml unix.cmxa do_parallel.ml phi_parser.ml phi_lexer.ml  me_lexer.ml me_parser.ml mainlib.ml unify.ml  
 
 www_: 
 	mkdir -p www

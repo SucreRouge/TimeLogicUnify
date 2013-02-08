@@ -17,6 +17,20 @@ let rec format_tree t = let degree = List.length t.c in
                      (format_tree (List.nth t.c 1)) ^ ")"
         | _ -> failwith "Unexpected Error: invalid formula tree"
 
+let rec format_tree2 t = let degree = List.length t.c in
+        let l = match t.l with
+        "<" -> "<=="
+        | ">" -> "==>"
+        | "=" -> "<==>"
+        | "-" -> "~" 
+        | _ -> t.l in
+        match degree with 
+        0 -> l
+        | 1 -> l ^ " " ^ (format_tree2 (List.hd t.c))
+        | 2 -> "((" ^ (format_tree2 (List.hd t.c)) ^ ") " ^ l ^ " (" ^
+                     (format_tree2 (List.nth t.c 1)) ^ "))"
+        | _ -> failwith "Unexpected Error: invalid formula tree"
+
 let tree_leafs t =
         let set_add m lst = if List.mem m lst then lst else m::lst in
         let rec f leafs t = if t.c = [] 
@@ -24,6 +38,7 @@ let tree_leafs t =
                 else List.fold_left f leafs t.c   
         in 
         List.sort (fun s1 s2 -> String.length s1 - String.length s2) (f [] t)
+
 
 (* Replace all leafs in the tree with single characters. Useful if sat checker
  * only supports single character names *)
@@ -33,24 +48,42 @@ let remap_leafs t =
         if List.length leafs > 26 then failwith "Cannot map more than 26 variables to letters";
         let a = Array.make 26 "" in
         let idx s = (Char.code (String.get s 0) - Char.code 'a') in
+        let isvar s = (let i = idx s in i < 26 && i >= 0) in
         let rec findfrom m i = if a.(i) = m 
                 then i 
                 else findfrom m (if i < 25 then i+1 else 0) in
-        List.iter (fun m -> a.(findfrom "" (idx m)) <- m) leafs;
+        List.iter (fun m -> if (isvar m)
+                then a.(findfrom "" (idx m)) <- m
+                else () ) leafs;
         let charof m = Char.escaped (Char.chr (Char.code 'a' + findfrom m (idx m) )) in
         let rec f t = if t.c = [] 
-                then {l = charof t.l; c=[]}
-                else {l =        t.l; c=List.map f t.c} 
+                then {l = if isvar t.l then charof t.l else t.l; c=[]}
+                else {l = t.l; c=List.map f t.c} 
         in
         f t
 
+let format_tree_mark f=(format_tree (remap_leafs f))
 
+let do_mlsolver t = ignore (Do_parallel.do_commands 
+        [| 
+                fun () ->
+                Unix.execv "../../4mlsolver/mlsolver/bin/mlsolver.exe"
+                [| "../../4mlsolver/mlsolver/bin/mlsolver.exe"; "-pgs"; "recursive";
+                "-ve"; "-val"; "ctlstar"; format_tree2 t  |]
+        |] 1.9 3)
 
+let do_mark t  = ignore (Do_parallel.do_commands 
+        [| fun () ->
+                Unix.chdir "mark/";
+                Unix.execvp "java"
+                [| "java"; "-Djava.awt.headless=true"; "JApplet";
+                   format_tree_mark t; "CTL" |]
+        |] 1.9 3)
 
-
-                
-                
-
+(*let do_mlsolver t = ignore (Do_parallel.do_commands (fun () ->  [| 
+        [| "../../4mlsolver/mlsolver/bin/mlsolver.exe"; "-pgs"; "recursive";
+        "-ve"; "-val"; "ctlstar"; format_tree2 t  |]
+        |] 1.9 3)  *)
 
 let do_string s =
         let status = ref "bad" in
@@ -59,6 +92,9 @@ let do_string s =
 		print_string ((format_tree formula_tree) ^ "\n");
                 List.iter print_string (tree_leafs formula_tree);
 		print_string ((format_tree (remap_leafs formula_tree)) ^ "\n");
+		print_string ((format_tree2 formula_tree) ^ "\n");
+                do_mlsolver formula_tree ;
+                do_mark formula_tree
          with 
 	  Parsing.Parse_error-> print_string "Could not parse Formula.\n"
 	;	

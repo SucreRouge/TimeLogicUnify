@@ -137,7 +137,7 @@ let log f_name s =
           output_string oc (s^"\n");
             close_out oc  
 
-let robust_parse_formula = robust_parse [split_every_char; v_to_or] Phi_parser.formula Phi_lexer.token 
+let robust_parse_formula p = robust_parse [split_every_char; v_to_or] p Phi_lexer.token 
 
 let check_lang lang_name bad_ops f = List.iter ( fun op -> 
        let c = String.get op 0 in
@@ -146,5 +146,5 @@ let check_lang lang_name bad_ops f = List.iter ( fun op ->
               raise Parsing.Parse_error
        )
  ) bad_ops 
-let parse_ctls_formula f = check_lang "CTL*" ["Since"]                      f ; robust_parse_formula f
-let parse_rtl_formula  f = check_lang "RTL"  ["All Paths"; "Exists a Path"] f ; robust_parse_formula f
+let parse_ctls_formula f = check_lang "CTL*" ["Since"]                      f ; robust_parse_formula Phi_parser.ifixs f
+let parse_rtl_formula  f = check_lang "RTL"  ["All Paths"; "Exists a Path"] f ; robust_parse_formula Phi_parser.formula f

@@ -21,8 +21,9 @@ open Me
 %left BINARY UNTIL SINCE
 %left PREFIX
 
-%start formula
+%start formula ifixs
 %type <string Me.tree> formula
+%type <string Me.tree> ifixs
 
 %%
 formula: phi EOF		{ $1 }	
@@ -41,6 +42,17 @@ ifix:  ATOM			{ {l= $1; c=[]} }
 	| UNI ifix		{ {l= $1; c=[$2]} }
 	| ifix BINARY ifix	{ {l= $2; c=[$1; $3]} }
 	| ifix PREFIX ifix	{ {l= $2; c=[$3; $1]} } 
+        /* perhaps it would be better to define our data structures such
+         * that c=[$1;$3] for ifix "PREFIX" operators and instead have
+         * c=[$3;$1] for phi "PREFIX" operators
+         */
+;
+
+ifixs:  ATOM			{ {l= $1; c=[]} }
+	| LPAREN ifix RPAREN	{ $2 }
+	| UNI ifix		{ {l= $1; c=[$2]} }
+	| ifix BINARY ifix	{ {l= $2; c=[$1; $3]} }
+        | ifix PREFIX ifix	{ {l= $2; c=[$1; $3]} } 
         /* perhaps it would be better to define our data structures such
          * that c=[$1;$3] for ifix "PREFIX" operators and instead have
          * c=[$3;$1] for phi "PREFIX" operators
