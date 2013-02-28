@@ -12,6 +12,12 @@ let decoding str =
  
 let decode str =
   Str.global_substitute url_decoding decoding str
+
+let url_encoding = Str.regexp "[^[:alnum:]]" 
+
+let encoding str =
+	let str = (Chr.code (String.get str 0))
+
 *)
 
 (*

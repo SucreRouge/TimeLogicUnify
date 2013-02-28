@@ -1,4 +1,43 @@
 (* file: main.ml 
+let url_decoding = Str.regexp "%[0-9][0-9]"
+
+let decoding str =
+  let str = Str.matched_string str in
+  let s = String.create 4 in
+  s.[0] <- '0';
+  s.[1] <- 'x';
+  s.[2] <- str.[1];
+  s.[3] <- str.[2];
+  String.make 1 (Char.chr (int_of_string s))
+ 
+let decode str =
+  Str.global_substitute url_decoding decoding str
+
+let url_encoding = Str.regexp "[^[:alnum:]]" 
+let url_encoding = Str.regexp "." 
+
+#load "str.cma";;
+let url_encoding = Str.regexp "[[^0-9A-Za-z_]]." 
+let url_encoding = Str.regexp "[[^0-9]]" 
+
+let encoding str = 
+  let str = Str.matched_string str in
+  ("%" ^ string_of_int (Char.code (String.get str 0)))
+	
+let encode str = Str.global_substitute url_encoding encoding str;;
+
+let _ = encode "(p&q)";;
+
+
+--- MD5 --- 
+let d= Digest.string "f";;
+
+let s = Digest.to_hex d;;
+
+let _ = print_string s;;
+
+
+
  *  *)
 
 open Mainlib
@@ -6,6 +45,30 @@ open Me (* only for type tree *)
 
 (*type 'a tree = {l: 'a; c: 'a tree list
 let tree = Me.tree*)
+
+(* URL encoding *)
+let url_decoding = Str.regexp "%[0-9][0-9]"
+
+let decoding str =
+  let str = Str.matched_string str in
+  let s = String.create 4 in
+  s.[0] <- '0';
+  s.[1] <- 'x';
+  s.[2] <- str.[1];
+  s.[3] <- str.[2];
+  String.make 1 (Char.chr (int_of_string s))
+ 
+let decode str =
+  Str.global_substitute url_decoding decoding str
+
+
+let url_encoding = Str.regexp "[^0-9a-zA-Z]" 
+
+let encoding str =
+  let str = Str.matched_string str in
+  ("%" ^ Printf.sprintf  "%x" (Char.code (String.get str 0)))
+        
+let encode str = Str.global_substitute url_encoding encoding str;;
 
 
 
@@ -67,18 +130,26 @@ let format_tree_mark f=(format_tree (remap_leafs f))
 let do_mlsolver t = ignore (Do_parallel.do_commands 
         [| 
                 fun () ->
-                Unix.execv "../../4mlsolver/mlsolver/bin/mlsolver.exe"
-                [| "../../4mlsolver/mlsolver/bin/mlsolver.exe"; "-pgs"; "recursive";
+                Unix.execv "/home/john_large/src/mlsolver-1.1/mlsolver/bin/mlsolver"
+                (*[| "../../4lsolver/lsolver/bin/mlsolver.exe"; "-pgs"; "recursive"; *)
+                [| "/home/john_large/src/mlsolver-1.1/mlsolver/bin/mlsolver"; "-pgs"; "recursive";
                 "-ve"; "-val"; "ctlstar"; format_tree2 t  |]
         |] 1.9 3)
 
-let do_mark t  = ignore (Do_parallel.do_commands 
+let do_mark t  = let s = format_tree_mark t
+ignore (Do_parallel.do_commands 
         [| fun () ->
                 Unix.chdir "mark/";
                 Unix.execvp "java"
                 [| "java"; "-Djava.awt.headless=true"; "JApplet";
                    format_tree_mark t; "CTL" |]
         |] 1.9 3)
+
+let mark_entry = [| "mark",  fname t = fun t fname ->
+                Unix.chdir "mark/";
+                Unix.execvp "java"
+                [| "java"; "-Djava.awt.headless=true"; "JApplet";
+                   format_tree_mark t; "CTL"; fname |] |]
 
 (*let do_mlsolver t = ignore (Do_parallel.do_commands (fun () ->  [| 
         [| "../../4mlsolver/mlsolver/bin/mlsolver.exe"; "-pgs"; "recursive";
