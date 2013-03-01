@@ -72,6 +72,7 @@ let encode str = Str.global_substitute url_encoding encoding str;;
 
 
 
+
 let rec format_tree t = let degree = List.length t.c in
         match degree with 
         0 -> t.l
@@ -125,7 +126,7 @@ let remap_leafs t =
         in
         f t
 
-let format_tree_mark f=(format_tree (remap_leafs f))
+let format_tree_mark f=(format_tree (remap_leafs f));;
 
 let do_mlsolver t = ignore (Do_parallel.do_commands 
         [| 
@@ -134,24 +135,51 @@ let do_mlsolver t = ignore (Do_parallel.do_commands
                 (*[| "../../4lsolver/lsolver/bin/mlsolver.exe"; "-pgs"; "recursive"; *)
                 [| "/home/john_large/src/mlsolver-1.1/mlsolver/bin/mlsolver"; "-pgs"; "recursive";
                 "-ve"; "-val"; "ctlstar"; format_tree2 t  |]
-        |] 1.9 3)
+        |] 1.9 3);;
 
-let do_mark t  = let s = format_tree_mark t
+let do_mark t  = (*let s = format_tree_mark t*)
 ignore (Do_parallel.do_commands 
         [| fun () ->
                 Unix.chdir "mark/";
                 Unix.execvp "java"
                 [| "java"; "-Djava.awt.headless=true"; "JApplet";
                    format_tree_mark t; "CTL" |]
-        |] 1.9 3)
+        |] 1.9 3);;
 
-let mark_entry = [| "mark",  fname t = fun t fname ->
+let mark_entry = ( "mark",  fun t fname ->
                 Unix.chdir "mark/";
                 Unix.execvp "java"
                 [| "java"; "-Djava.awt.headless=true"; "JApplet";
-                   format_tree_mark t; "CTL"; fname |] |]
+                   format_tree_mark t; "CTL"; fname |] )
 
-(*let do_mlsolver t = ignore (Do_parallel.do_commands (fun () ->  [| 
+let mlsolver_entry = ( "mlsolver", fun t fname -> 
+                let outfile = (Unix.openfile fname [Unix.O_CREAT; Unix.O_WRONLY] 0o644) in
+                let _ = Unix.dup2 outfile Unix.stdout in
+                Unix.execv "/home/john_large/src/mlsolver-1.1/mlsolver/bin/mlsolver"
+                [| "/home/john_large/src/mlsolver-1.1/mlsolver/bin/mlsolver"; "-pgs"; "recursive";
+                "-ve"; "-val"; "ctlstar"; format_tree2 t  |]
+)
+
+(* gives the canonical file name for a tree t: STUB *)
+let canonical_file t = "STUB"
+
+let required_tasks t = 
+        let solver_entries = [mark_entry; mlsolver_entry] in
+        let tasks = ref [] in
+        List.iter  ( fun e -> 
+                let (solver_name, f) = e in
+                let fname = "out/" ^ (canonical_file t) ^ "." ^ solver_name in
+                tasks := (fun () -> f t fname)::(!tasks)
+        ) solver_entries ;
+        !tasks
+
+                (*if not Sys.file_exists *)
+
+
+
+
+        
+        (*let do_mlsolver t = ignore (Do_parallel.do_commands (fun () ->  [| 
         [| "../../4mlsolver/mlsolver/bin/mlsolver.exe"; "-pgs"; "recursive";
         "-ve"; "-val"; "ctlstar"; format_tree2 t  |]
         |] 1.9 3)  *)
