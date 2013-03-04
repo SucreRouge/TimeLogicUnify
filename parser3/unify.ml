@@ -43,6 +43,20 @@ let _ = print_string s;;
 open Mainlib
 open Me (* only for type tree *)
 
+
+(* From: http://www2.lib.uchicago.edu/keith/ocaml-class/complete.html *)
+let cat filename =
+  let chan = open_in filename in
+  let size = 4 * 1024 in
+  let buffer = String.create size in
+  let eof = ref false in
+    while not !eof do
+      let len = input chan buffer 0 size in
+	if len > 0
+	then print_string (String.sub buffer 0 len)
+	else eof := true
+    done
+
 (*type 'a tree = {l: 'a; c: 'a tree list
 let tree = Me.tree*)
 
@@ -69,7 +83,6 @@ let encoding str =
   ("%" ^ Printf.sprintf  "%x" (Char.code (String.get str 0)))
         
 let encode str = Str.global_substitute url_encoding encoding str;;
-
 
 
 
@@ -169,7 +182,9 @@ let required_tasks t =
         List.iter  ( fun e -> 
                 let (solver_name, f) = e in
                 let fname = "out/" ^ (canonical_file t) ^ "." ^ solver_name in
-                tasks := (fun () -> f t fname)::(!tasks)
+                let task_f = (fun () -> f t fname) in
+                let on_finish_f = (fun () -> cat fname ) in
+                tasks := (task_f, on_finish_f)::(!tasks)
         ) solver_entries ;
         !tasks
 
