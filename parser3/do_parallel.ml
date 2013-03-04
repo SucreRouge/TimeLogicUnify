@@ -23,6 +23,11 @@ let start_command command =
         (*Unix.execv command.(0) command *)
     | pid -> pid
 
+
+
+(* Runs an array of commands in parallel. Each command is a tuple (t,f) where t
+ * is the task to be run in another process and f is the finishing task to be
+ * run in the same process *)
 let do_commands commands timeout concurrent=
         let running = ref [] in
         let inprogress = ref true in
@@ -39,7 +44,8 @@ let do_commands commands timeout concurrent=
                (* while ((next_command<num_commands) and ((List.length(!running)) < concurrent)) do ( *)
                while (((!next_command)<num_commands) && ((List.length(!running)) < concurrent)) do (
                     let i = (!next_command) in
-                    let pid = start_command commands.(i) in
+                    (* Here we run the actual commands *)
+                    let pid = start_command (fst commands.(i)) in
                     running := (!running) @ [i];
                     start_times.(i) <- Unix.gettimeofday();
                             pids.(i) <- pid;
@@ -63,6 +69,8 @@ let do_commands commands timeout concurrent=
                                let endtime = Unix.gettimeofday() in
                                let i = Hashtbl.find pid2i pid in 
                                run_times.(i) <- endtime -. start_times.(i);
+                               (* Here we run the cleanup/finishing task *)
+                               (snd commands.(i)) ();
                                running := list_remove i (!running);
                                Hashtbl.remove pid2i pid)
                        with

@@ -141,7 +141,7 @@ let remap_leafs t =
 
 let format_tree_mark f=(format_tree (remap_leafs f));;
 
-let do_mlsolver t = ignore (Do_parallel.do_commands 
+(*let do_mlsolver t = ignore (Do_parallel.do_commands 
         [| 
                 fun () ->
                 Unix.execv "/home/john_large/src/mlsolver-1.1/mlsolver/bin/mlsolver"
@@ -158,7 +158,7 @@ ignore (Do_parallel.do_commands
                 [| "java"; "-Djava.awt.headless=true"; "JApplet";
                    format_tree_mark t; "CTL" |]
         |] 1.9 3);;
-
+*)
 let mark_entry = ( "mark",  fun t fname ->
                 Unix.chdir "mark/";
                 Unix.execvp "java"
@@ -186,7 +186,7 @@ let required_tasks t =
                 let on_finish_f = (fun () -> cat fname ) in
                 tasks := (task_f, on_finish_f)::(!tasks)
         ) solver_entries ;
-        !tasks
+        Array.of_list(!tasks)
 
                 (*if not Sys.file_exists *)
 
@@ -207,15 +207,15 @@ let do_string s =
                 List.iter print_string (tree_leafs formula_tree);
 		print_string ((format_tree (remap_leafs formula_tree)) ^ "\n");
 		print_string ((format_tree2 formula_tree) ^ "\n");
-                do_mlsolver formula_tree ;
-                do_mark formula_tree
+                (*do_mlsolver formula_tree ;
+                do_mark formula_tree*)
+                ignore (Do_parallel.do_commands (required_tasks formula_tree) 1.9 3)
          with 
 	  Parsing.Parse_error-> print_string "Could not parse Formula.\n"
 	;	
         Mainlib.print_count "Program" "unify_stats.txt";
         Mainlib.log (Mainlib.log_dir ^ "unify_" ^ !status ^ ".log") 
                 (Mainlib.string_map (fun c->if c='\n' then ' ' else c) s)
-
 ;;
 
 let main () =
