@@ -64,8 +64,47 @@ let cat fname =
   ) else (
     print_string (fname ^ " does not exist\n")
   );
+;;
 
-  Printf.printf "************ End CAT%s\n" fname
+
+
+let is_sat_regexp = Str.regexp_case_fold "is satisfiable";;
+let is_sat_regexp = Str.regexp " unsatisfiable"
+let result_parse_info = [ ( Str.regexp_case_fold "is satisfiable", "Satisfiable: ");
+                          ( Str.regexp " unsatisfiable",           "UNsatisfiable: ") ]
+let add_ref_list a : string list ref * 'a = (ref [],a)
+let result_info = List.map add_ref_list result_parse_info
+(*let result_info = List.map (fun a -> (ref [],a)) result_parse_info
+*)(*let result_info = [ ( Str.regexp_case_fold "is satisfiable", "Satisfiable: "  , ref[]);
+                    ( Str.regexp " unsatisfiable",           "UNsatisfiable: ", ref[]) ] *)
+
+(* From: http://www2.lib.uchicago.edu/keith/ocaml-class/complete.html *)
+let process_file name fname =
+  Printf.printf "**** Begin %s\n" fname;
+  if (Sys.file_exists fname) then (
+    let chan = open_in fname in
+    let size = 4 * 1024 in
+    let buffer = String.create size in
+    let len = input chan buffer 0 size in
+    let s = (String.sub buffer 0 len) in
+    let runtime_s = try
+      let r = Str.regexp "RUNTIME: \\([0-9.]*\\)" in
+        ignore(Str.search_forward r s 0);
+        let time_s = Str.matched_group 1 s in
+        Printf.sprintf "(%0.2f)" (float_of_string time_s)
+    with Not_found -> "(?.?)" in
+    print_string (s);
+    if (len >= size) then print_string "Data file too long\n";
+    List.iter (fun x ->
+                 let (l,(regexp,title)) = x in
+                 try ignore(Str.search_forward regexp s 0) ; l := (name^runtime_s)::(!l)
+                 with Not_found -> ()
+    ) result_info
+  ) else (
+    print_string (fname ^ " does not exist\n")
+  );
+  Printf.printf "**** End %s\n" fname;
+  ()
 
 (*let cat filename =
  Printf.printf "*AT %s\n" filename
@@ -182,6 +221,12 @@ let redirect_output fname =
   let _ = Unix.dup2 outfile Unix.stdout in
   let _ = Unix.dup2 outfile Unix.stderr in ()
 
+let append_s_to_fname s fname =
+  let f = open_out_gen [Open_append] 0o644 fname in
+    output_string f s;
+    close_out f
+
+
 let java_entry name = ( name, "mark/",  fun t fname ->
                           redirect_output "/dev/null";
                           Unix.chdir "mark/";
@@ -195,7 +240,7 @@ let mlsolver_entry = ( "mlsolver", "", fun t fname ->
                          redirect_output fname;
                          Unix.execv "mlsolver/bin/mlsolver"
                            [| "mlsolver"; "-pgs"; "recursive";
-                              "-ve"; "-val"; "ctlstar"; format_tree2 t  |]
+                              "-ve"; "-sat"; "ctlstar"; format_tree2 t  |]
 )
 
 (* gives the canonical file name for a tree t: STUB *)
@@ -212,11 +257,12 @@ let required_tasks t =
                    let fname = "out/" ^ (canonical_file t) ^ "." ^ solver_name in
                    let fullfname = prefix ^ fname in
                    let task_f = (fun () -> f t fname) in
-                   let on_finish_f = (fun () -> () ) in
-                   let on_finish_f = (fun () -> cat (fullfname) ) in
+                   let on_finish_f1 = (fun () -> process_file solver_name fullfname ) in
                      if (Sys.file_exists fullfname) then
-                       cat (fullfname)
+                       on_finish_f1 ()
                      else
+                       let on_finish_f runtime = (append_s_to_fname ("\nRUNTIME: "^(string_of_float runtime)^"\n") fullfname;
+                       on_finish_f1 ()) in
                        tasks := (task_f, on_finish_f)::(!tasks)
     ) solver_entries ;
     Array.of_list(!tasks)
@@ -245,7 +291,15 @@ let do_string s =
           print_string ((format_tree2 formula_tree) ^ "\n");
           (*do_mlsolver formula_tree ;
            do_mark formula_tree*)
-          ignore (Do_parallel.do_commands (required_tasks formula_tree) 1.9 3)
+          ignore (Do_parallel.do_commands (required_tasks formula_tree) 1.9 3);
+
+          List.iter (fun x ->
+                       let (l,(regexp,title)) = x in
+                         print_string title;
+                         List.iter (fun s -> print_string (s ^ " ")) (!l);
+                         print_string "\n"
+          ) result_info
+
     with
         Parsing.Parse_error-> print_string "Could not parse Formula.\n"
                                 ;

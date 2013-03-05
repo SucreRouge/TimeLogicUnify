@@ -70,7 +70,7 @@ let do_commands commands timeout concurrent =
                  let i = Hashtbl.find pid2i pid in
                    run_times.(i) <- endtime -. start_times.(i);
                    (* Here we run the cleanup/finishing task *)
-                   (snd commands.(i)) ();
+                   (snd commands.(i)) run_times.(i);
                    running := list_remove i (!running);
                    Hashtbl.remove pid2i pid)
             with
