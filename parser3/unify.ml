@@ -43,21 +43,33 @@ let _ = print_string s;;
 open Mainlib
 open Me (* only for type tree *)
 
+let origcwd = Sys.getcwd ()
+
 
 (* From: http://www2.lib.uchicago.edu/keith/ocaml-class/complete.html *)
-let cat filename =
-  let chan = open_in filename in
+let cat fname =
+  Printf.printf "**** INTBegin CAT%s\n" fname;
+  if (Sys.file_exists fname) then (
+  let chan = open_in fname in
   let size = 4 * 1024 in
   let buffer = String.create size in
+  Printf.printf "**** Begin CAT%s\n" fname;
   let eof = ref false in
     while not !eof do
       let len = input chan buffer 0 size in
-	if len > 0
+	if len > 1
 	then print_string (String.sub buffer 0 len)
 	else eof := true
-    done
+    done; ()
+  ) else (
+           print_string (fname ^ " does not exist\n")
+  );
 
-(*type 'a tree = {l: 'a; c: 'a tree list
+  Printf.printf "************ End CAT%s\n" fname
+
+(*let cat filename =
+  Printf.printf "*AT %s\n" filename
+type 'a tree = {l: 'a; c: 'a tree list
 let tree = Me.tree*)
 
 (* URL encoding *)
@@ -120,11 +132,11 @@ let tree_leafs t =
 (* Replace all leafs in the tree with single characters. Useful if sat checker
  * only supports single character names *)
 
-let remap_leafs t =
+let remap_leafs_ m t =
         let leafs = tree_leafs t in
         if List.length leafs > 26 then failwith "Cannot map more than 26 variables to letters";
         let a = Array.make 26 "" in
-        let idx s = (Char.code (String.get s 0) - Char.code 'a') in
+        let idx s = m * (Char.code (String.get s 0) - Char.code 'a') in
         let isvar s = (let i = idx s in i < 26 && i >= 0) in
         let rec findfrom m i = if a.(i) = m 
                 then i 
@@ -138,6 +150,11 @@ let remap_leafs t =
                 else {l = t.l; c=List.map f t.c} 
         in
         f t
+
+let remap_leafs_preserve_first_char = remap_leafs_ 1 
+let remap_leafs = remap_leafs_ 0 
+let rename_variables = remap_leafs_ 0
+        
 
 let format_tree_mark f=(format_tree (remap_leafs f));;
 
@@ -159,32 +176,48 @@ ignore (Do_parallel.do_commands
                    format_tree_mark t; "CTL" |]
         |] 1.9 3);;
 *)
-let mark_entry = ( "mark",  fun t fname ->
-                Unix.chdir "mark/";
-                Unix.execvp "java"
-                [| "java"; "-Djava.awt.headless=true"; "JApplet";
-                   format_tree_mark t; "CTL"; fname |] )
 
-let mlsolver_entry = ( "mlsolver", fun t fname -> 
+let redirect_output fname = 
                 let outfile = (Unix.openfile fname [Unix.O_CREAT; Unix.O_WRONLY] 0o644) in
                 let _ = Unix.dup2 outfile Unix.stdout in
-                Unix.execv "/home/john_large/src/mlsolver-1.1/mlsolver/bin/mlsolver"
-                [| "/home/john_large/src/mlsolver-1.1/mlsolver/bin/mlsolver"; "-pgs"; "recursive";
+                let _ = Unix.dup2 outfile Unix.stderr in ()
+
+let java_entry name = ( name, "mark/",  fun t fname ->
+                redirect_output "/dev/null";
+                Unix.chdir "mark/";
+                let args = 
+                [| "java"; "-Djava.awt.headless=true"; "JApplet";
+                format_tree_mark t; name ; fname |] in
+                (*Unix.execvp "echo" args;*)
+                Unix.execvp "java" args )
+
+let mlsolver_entry = ( "mlsolver", "", fun t fname -> 
+                redirect_output fname;
+                Unix.execv "mlsolver/bin/mlsolver"
+                [| "mlsolver"; "-pgs"; "recursive";
                 "-ve"; "-val"; "ctlstar"; format_tree2 t  |]
 )
 
 (* gives the canonical file name for a tree t: STUB *)
-let canonical_file t = "STUB"
+let md5 s = Digest.to_hex (Digest.string s)
+let canonical_file t = md5 (format_tree_mark t)
 
 let required_tasks t = 
-        let solver_entries = [mark_entry; mlsolver_entry] in
+        let solver_entries = [java_entry "BCTLNEW" ; mlsolver_entry] in
+        let solver_entries = [mlsolver_entry; java_entry "BCTLNEW"; java_entry
+        "BCTLOLD" ; java_entry "CTL" ] in
         let tasks = ref [] in
         List.iter  ( fun e -> 
-                let (solver_name, f) = e in
+                let (solver_name, prefix, f) = e in
                 let fname = "out/" ^ (canonical_file t) ^ "." ^ solver_name in
+                let fullfname = prefix ^ fname in
                 let task_f = (fun () -> f t fname) in
-                let on_finish_f = (fun () -> cat fname ) in
-                tasks := (task_f, on_finish_f)::(!tasks)
+                let on_finish_f = (fun () -> () ) in
+                let on_finish_f = (fun () -> cat (fullfname) ) in
+                if (Sys.file_exists fullfname) then
+                        cat (fullfname)
+                else
+                        tasks := (task_f, on_finish_f)::(!tasks)
         ) solver_entries ;
         Array.of_list(!tasks)
 
@@ -203,7 +236,10 @@ let do_string s =
         let status = ref "bad" in
 	try 
 		let formula_tree = parse_ctls_formula s in
-		print_string ((format_tree formula_tree) ^ "\n");
+		print_string ("Input formula: " ^ (format_tree formula_tree) ^ "\n");
+                let formula_tree = rename_variables formula_tree in
+		print_string ("Normalised to: " ^ (format_tree formula_tree) ^ "\n");
+
                 List.iter print_string (tree_leafs formula_tree);
 		print_string ((format_tree (remap_leafs formula_tree)) ^ "\n");
 		print_string ((format_tree2 formula_tree) ^ "\n");
