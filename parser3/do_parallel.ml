@@ -23,7 +23,9 @@ let start_command command =
     (*Unix.execv command.(0) command *)
     | pid -> pid
 
+let wait () = print_endline "Enter Wait" ; let r = Unix.wait () in print_endline "Exit wait"; r
 
+let killlist signal = Array.iter (fun pid -> Unix.kill pid signal)
 
 (* Runs an array of commands in parallel. Each command is a tuple (t,f) where t
  * is the task to be run in another process and f is the finishing task to be
@@ -38,6 +40,7 @@ let do_commands commands timeout concurrent =
   let pids = Array.make num_commands (-1) in
   let pid2i = Hashtbl.create num_commands in
   let next_command = ref 0 in
+  let sigxcpu = 24 in
     Sys.set_signal Sys.sigalrm
       (Sys.Signal_handle (fun _ -> failwith "timeout"));
     while (!inprogress) do (
@@ -63,21 +66,25 @@ let do_commands commands timeout concurrent =
           (*ignore (Unix.alarm 1);  test *)
           ( try
               (*if sleep > 0 then () else failwith "timeout"; *)
-              (let (pid,status) = Unix.wait() in
+              (let (pid,status) = wait() in
                  (* Race condition? *)
                  ignore (Unix.alarm 0);
                  let endtime = Unix.gettimeofday() in
                  let i = Hashtbl.find pid2i pid in
                    run_times.(i) <- endtime -. start_times.(i);
                    (* Here we run the cleanup/finishing task *)
-                   (snd commands.(i)) run_times.(i);
+		   try 
+                     (snd commands.(i)) run_times.(i);
+		   with e -> 
+			print_endline "Exception finalising task";
+			print_endline (Printexc.to_string e);
+			Printexc.print_backtrace stderr;
                    running := list_remove i (!running);
                    Hashtbl.remove pid2i pid)
             with
                 Failure "timeout" -> (
+		  print_endline "timeout.";
                   (* timed out; do what you will here *)
-                  let sigxcpu = 24 in
-                  let sigkill = 9 in
                   let t = Unix.gettimeofday() in
                   let rec kill_out_of_time l = (
                     match l with
@@ -86,7 +93,7 @@ let do_commands commands timeout concurrent =
                         then ()
                         else (
                           let pid = pids.(i) in
-                            Unix.kill pid (if killed.(i) > 1 then sigkill else sigxcpu);
+                            Unix.kill pid (if killed.(i) > 1 then Sys.sigkill else sigxcpu);
                             killed.(i) <- killed.(i) + 1;
                             if killed.(i) > 3 then (
                               print_string "Can't kill a pid, will just forget it\n";
@@ -98,9 +105,24 @@ let do_commands commands timeout concurrent =
                     kill_out_of_time (!running);
                     Unix.sleep 1
                 )
-              | e ->
+	      |  Unix.Unix_error (Unix.ECHILD, _, _) -> 
                   (* clear the still-pending alarm *)
-                  ignore (Unix.alarm 0)
+                  ignore (Unix.alarm 0);
+		  print_endline "";
+		  Printf.printf "No more children but %d elements remain in running\n" (List.length (!running))   ;
+		  Printexc.print_backtrace stderr;
+		  print_endline "";
+		  running := []
+              | e ->
+			print_endline "Unknown exception e";
+			print_endline (Printexc.to_string e);
+			Printexc.print_backtrace stderr;
+                	ignore (Unix.alarm 0);
+			killlist Sys.sigterm pids;
+			Unix.sleep 1;
+			killlist Sys.sigkill pids;
+		  	raise e 
+                  (* clear the still-pending alarm *)
           (* propagate unexpected exception *)
           (* Should perhaps clean up running procs?*)
           )

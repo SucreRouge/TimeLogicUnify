@@ -6,6 +6,8 @@ main: precheck me.ml mainlib.ml phi_lexer.ml phi_parser.ml  me_parser.ml me_pars
 unify: precheck me.ml do_parallel.ml mainlib.ml unify.ml phi_lexer.ml phi_parser.ml  me_parser.ml me_parser.mli me_lexer.ml main.ml phi_parser.cmi me_parser.cmi me_parser.cmo me_parser.cmo
 	$(OCAMLC) -o unify me.ml unix.cmxa do_parallel.ml phi_parser.ml phi_lexer.ml  me_lexer.ml me_parser.ml mainlib.ml str.cmxa unify.ml  
 
+unify_dbg:
+	ocamlc -g -o unify_dbg me.ml unix.cma do_parallel.ml phi_parser.ml phi_lexer.ml  me_lexer.ml me_parser.ml mainlib.ml str.cma unify.ml && echo p 
 www_: 
 	mkdir -p www
 	bash -c "(echo '<html>' ; cat mechecker2.html) > www/mechecker_plain.html"
@@ -29,12 +31,16 @@ install: www_ mechecker.cgi
 	#bash -c "cat mechecker1.html mechecker2.html > /var/www/mechecker.html"
 	cp www/* /var/www
 
-unify_install: unify_www_ unify.cgi
+unify_install: unify_www_ unify
 	cp unify /usr/lib/cgi-bin/unify.cgi
 	#bash -c "(echo '<html>' ; cat mechecker2.html) > /var/www/mechecker_plain.html"
 	#bash -c "cat mechecker1.html mechecker2.html > /var/www/mechecker.html"
 	(git archive --prefix=mechecker/ HEAD -o www/mechecker_src.tar && gzip -f -9 www/mechecker_src.tar) || cp ../mechecker_src.tar.gz www
-	cp www/* /var/www
+	cp unify_www/* /var/www
+	mkdir -p /var/data/unify
+	#mkdir -p /var/data/unify
+	#cp -rv mark/ /var/data/unify/mark	
+	#cp -rv mlsolver/ /var/data/unify/mlsolver
 
 # Install to a non-root web-directory where cgi-bin is not allowed (link back to machine where cgi-bin is installed)
 install_home: www_
@@ -48,6 +54,10 @@ mechecker.cgi: precheck me.ml  phi_lexer.ml phi_parser.ml  me_parser.ml me_parse
 	$(OCAMLC) -o mechecker.cgi me.ml phi_parser.ml phi_lexer.ml  me_lexer.ml me_parser.ml mainlib.ml main.ml  
 	#ocamlopt.opt -g -o mechecker.cgi  mainlib.ml me.ml phi_parser.ml phi_lexer.ml  me_lexer.ml me_parser.ml main.ml
 
+mvroot:
+	mkdir -p root
+	mv `ls -l | grep -w root | sed s/.*\ //g` bak
+	
 run: main
 	rlwrap ./main
 
