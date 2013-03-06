@@ -12,6 +12,12 @@ www_:
 	bash -c "cat mechecker1.html mechecker2.html > www/mechecker.html"
 	(git archive --prefix=mechecker/ HEAD -o www/mechecker_src.tar && gzip -f -9 www/mechecker_src.tar) || cp ../mechecker_src.tar.gz www
 
+unify_www_: 
+	mkdir -p unify_www
+	bash -c "(echo '<html>' ; cat unify2.html) > unify_www/mechecker_plain.html"
+	bash -c "cat unify1.html unify2.html > unify_www/unified.html"
+	#(git archive --prefix=mechecker/ HEAD -o www/mechecker_src.tar && gzip -f -9 www/mechecker_src.tar) || cp ../mechecker_src.tar.gz www
+
 precheck:
 	which $(OCAMLC) || (echo "The $(OCAMLC) compiler was not found.\nUsing 'make OCAMLC=ocamlc' in place of 'make' may help (but will cause slower bytecode to be used)" && false) 
 
@@ -21,6 +27,13 @@ install: www_ mechecker.cgi
 	cp mechecker.cgi /usr/lib/cgi-bin
 	#bash -c "(echo '<html>' ; cat mechecker2.html) > /var/www/mechecker_plain.html"
 	#bash -c "cat mechecker1.html mechecker2.html > /var/www/mechecker.html"
+	cp www/* /var/www
+
+unify_install: unify_www_ unify.cgi
+	cp unify /usr/lib/cgi-bin/unify.cgi
+	#bash -c "(echo '<html>' ; cat mechecker2.html) > /var/www/mechecker_plain.html"
+	#bash -c "cat mechecker1.html mechecker2.html > /var/www/mechecker.html"
+	(git archive --prefix=mechecker/ HEAD -o www/mechecker_src.tar && gzip -f -9 www/mechecker_src.tar) || cp ../mechecker_src.tar.gz www
 	cp www/* /var/www
 
 # Install to a non-root web-directory where cgi-bin is not allowed (link back to machine where cgi-bin is installed)
