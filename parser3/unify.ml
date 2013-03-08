@@ -48,8 +48,7 @@ let _ = Unix.chdir "/var/data/unify"
 
 (*let max_runtime = try getenv "MAX_RUNTIME" with Not_found -> "2" 
 let max_concurrent = try int_of_string (getenv "MAX_CONCURRENT") with Not_found -> 2  *)
-let num_cpus = 2 (*STUB *)
-let (max_runtime, max_concurrent) = try ignore(Sys.getenv "UNIFY_OFFLINE"); ("3600", 1) with Not_found -> ("2",num_cpus) ;;
+let (max_runtime, max_concurrent) = try ignore(Sys.getenv "UNIFY_OFFLINE"); ("3600", 1) with Not_found -> ("2",NUM_CPUS) ;;
 let max_runtime_float = float_of_string max_runtime 
 
 (* From: http://www2.lib.uchicago.edu/keith/ocaml-class/complete.html *)
@@ -255,9 +254,7 @@ let md5 s = Digest.to_hex (Digest.string s)
 let canonical_file t = md5 (format_tree_mark t)
 
 let required_tasks t =
-  let solver_entries = [java_entry "BCTLNEW" ; mlsolver_entry] in
-  let solver_entries = [mlsolver_entry; java_entry "BCTLNEW"; java_entry
-                                                                "BCTLOLD" ; java_entry "CTL" ] in
+  let solver_entries = [mlsolver_entry; java_entry "BCTLNEW"; java_entry "BCTLOLD" ; java_entry "CTL" ] in
   let tasks = ref [] in
     List.iter  ( fun e ->
                    let (solver_name, prefix, f) = e in

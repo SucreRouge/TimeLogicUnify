@@ -3,11 +3,14 @@ OCAMLC=ocamlopt
 main: precheck me.ml mainlib.ml phi_lexer.ml phi_parser.ml  me_parser.ml me_parser.mli me_lexer.ml main.ml phi_parser.cmi me_parser.cmi me_parser.cmo me_parser.cmo
 	$(OCAMLC) -o main me.ml phi_parser.ml phi_lexer.ml  me_lexer.ml me_parser.ml mainlib.ml main.ml  
 
-unify: precheck me.ml do_parallel.ml mainlib.ml unify.ml phi_lexer.ml phi_parser.ml  me_parser.ml me_parser.mli me_lexer.ml main.ml phi_parser.cmi me_parser.cmi me_parser.cmo me_parser.cmo
-	$(OCAMLC) -o unify me.ml unix.cmxa do_parallel.ml phi_parser.ml phi_lexer.ml  me_lexer.ml me_parser.ml mainlib.ml str.cmxa unify.ml  
+unify_.ml:
+	sed s/NUM_CPUS/`cat /proc/cpuinfo  | grep ^processor | wc -l`/g < unify.ml > unify_.ml
+
+unify: precheck me.ml do_parallel.ml mainlib.ml unify_.ml phi_lexer.ml phi_parser.ml  me_parser.ml me_parser.mli me_lexer.ml main.ml phi_parser.cmi me_parser.cmi me_parser.cmo me_parser.cmo
+	$(OCAMLC) -o unify me.ml unix.cmxa do_parallel.ml phi_parser.ml phi_lexer.ml  me_lexer.ml me_parser.ml mainlib.ml str.cmxa unify_.ml  
 
 unify_dbg:
-	ocamlc -g -o unify_dbg me.ml unix.cma do_parallel.ml phi_parser.ml phi_lexer.ml  me_lexer.ml me_parser.ml mainlib.ml str.cma unify.ml && echo p 
+	ocamlc -g -o unify_dbg me.ml unix.cma do_parallel.ml phi_parser.ml phi_lexer.ml  me_lexer.ml me_parser.ml mainlib.ml str.cma unify_.ml && echo p 
 www_: 
 	mkdir -p www
 	#bash -c "(echo '<html>' ; cat mechecker2.html) > www/mechecker_plain.html"
