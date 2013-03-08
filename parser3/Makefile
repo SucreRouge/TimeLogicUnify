@@ -10,14 +10,16 @@ unify_dbg:
 	ocamlc -g -o unify_dbg me.ml unix.cma do_parallel.ml phi_parser.ml phi_lexer.ml  me_lexer.ml me_parser.ml mainlib.ml str.cma unify.ml && echo p 
 www_: 
 	mkdir -p www
-	bash -c "(echo '<html>' ; cat mechecker2.html) > www/mechecker_plain.html"
-	bash -c "cat mechecker1.html mechecker2.html > www/mechecker.html"
+	#bash -c "(echo '<html>' ; cat mechecker2.html) > www/mechecker_plain.html"
+	#bash -c "cat mechecker1.html mechecker2.html > www/mechecker.html"
+	bash ./makehtml.sh mechecker www/mechecker
 	(git archive --prefix=mechecker/ HEAD -o www/mechecker_src.tar && gzip -f -9 www/mechecker_src.tar) || cp ../mechecker_src.tar.gz www
 
 unify_www_: 
 	mkdir -p unify_www
-	bash -c "(echo '<html>' ; cat unify2.html) > unify_www/mechecker_plain.html"
-	bash -c "cat unify1.html unify2.html > unify_www/unified.html"
+	#bash -c "(echo '<html>' ; cat unify2.html) > unify_www/mechecker_plain.html"
+	#bash -c "cat unify1.html unify2.html > unify_www/unified.html"
+	./makehtml.sh unify unify_www/unified
 	#(git archive --prefix=mechecker/ HEAD -o www/mechecker_src.tar && gzip -f -9 www/mechecker_src.tar) || cp ../mechecker_src.tar.gz www
 
 precheck:

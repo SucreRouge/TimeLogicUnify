@@ -58,5 +58,5 @@ try
 		| Not_found -> failwith "QUERY_STRING missing `='?\n" )
 with 
 	Not_found -> Printexc.print main () 
-	|  _ -> Printf.printf "Unexpected error\n"
+	|  _ -> Printf.printf "Unexpected error in main loop\n"
 
