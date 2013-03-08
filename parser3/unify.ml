@@ -44,6 +44,7 @@ open Mainlib
 open Me (* only for type tree *)
 
 let origcwd = Sys.getcwd ()
+let _ = Unix.chdir "/var/data/unify"
 
 (* From: http://www2.lib.uchicago.edu/keith/ocaml-class/complete.html *)
 let cat fname =
@@ -282,6 +283,7 @@ let do_string s =
   clear_result_info();
   let status = ref "bad" in
     try
+      print_endline origcwd;
       let formula_tree = parse_ctls_formula s in
         print_string ("Input formula: " ^ (format_tree formula_tree) ^ "\n");
         let formula_tree = rename_variables formula_tree in
@@ -311,6 +313,9 @@ let do_string s =
 
 let main () =
   print_string "main loop";
+
+  Sys.set_signal Sys.sigfpe
+      (Sys.Signal_handle (fun _ -> print_string "blush\n" ; Printexc.print_backtrace stdout ; print_string "flush\n" ; flush stderr ; failwith "FPE")); 
   try
     while true do
       try
@@ -321,6 +326,7 @@ let main () =
       with
           Parsing.Parse_error -> Printf.printf "Parse Error!\n"
         | Not_found -> print_string "Divider `:' not found in input."
+	| x -> print_string (Printexc.get_backtrace ()) ; failwith "Unexpected exception"
     done;
 
   with End_of_file -> (print_string "EOF\n" ; flush stdout; exit 0)
