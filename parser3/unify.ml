@@ -45,7 +45,6 @@ open Me (* only for type tree *)
 
 let origcwd = Sys.getcwd ()
 
-
 (* From: http://www2.lib.uchicago.edu/keith/ocaml-class/complete.html *)
 let cat fname =
   Printf.printf "**** INTBegin CAT%s\n" fname;
@@ -74,6 +73,7 @@ let result_parse_info = [ ( Str.regexp_case_fold "is satisfiable", "Satisfiable:
                           ( Str.regexp " unsatisfiable",           "UNsatisfiable: ") ]
 let add_ref_list a : string list ref * 'a = (ref [],a)
 let result_info = List.map add_ref_list result_parse_info
+let clear_result_info () = List.iter (fun e -> (fst e) := []) result_info
 (*let result_info = List.map (fun a -> (ref [],a)) result_parse_info
 *)(*let result_info = [ ( Str.regexp_case_fold "is satisfiable", "Satisfiable: "  , ref[]);
                     ( Str.regexp " unsatisfiable",           "UNsatisfiable: ", ref[]) ] *)
@@ -279,6 +279,7 @@ let required_tasks t =
  |] 1.9 3)  *)
 
 let do_string s =
+  clear_result_info();
   let status = ref "bad" in
     try
       let formula_tree = parse_ctls_formula s in
