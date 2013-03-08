@@ -3,6 +3,8 @@
  #load "unix.cma";; *)
 
 let list_remove e l = (List.fold_right (fun e2 l2 -> if e2=e then l2 else e2::l2) l []) ;;
+let list_remove e l = (List.filter (fun e2 -> e2!=e) l);;
+let list_remove e l = (List.filter ((!=) e) l);;
 
 
 (* TODO
@@ -25,7 +27,8 @@ let start_command command =
 
 let wait () = print_endline "Enter Wait" ; let r = Unix.wait () in print_endline "Exit wait"; r
 
-let killlist signal = Array.iter (fun pid -> Unix.kill pid signal)
+let kill pid signal = try Unix.kill pid signal with Unix.Unix_error (Unix.ESRCH, _, _) -> (* process already killed*) () 
+let killlist signal = Array.iter (fun pid -> kill pid signal)
 
 (* Runs an array of commands in parallel. Each command is a tuple (t,f) where t
  * is the task to be run in another process and f is the finishing task to be
@@ -52,6 +55,7 @@ let do_commands commands timeout concurrent =
           running := (!running) @ [i];
           start_times.(i) <- Unix.gettimeofday();
           pids.(i) <- pid;
+          Printf.printf ">>>> Add pid %d\n" pid;
           Hashtbl.replace pid2i pid i;
           next_command := ((!next_command)+1)
       ) done;
@@ -69,18 +73,27 @@ let do_commands commands timeout concurrent =
               (let (pid,status) = wait() in
                  (* Race condition? *)
                  ignore (Unix.alarm 0);
+                 Printf.printf ">>>> Find pid %d\n" pid;
                  let endtime = Unix.gettimeofday() in
                  let i = Hashtbl.find pid2i pid in
-                   run_times.(i) <- endtime -. start_times.(i);
-                   (* Here we run the cleanup/finishing task *)
-		   try 
-                     (snd commands.(i)) run_times.(i);
-		   with e -> 
-			print_endline "Exception finalising task";
-			print_endline (Printexc.to_string e);
-			Printexc.print_backtrace stderr;
+                 print_string (String.concat "; " (List.map string_of_int (!running)));
+                 Printf.printf ">>>> rm pid: %d i %d:\n" pid i;
+                 run_times.(i) <- endtime -. start_times.(i);
+                 (* Here we run the cleanup/finishing task *)
+                 (try
+                    (snd commands.(i)) run_times.(i);
+                  with e ->
+                    (print_endline "Exception finalising task";
+                     print_endline (Printexc.to_string e);
+                     Printexc.print_backtrace stderr));
+                 if (List.mem i (!running)) then (
+                   Printf.printf "Removing element %d from pid %d in running tasks [%s]\n" i pid (String.concat "; " (List.map string_of_int (!running)));
                    running := list_remove i (!running);
-                   Hashtbl.remove pid2i pid)
+                   Printf.printf "Removed element %d from pid %d in running tasks [%s]\n" i pid (String.concat "; " (List.map string_of_int (!running)));
+                 ) else
+                   Printf.printf "No element %d from pid %d in running tasks [%s]\n" i pid
+                     (String.concat "; " (List.map string_of_int (!running)));
+                 Hashtbl.remove pid2i pid)
             with
                 Failure "timeout" -> (
 		  print_endline "timeout.";
@@ -93,7 +106,7 @@ let do_commands commands timeout concurrent =
                         then ()
                         else (
                           let pid = pids.(i) in
-                            Unix.kill pid (if killed.(i) > 1 then Sys.sigkill else sigxcpu);
+                            kill pid (if killed.(i) > 1 then Sys.sigkill else sigxcpu);
                             killed.(i) <- killed.(i) + 1;
                             if killed.(i) > 3 then (
                               print_string "Can't kill a pid, will just forget it\n";
