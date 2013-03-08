@@ -46,6 +46,12 @@ open Me (* only for type tree *)
 let origcwd = Sys.getcwd ()
 let _ = Unix.chdir "/var/data/unify"
 
+(*let max_runtime = try getenv "MAX_RUNTIME" with Not_found -> "2" 
+let max_concurrent = try int_of_string (getenv "MAX_CONCURRENT") with Not_found -> 2  *)
+let num_cpus = 2 (*STUB *)
+let (max_runtime, max_concurrent) = try ignore(Sys.getenv "UNIFY_OFFLINE"); ("3600", 1) with Not_found -> ("2",num_cpus) ;;
+let max_runtime_float = float_of_string max_runtime 
+
 (* From: http://www2.lib.uchicago.edu/keith/ocaml-class/complete.html *)
 let cat fname =
   Printf.printf "**** INTBegin CAT%s\n" fname;
@@ -81,7 +87,7 @@ let clear_result_info () = List.iter (fun e -> (fst e) := []) result_info
 
 (* From: http://www2.lib.uchicago.edu/keith/ocaml-class/complete.html *)
 let process_file name fname =
-  Printf.printf "**** Begin %s\n" fname;
+  Printf.printf "**** Begin %s\n" name;
   if (Sys.file_exists fname) then (
     let chan = open_in fname in
     let size = 4 * 1024 in
@@ -222,11 +228,12 @@ let redirect_output fname =
   let _ = Unix.dup2 outfile Unix.stdout in
   let _ = Unix.dup2 outfile Unix.stderr in ()
 
-let append_s_to_fname s fname =
-  let f = open_out_gen [Open_append] 0o644 fname in
+let append_s_to_fname_ l s fname =
+  let f = open_out_gen l  0o666 fname in
     output_string f s;
     close_out f
 
+let append_s_to_fname = append_s_to_fname_ [Open_append]
 
 let java_entry name = ( name, "mark/",  fun t fname ->
                           redirect_output "/dev/null";
@@ -255,8 +262,11 @@ let required_tasks t =
   let tasks = ref [] in
     List.iter  ( fun e ->
                    let (solver_name, prefix, f) = e in
-                   let fname = "out/" ^ (canonical_file t) ^ "." ^ solver_name in
-                   let fullfname = prefix ^ fname in
+                   let fname_ = "out/" ^ (canonical_file t) ^ "." ^ solver_name in
+                   let fullfname_ = prefix ^ fname_ in
+                   let fullfname3600 = fullfname_ ^ "3600" in
+		   let fullfname = if (Sys.file_exists fullfname3600) then fullfname3600 else fullfname_ ^ max_runtime in
+		   let fname = fname_ ^ max_runtime in
                    let task_f = (fun () -> f t fname) in
                    let on_finish_f1 = (fun () -> process_file solver_name fullfname ) in
                      if (Sys.file_exists fullfname) then
@@ -283,18 +293,19 @@ let do_string s =
   clear_result_info();
   let status = ref "bad" in
     try
-      print_endline origcwd;
+(*      print_endline origcwd; *)
       let formula_tree = parse_ctls_formula s in
         print_string ("Input formula: " ^ (format_tree formula_tree) ^ "\n");
         let formula_tree = rename_variables formula_tree in
-          print_string ("Normalised to: " ^ (format_tree formula_tree) ^ "\n");
-
+          let normal_s = (format_tree formula_tree) ^ "\n" in
+          print_string ("Normalised to: " ^ normal_s);
+      	  append_s_to_fname_ [Open_append;Open_creat] normal_s ("log." ^ max_runtime);
           List.iter print_string (tree_leafs formula_tree);
           print_string ((format_tree (remap_leafs formula_tree)) ^ "\n");
           print_string ((format_tree2 formula_tree) ^ "\n");
           (*do_mlsolver formula_tree ;
            do_mark formula_tree*)
-          ignore (Do_parallel.do_commands (required_tasks formula_tree) 1.9 3);
+          ignore (Do_parallel.do_commands (required_tasks formula_tree) max_runtime_float max_concurrent);
 
           List.iter (fun x ->
                        let (l,(regexp,title)) = x in
@@ -326,7 +337,7 @@ let main () =
       with
           Parsing.Parse_error -> Printf.printf "Parse Error!\n"
         | Not_found -> print_string "Divider `:' not found in input."
-	| x -> print_string (Printexc.get_backtrace ()) ; failwith "Unexpected exception"
+	| x -> print_string (Printexc.get_backtrace ()) ; print_string (Printexc.to_string x); failwith "Unexpected exception"
     done;
 
   with End_of_file -> (print_string "EOF\n" ; flush stdout; exit 0)
@@ -342,5 +353,5 @@ let _ =
           | Not_found -> failwith "QUERY_STRING missing `='?\n" )
   with
       Not_found -> Printexc.print main ()
-    |  _ -> Printf.printf "Unexpected error\n"
+    |  x ->  print_string (Printexc.to_string x);Printf.printf "Unexpected error in unify main loop\n"
 
