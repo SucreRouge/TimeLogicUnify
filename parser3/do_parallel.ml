@@ -55,7 +55,6 @@ let do_commands commands timeout concurrent =
           running := (!running) @ [i];
           start_times.(i) <- Unix.gettimeofday();
           pids.(i) <- pid;
-          Printf.printf ">>>> Add pid %d\n" pid;
           Hashtbl.replace pid2i pid i;
           next_command := ((!next_command)+1)
       ) done;
@@ -73,11 +72,9 @@ let do_commands commands timeout concurrent =
               (let (pid,status) = wait() in
                  (* Race condition? *)
                  ignore (Unix.alarm 0);
-                 Printf.printf ">>>> Find pid %d\n" pid;
                  let endtime = Unix.gettimeofday() in
                  let i = Hashtbl.find pid2i pid in
                  print_string (String.concat "; " (List.map string_of_int (!running)));
-                 Printf.printf ">>>> rm pid: %d i %d:\n" pid i;
                  run_times.(i) <- endtime -. start_times.(i);
                  (* Here we run the cleanup/finishing task *)
                  (try
@@ -86,13 +83,7 @@ let do_commands commands timeout concurrent =
                     (print_endline "Exception finalising task";
                      print_endline (Printexc.to_string e);
                      Printexc.print_backtrace stderr));
-                 if (List.mem i (!running)) then (
-                   Printf.printf "Removing element %d from pid %d in running tasks [%s]\n" i pid (String.concat "; " (List.map string_of_int (!running)));
                    running := list_remove i (!running);
-                   Printf.printf "Removed element %d from pid %d in running tasks [%s]\n" i pid (String.concat "; " (List.map string_of_int (!running)));
-                 ) else
-                   Printf.printf "No element %d from pid %d in running tasks [%s]\n" i pid
-                     (String.concat "; " (List.map string_of_int (!running)));
                  Hashtbl.remove pid2i pid)
             with
                 Failure "timeout" -> (
