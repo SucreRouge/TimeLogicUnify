@@ -48,8 +48,9 @@ let _ = Unix.chdir "/var/data/unify"
 
 (*let max_runtime = try getenv "MAX_RUNTIME" with Not_found -> "2" 
 let max_concurrent = try int_of_string (getenv "MAX_CONCURRENT") with Not_found -> 2  *)
-let (max_runtime, max_concurrent) = try ignore(Sys.getenv "UNIFY_OFFLINE"); ("3600", 1) with Not_found -> ("2",NUM_CPUS) ;;
+let (max_runtime, max_concurrent) = try ignore(Sys.getenv "UNIFY_OFFLINE"); ("3600", 1) with Not_found -> ("3",NUM_CPUS) ;;
 let max_runtime_float = float_of_string max_runtime 
+let verbose = false 
 
 (* From: http://www2.lib.uchicago.edu/keith/ocaml-class/complete.html *)
 let cat fname =
@@ -75,8 +76,8 @@ let cat fname =
 
 let is_sat_regexp = Str.regexp_case_fold "is satisfiable";;
 let is_sat_regexp = Str.regexp " unsatisfiable"
-let result_parse_info = [ ( Str.regexp_case_fold "is satisfiable", "Satisfiable: ");
-                          ( Str.regexp " unsatisfiable",           "UNsatisfiable: ") ]
+let result_parse_info = [ ( Str.regexp_case_fold "is satisfiable", "  Satisfiable: ");
+                          ( Str.regexp " unsatisfiable",           "  UNsatisfiable: ") ]
 let add_ref_list a : string list ref * 'a = (ref [],a)
 let result_info = List.map add_ref_list result_parse_info
 let clear_result_info () = List.iter (fun e -> (fst e) := []) result_info
@@ -86,7 +87,7 @@ let clear_result_info () = List.iter (fun e -> (fst e) := []) result_info
 
 (* From: http://www2.lib.uchicago.edu/keith/ocaml-class/complete.html *)
 let process_file name fname =
-  Printf.printf "**** Begin %s\n" name;
+  if verbose then Printf.printf "**** Begin %s\n" name;
   if (Sys.file_exists fname) then (
     let chan = open_in fname in
     let size = 4 * 1024 in
@@ -99,17 +100,20 @@ let process_file name fname =
         let time_s = Str.matched_group 1 s in
         Printf.sprintf "(%0.2f)" (float_of_string time_s)
     with Not_found -> "(?.?)" in
-    print_string (s);
+    if verbose then print_string (s);
     if (len >= size) then print_string "Data file too long\n";
     List.iter (fun x ->
                  let (l,(regexp,title)) = x in
-                 try ignore(Str.search_forward regexp s 0) ; l := (name^runtime_s)::(!l)
+                 let result_str = (name^runtime_s) in
+                 try ignore(Str.search_forward regexp s 0) ;
+                     Printf.printf "%s%s\n" title result_str; flush stdout;
+                     l := (name^runtime_s)::(!l)
                  with Not_found -> ()
     ) result_info
   ) else (
     print_string (fname ^ " does not exist\n")
   );
-  Printf.printf "**** End %s\n" fname;
+  if verbose then Printf.printf "**** End %s\n" fname;
   ()
 
 (*let cat filename =
@@ -255,7 +259,7 @@ let md5 s = Digest.to_hex (Digest.string s)
 let canonical_file t = md5 (format_tree_mark t)
 
 let required_tasks t =
-  let solver_entries = [mlsolver_entry; java_entry "BCTLNEW"; java_entry "BCTLOLD" ; java_entry "CTL" ] in
+  let solver_entries = [mlsolver_entry; java_entry "BCTLNEW"; java_entry "BCTLOLD" ; java_entry "CTL"; java_entry "BPATH" ; java_entry "BPATHUE"; java_entry "BCTLHUE"  ] in
   let tasks = ref [] in
     List.iter  ( fun e ->
                    let (solver_name, prefix, f) = e in
@@ -286,7 +290,7 @@ let required_tasks t =
  "-ve"; "-val"; "ctlstar"; format_tree2 t  |]
  |] 1.9 3)  *)
 
-let do_string s =
+let do_string_ s =
   clear_result_info();
   let status = ref "bad" in
     try
@@ -297,14 +301,14 @@ let do_string s =
           let normal_s = (format_tree formula_tree) ^ "\n" in
           print_string ("Normalised to: " ^ normal_s);
       	  append_s_to_fname_ [Open_append;Open_creat] normal_s ("log." ^ max_runtime);
-          List.iter print_string (tree_leafs formula_tree);
+          (*List.iter print_string (tree_leafs formula_tree);
           print_string ((format_tree (remap_leafs formula_tree)) ^ "\n");
           print_string ((format_tree2 formula_tree) ^ "\n");
-          (*do_mlsolver formula_tree ;
+          do_mlsolver formula_tree ;
            do_mark formula_tree*)
           ignore (Do_parallel.do_commands (required_tasks formula_tree) max_runtime_float max_concurrent);
 
-          List.iter (fun x ->
+          if verbose then List.iter (fun x ->
                        let (l,(regexp,title)) = x in
                          print_string title;
                          List.iter (fun s -> print_string (s ^ " ")) (!l);
@@ -319,25 +323,27 @@ let do_string s =
                                 (Mainlib.string_map (fun c->if c='\n' then ' ' else c) s)
 ;;
 
+let do_string s = do_string_ s ; do_string_ ("-(" ^ s ^ ")")
+
 let main () =
   print_string "main loop";
 
   Sys.set_signal Sys.sigfpe
       (Sys.Signal_handle (fun _ -> print_string "blush\n" ; Printexc.print_backtrace stdout ; print_string "flush\n" ; flush stderr ; failwith "FPE")); 
-  try
+  try 
     while true do
       try
         print_string "\n# ";
-        let line = read_line() in
+        let line = try read_line() with End_of_file -> (print_string "End of input\n" ; flush stdout; exit 0)  in
           print_string (line ^ "\n"); flush stdout;
           do_string (line)
       with
           Parsing.Parse_error -> Printf.printf "Parse Error!\n"
         | Not_found -> print_string "Divider `:' not found in input."
-	| x -> print_string (Printexc.get_backtrace ()) ; print_string (Printexc.to_string x); failwith "Unexpected exception"
     done;
-
-  with End_of_file -> (print_string "EOF\n" ; flush stdout; exit 0)
+  with 
+       | End_of_file -> (print_string "End of input??\n" ; flush stdout; exit 0) 
+       | x -> print_string (Printexc.get_backtrace ()) ; print_string (Printexc.to_string x); failwith "Unexpected exception 1"
 
 let _ =
   try

@@ -20,6 +20,7 @@ open Me
 %left SEMICOLON
 %left BINARY UNTIL SINCE
 %left PREFIX
+%right UNI
 
 %start formula ifixs
 %type <string Me.tree> formula

@@ -26,6 +26,7 @@ let start_command command =
     | pid -> pid
 
 let wait () = print_endline "Enter Wait" ; let r = Unix.wait () in print_endline "Exit wait"; r
+let wait = Unix.wait 
 
 let kill pid signal = try Unix.kill pid signal with Unix.Unix_error (Unix.ESRCH, _, _) -> (* process already killed*) () 
 let killlist signal = Array.iter (fun pid -> kill pid signal)
@@ -74,7 +75,7 @@ let do_commands commands timeout concurrent =
                  ignore (Unix.alarm 0);
                  let endtime = Unix.gettimeofday() in
                  let i = Hashtbl.find pid2i pid in
-                 print_string (String.concat "; " (List.map string_of_int (!running)));
+                 (*print_string (String.concat "; " (List.map string_of_int (!running)));*)
                  run_times.(i) <- endtime -. start_times.(i);
                  (* Here we run the cleanup/finishing task *)
                  (try
