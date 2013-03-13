@@ -8,7 +8,6 @@ unify_.ml: unify.ml
 
 unify: me.ml do_parallel.ml mainlib.ml unify_.ml phi_lexer.ml phi_parser.ml  me_parser.ml me_parser.mli me_lexer.ml main.ml phi_parser.cmi me_parser.cmi me_parser.cmo me_parser.cmo
 	$(OCAMLC) -o unify me.ml unix.cmxa do_parallel.ml phi_parser.ml phi_lexer.ml  me_lexer.ml me_parser.ml mainlib.ml str.cmxa unify_.ml  
-
 unify_dbg:  me.ml do_parallel.ml mainlib.ml unify_.ml phi_lexer.ml phi_parser.ml  me_parser.ml me_parser.mli me_lexer.ml main.ml phi_parser.cmi me_parser.cmi me_parser.cmo me_parser.cmo
 	ocamlc -g -o unify_dbg me.ml unix.cma do_parallel.ml phi_parser.ml phi_lexer.ml  me_lexer.ml me_parser.ml mainlib.ml str.cma unify_.ml
 www_: 
@@ -43,6 +42,9 @@ unify_install: unify_www_ unify
 	(git archive --prefix=mechecker/ HEAD -o www/mechecker_src.tar && gzip -f -9 www/mechecker_src.tar) || cp ../mechecker_src.tar.gz www
 	cp unify_www/* /var/www
 	mkdir -p /var/data/unify
+	mkdir -p /var/data/unify/out
+	touch /var/data/unify/out/rules.txt
+	chmod 666 /var/data/unify/out/rules.txt
 	#mkdir -p /var/data/unify
 	#cp -rv mark/ /var/data/unify/mark	
 	#cp -rv mlsolver/ /var/data/unify/mlsolver
