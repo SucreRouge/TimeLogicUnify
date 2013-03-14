@@ -7,9 +7,8 @@ unify_.ml: unify.ml
 	sed s/NUM_CPUS/`cat /proc/cpuinfo  | grep ^processor | wc -l`/g < unify.ml > unify_.ml
 
 unify: me.ml do_parallel.ml mainlib.ml unify_.ml phi_lexer.ml phi_parser.ml  me_parser.ml me_parser.mli me_lexer.ml main.ml phi_parser.cmi me_parser.cmi me_parser.cmo me_parser.cmo
-	$(OCAMLC) -o unify me.ml unix.cmxa do_parallel.ml phi_parser.ml phi_lexer.ml  me_lexer.ml me_parser.ml mainlib.ml str.cmxa unify_.ml  
-
-unify_dbg:  me.ml do_parallel.ml mainlib.ml unify_.ml phi_lexer.ml phi_parser.ml  me_parser.ml me_parser.mli me_lexer.ml main.ml phi_parser.cmi me_parser.cmi me_parser.cmo me_parser.cmo
+	$(OCAMLC) -o unify me.ml str.cmxa unix.cmxa do_parallel.ml phi_parser.ml phi_lexer.ml  me_lexer.ml me_parser.ml mainlib.ml unify_.ml  
+unify_dbg:  me.ml do_parallel.ml mainlib.ml unifstr.cmxa y_.ml phi_lexer.ml phi_parser.ml  me_parser.ml me_parser.mli me_lexer.ml main.ml phi_parser.cmi me_parser.cmi me_parser.cmo me_parser.cmo
 	ocamlc -g -o unify_dbg me.ml unix.cma do_parallel.ml phi_parser.ml phi_lexer.ml  me_lexer.ml me_parser.ml mainlib.ml str.cma unify_.ml
 www_: 
 	mkdir -p www
@@ -45,7 +44,12 @@ unify_install: unify_www_ unify
 	mkdir -p /var/data/unify
 	touch /var/data/unify/log.3
 	chmod 666  /var/data/unify/log.3
+	mkdir -p /var/data/unify/out
+	mkdir -p /var/data/unify/mark/out
 	chmod 777  /var/data/unify/mark/out
+	chmod 777  /var/data/unify/out
+	touch /var/data/unify/out/rules.txt
+	chmod 666 /var/data/unify/out/rules.txt
 	#mkdir -p /var/data/unify
 	#cp -rv mark/ /var/data/unify/mark	
 	#cp -rv mlsolver/ /var/data/unify/mlsolver

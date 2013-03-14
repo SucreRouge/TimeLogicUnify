@@ -4,6 +4,17 @@
 open Me
 include Me
 type 'a tree = {l: 'a; c: 'a tree list}
+(*	| LPAREN ifix RPAREN	{ $2 } *)
+
+	| ifix BINARY ifix	{ {l= $2; c=[$1; $3]} }
+        | ifix PREFIX ifix	{ {l= $2; c=[$1; $3]} } 
+	| LPAREN ifix BINARY ifix RPAREN	{ {l= $3; c=[$2; $4]} }
+	| LPAREN ifix PREFIX ifix RPAREN	{ {l= $3; c=[$2; $4]} }
+	| LPAREN ifixsi RPAREN	{ $2 }
+
+	| ifixsi PREFIX ifixsi	{ {l= $2; c=[$3; $1]} } 
+        ifixsi 			{ $1 }
+	| UNI ifix		{ {l= $1; c=[$2]} }
 *)
 open Me
 %}
@@ -49,11 +60,19 @@ ifix:  ATOM			{ {l= $1; c=[]} }
          */
 ;
 
-ifixs:  ATOM			{ {l= $1; c=[]} }
-	| LPAREN ifix RPAREN	{ $2 }
-	| UNI ifix		{ {l= $1; c=[$2]} }
-	| ifix BINARY ifix	{ {l= $2; c=[$1; $3]} }
-        | ifix PREFIX ifix	{ {l= $2; c=[$1; $3]} } 
+ifixsi:  ATOM			{ {l= $1; c=[]} }
+	| UNI ifixsi		{ {l= $1; c=[$2]} }
+	| LPAREN ifixsi BINARY ifixsi RPAREN	{ {l= $3; c=[$2; $4]} }
+	| LPAREN ifixsi PREFIX ifixsi RPAREN	{ {l= $3; c=[$2; $4]} }
+        /* perhaps it would be better to define our data structures such
+         * that c=[$1;$3] for ifix "PREFIX" operators and instead have
+         * c=[$3;$1] for phi "PREFIX" operators
+         */
+;
+ifixs:  
+        ifixsi 			{ $1 }
+	|  ifixsi BINARY ifixsi 	{ {l= $2; c=[$1; $3]} }
+	|  ifixsi PREFIX ifixsi 	{ {l= $2; c=[$1; $3]} }
         /* perhaps it would be better to define our data structures such
          * that c=[$1;$3] for ifix "PREFIX" operators and instead have
          * c=[$3;$1] for phi "PREFIX" operators

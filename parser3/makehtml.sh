@@ -13,7 +13,24 @@ then cat $1_header.html
 fi
 cat <<EOF | sed s/NAME/"$1"/g
 <form action="cgi-bin/NAME.cgi#end" method="GET" target="my_iframe">
- <textarea name="i" cols=40 rows=4 onkeydown="if (event.keyCode == 13) { this.form.submit(); return false; }">Gp|-p</textarea>
+ <textarea name="i" cols=40 rows=2 onkeydown="if (event.keyCode == 13) { this.form.submit(); return false; }">Gp|-p</textarea>
+EOF
+if [ "$1" == "unify" ] 
+then #cat <<EOF
+#<br/><textarea name="exclude" cols=40 rows=2 onkeydown="if (event.keyCode == 13) { this.form.submit(); return false; }">CTL BCTLOLD BCTLNEW BCTLHUE BPATHUE</textarea>
+echo '<br/>'
+for s in CTL BCTLOLD BCTLNEW BCTLHUE BPATHUE
+do
+ echo '<input type="checkbox" name="solver" value="'$s'"/> '$s '&nbsp; '
+done
+for s in mlsolver BPATH
+do
+ echo '<input type="checkbox" name="solver" value="'$s'" checked/> '$s '&nbsp; '
+done
+echo '<br/><input type="checkbox" name="simplify" value="y" checked/>' simplify '<br/>'
+#EOF
+fi
+cat <<EOF
  <input type="submit" value="Go">
 </form>
 

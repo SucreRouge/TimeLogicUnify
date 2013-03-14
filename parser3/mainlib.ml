@@ -4,6 +4,11 @@
  * around the model-checker found in me.ml *)
 
 let printf=Printf.printf
+
+let handle_error s f x =
+try f x
+with e -> Printf.printf "%s> %s\n" s (Printexc.to_string e); flush stdout; raise e
+	
 let clear_equals = fun s -> let p = String.index s '=' in String.sub s (p+1) (String.length s - p - 1)
 let rec fixstr_ s i j = if j >= String.length s then String.sub s 0 i else let (si,jj)=(match s.[j] with '%' -> (char_of_int (int_of_string ("0x"^(String.sub s (j+1) 2))) ,j+3) | '+' -> (' ',j+1) | _ -> (s.[j],j+1)) in s.[i]<-si ; fixstr_ s (i+1) jj 
 let fixstr = fun s -> fixstr_ (clear_equals s) 0 0
@@ -16,6 +21,21 @@ let newline_split s ind =
 	String.sub s 0 ind, String.sub s (ind) ((String.length s)-ind)
 
 let append_char s c = s ^ (String.make 1 c)
+
+let get_url_argument key s =
+      let r = Str.regexp (key^"=\\([^&#]*\\)") in
+        let _ = Str.search_forward r s 0 in
+        fixstr_ (Str.matched_group 1 s) 0 0
+
+let get_url_list key s =
+      let r = Str.regexp (key^"=\\([^&#]*\\)") in
+      let rec f pos =  
+        try 
+		let next = 1 + (Str.search_forward r s pos) in
+		let str = fixstr_ (Str.matched_group 1 s) 0 0 in
+		str::(f next)
+	with Not_found -> [] in
+	handle_error "LIST" f 0  
 
 let reverse s_ =
 	let s = String.copy s_ in 

@@ -43,8 +43,20 @@
 open Mainlib
 open Me (* only for type tree *)
 
+
 let origcwd = Sys.getcwd ()
 let _ = Unix.chdir "/var/data/unify"
+
+let append_s_to_fname_ l s fname =
+  let f = open_out_gen l  0o666 fname in
+    output_string f s;
+    close_out f
+
+let append_s_to_fname = append_s_to_fname_ [Open_append] ;;
+let appendc_s_to_fname = append_s_to_fname_ [Open_append; Open_creat] ;;
+
+let settings_solvers = ref ["mlsolver"; "BPATH"]
+let settings_simplify = ref true
 
 (*let max_runtime = try getenv "MAX_RUNTIME" with Not_found -> "2" 
 let max_concurrent = try int_of_string (getenv "MAX_CONCURRENT") with Not_found -> 2  *)
@@ -72,12 +84,25 @@ let cat fname =
   );
 ;;
 
-
+(* From StackOverflow, I think *)
+let read_all_lines file_name =
+  let in_channel = open_in file_name in
+  let rec read_recursive lines =
+    try
+      Scanf.fscanf in_channel "%[^\r\n]\n" (fun x -> read_recursive (x :: lines))
+    with
+      End_of_file ->
+        lines in
+  let lines = read_recursive [] in
+  let _ = close_in_noerr in_channel in
+  List.rev (lines);;
 
 let is_sat_regexp = Str.regexp_case_fold "is satisfiable";;
 let is_sat_regexp = Str.regexp " unsatisfiable"
+
+let title_unsat_str =  "  UNsatisfiable: " 
 let result_parse_info = [ ( Str.regexp_case_fold "is satisfiable", "  Satisfiable: ");
-                          ( Str.regexp " unsatisfiable",           "  UNsatisfiable: ") ]
+                          ( Str.regexp " unsatisfiable",           title_unsat_str) ]
 let add_ref_list a : string list ref * 'a = (ref [],a)
 let result_info = List.map add_ref_list result_parse_info
 let clear_result_info () = List.iter (fun e -> (fst e) := []) result_info
@@ -86,35 +111,6 @@ let clear_result_info () = List.iter (fun e -> (fst e) := []) result_info
                     ( Str.regexp " unsatisfiable",           "UNsatisfiable: ", ref[]) ] *)
 
 (* From: http://www2.lib.uchicago.edu/keith/ocaml-class/complete.html *)
-let process_file name fname =
-  if verbose then Printf.printf "**** Begin %s\n" name;
-  if (Sys.file_exists fname) then (
-    let chan = open_in fname in
-    let size = 4 * 1024 in
-    let buffer = String.create size in
-    let len = input chan buffer 0 size in
-    let s = (String.sub buffer 0 len) in
-    let runtime_s = try
-      let r = Str.regexp "RUNTIME: \\([0-9.]*\\)" in
-        ignore(Str.search_forward r s 0);
-        let time_s = Str.matched_group 1 s in
-        Printf.sprintf "(%0.2f)" (float_of_string time_s)
-    with Not_found -> "(?.?)" in
-    if verbose then print_string (s);
-    if (len >= size) then print_string "Data file too long\n";
-    List.iter (fun x ->
-                 let (l,(regexp,title)) = x in
-                 let result_str = (name^runtime_s) in
-                 try ignore(Str.search_forward regexp s 0) ;
-                     Printf.printf "%s%s\n" title result_str; flush stdout;
-                     l := (name^runtime_s)::(!l)
-                 with Not_found -> ()
-    ) result_info
-  ) else (
-    print_string (fname ^ " does not exist\n")
-  );
-  if verbose then Printf.printf "**** End %s\n" fname;
-  ()
 
 (*let cat filename =
  Printf.printf "*AT %s\n" filename
@@ -146,6 +142,70 @@ let encoding str =
 let encode str = Str.global_substitute url_encoding encoding str;;
 
 
+(*
+ type 'a tree = {l: 'a; c: 'a tree list}
+ let t0 = {l="p"; c=[]}
+ let t1 = {l="q"; c=[]}
+ let t2 = {l="&"; c=[t0;t1]}
+ let t2b = {l="&"; c=[t1;t0]}
+ let t3 = {l="&"; c=[t0;t0]};;
+
+ *)
+let isleaf t = t.c = []
+module StringMap = Map.Make (String)
+
+exception Not_matched
+exception Not_matchedt
+let stringmap_set x y m = 
+  (try
+    (if ((StringMap.find x m) <> y) then raise Not_matchedt)
+  with Not_found -> ());
+  StringMap.add x y m
+
+let match_tree_pattern t p =
+  let map = ref StringMap.empty in
+  let rec f t p = (
+        (*let degree = List.length p.c in
+        if degree > 0 then*)
+        if p.c = [] then (
+                map := (stringmap_set p.l t (!map)) 
+        ) else (
+          (if t.l <> p.l then raise Not_matched);
+          List.iter2 f t.c p.c
+        ) (* ensure variable maps *)
+  ) in
+    f t p; (!map)
+
+let tree_leaf_map f t =
+  let rec r t =
+        if isleaf t 
+        then (f t.l)
+        else {l=t.l; c=(List.map r t.c)}
+  in (r t);;
+
+let apply_rule t (a,b) =
+  let map = match_tree_pattern t a in
+    tree_leaf_map (fun e -> StringMap.find e map) b
+
+let parse_rule s =
+      let t = parse_ctls_formula s in
+        match t with 
+            {l="="; c=[x;y]} -> (x,y)
+          | _ -> failwith "Invalid ="
+(*
+let my_rules = List.map parse_rule ["(--p)=p"; 
+                         "(p&q)=(q&p)";
+                         "(p|q)=(q|p)";
+                         "(p&(q&r))=((p&q)&r)";
+                         "((p&q)&r)=((r&q)&p)";
+                         "((p&q)&r)=(p&(q&r))";
+                         "(p<q)=(q>p)";
+] ;;
+ *)
+let rule_fname = "out/rules.txt"
+
+let rule_descriptions = ref (read_all_lines rule_fname)
+let rule_list = ref (List.map parse_rule (!rule_descriptions))
 
 let rec format_tree t = let degree = List.length t.c in
   match degree with
@@ -153,7 +213,93 @@ let rec format_tree t = let degree = List.length t.c in
     | 1 -> t.l ^ (format_tree (List.hd t.c))
     | 2 -> "(" ^ (format_tree (List.hd t.c)) ^ t.l ^
            (format_tree (List.nth t.c 1)) ^ ")"
-    | _ -> failwith "Unexpected Error: invalid formula tree"
+    | _ -> failwith "Unexpected Error: invalid formula tree";;
+
+let add_rule t = (
+  if (t.l = "=") then (
+   let s = (format_tree t) in
+   if (not (List.mem s (!rule_descriptions))) then (
+    rule_descriptions := s::(!rule_descriptions);
+    rule_list := (parse_rule s)::(!rule_list);
+    (*appendc_s_to_fname (s^"\n") rule_fname*)
+     append_s_to_fname_ [Open_append; Open_creat] (s^"\n") rule_fname;
+     print_endline ("Added new rule: " ^ s)
+   )
+));;
+  (*if ((t.l = "=") and (not (List.mem s (!rule_descriptions)))) then *)
+
+let process_file name fname t =
+  if verbose then Printf.printf "**** Begin %s\n" name;
+  if (Sys.file_exists fname) then (
+    let chan = open_in fname in
+    let size = 4 * 1024 in
+    let buffer = String.create size in
+    let len = input chan buffer 0 size in
+    let s = (String.sub buffer 0 len) in
+    let runtime_s = try
+      let r = Str.regexp "RUNTIME: \\([0-9.]*\\)" in
+        ignore(Str.search_forward r s 0);
+        let time_s = Str.matched_group 1 s in
+        Printf.sprintf "(%0.2f)" (float_of_string time_s)
+    with Not_found -> "(?.?)" in
+    if verbose then print_string (s);
+    if (len >= size) then print_string "Data file too long\n";
+    List.iter (fun x ->
+                 let (l,(regexp,title)) = x in
+                 let result_str = (name^runtime_s) in
+                 try ignore(Str.search_forward regexp s 0) ;
+                     (match (title, name, t) with
+                         (* "  UNsatisfiable: "title_unsat_str, "BPATH", {l="-";
+                          * c=[rule]}) -> *)
+                         ( "  UNsatisfiable: ", "BPATH", {l="-"; c=[rule]}) -> 
+                           (*if (title == title_unsat_str) then (
+                           Printf.printf "Title is %s\n" title ;*) add_rule rule
+                           (* ) *)
+                        | _ -> ());
+                     Printf.printf "%s%s\n" title result_str; flush stdout;
+                     l := (name^runtime_s)::(!l)
+                 with Not_found -> ()
+    ) result_info
+  ) else (
+    print_string (fname ^ " does not exist\n")
+  );
+  if verbose then Printf.printf "**** End %s\n" fname;
+  ()
+
+let rec format_tree_prefix t = t.l ^ (String.concat "" (List.map format_tree_prefix t.c))
+
+let simpler_than t1 t2 =
+  let (ft1, ft2) = (format_tree_prefix t1, format_tree_prefix t2) in
+  let (lt1, lt2) = (String.length ft1, String.length ft2) in
+  if (lt1 < lt2) then true else (
+    if (lt2 < lt1) then false else (
+     if t2.l = "<" then true else ( 
+       ft1 < ft2 
+     )
+    )
+  )
+
+let simplify_root rules t_in =
+  let t = ref t_in in
+  let finished = ref false in 
+  let simplify1 rule = (
+    try ( 
+      let t2 = apply_rule (!t) rule in
+      if (simpler_than t2 (!t)) then (t := t2; finished := false)
+    ) with _ -> () ) in
+  while (not (!finished)) do
+    finished := true;
+    List.iter simplify1 rules;
+  done;
+  (!t)
+
+(*let simplify_root rules t_in =
+  let t = simplify_root_ rules t_in *) 
+
+let rec simplify rules t = 
+  if t.c = [] 
+  then t
+  else (simplify_root rules {l=t.l; c= List.map (simplify rules) t.c})
 
 let rec format_tree2 t = let degree = List.length t.c in
 let l = match t.l with
@@ -231,13 +377,6 @@ let redirect_output fname =
   let _ = Unix.dup2 outfile Unix.stdout in
   let _ = Unix.dup2 outfile Unix.stderr in ()
 
-let append_s_to_fname_ l s fname =
-  let f = open_out_gen l  0o666 fname in
-    output_string f s;
-    close_out f
-
-let append_s_to_fname = append_s_to_fname_ [Open_append]
-
 let java_entry name = ( name, "mark/",  fun t fname ->
                           redirect_output "/dev/null";
                           Unix.chdir "mark/";
@@ -261,22 +400,23 @@ let canonical_file t = md5 (format_tree_mark t)
 let required_tasks t =
   let solver_entries = [mlsolver_entry; java_entry "BCTLNEW"; java_entry "BCTLOLD" ; java_entry "CTL"; java_entry "BPATH" ; java_entry "BPATHUE"; java_entry "BCTLHUE"  ] in
   let tasks = ref [] in
-    List.iter  ( fun e ->
+    List.iter  ( fun e -> 
                    let (solver_name, prefix, f) = e in
+		   if List.mem solver_name (!settings_solvers) then (
                    let fname_ = "out/" ^ (canonical_file t) ^ "." ^ solver_name in
                    let fullfname_ = prefix ^ fname_ in
                    let fullfname3600 = fullfname_ ^ "3600" in
 		   let fullfname = if (Sys.file_exists fullfname3600) then fullfname3600 else fullfname_ ^ max_runtime in
 		   let fname = fname_ ^ max_runtime in
                    let task_f = (fun () -> f t fname) in
-                   let on_finish_f1 = (fun () -> process_file solver_name fullfname ) in
+                   let on_finish_f1 = (fun () -> process_file solver_name fullfname t ) in
                      if (Sys.file_exists fullfname) then
                        on_finish_f1 ()
                      else
                        let on_finish_f runtime = (append_s_to_fname ("\nRUNTIME: "^(string_of_float runtime)^"\n") fullfname;
                        on_finish_f1 ()) in
                        tasks := (task_f, on_finish_f)::(!tasks)
-    ) solver_entries ;
+    )) solver_entries ;
     Array.of_list(!tasks)
 
 (*if not Sys.file_exists *)
@@ -297,7 +437,7 @@ let do_string_ s =
 (*      print_endline origcwd; *)
       let formula_tree = parse_ctls_formula s in
         print_string ("Input formula: " ^ (format_tree formula_tree) ^ "\n");
-        let formula_tree = rename_variables formula_tree in
+        let formula_tree = if (!settings_simplify) then simplify (!rule_list) (rename_variables formula_tree) else formula_tree in
           let normal_s = (format_tree formula_tree) ^ "\n" in
           print_string ("Normalised to: " ^ normal_s);
       	  append_s_to_fname_ [Open_append;Open_creat] normal_s ("log." ^ max_runtime);
@@ -351,7 +491,13 @@ let _ =
     let qs = Sys.getenv "QUERY_STRING" in
       Me.max_size := 10000;
       ( try
-          do_string (Mainlib.fixstr qs); flush stdout;
+	  settings_simplify := (try (Mainlib.get_url_argument "simplify" qs) = "y" with Not_found -> false);
+          settings_solvers := (Mainlib.get_url_list "solver" qs);
+          (*settings_exclude := " " ^ (Mainlib.get_url_argument "exclude" qs) ^ " ";*)
+	  (*
+          (* Printf.printf "XX%sXX\n" (Mainlib.get_url_argument "simplify" qs); flush stdout; *)
+*)          
+do_string (Mainlib.get_url_argument "i" qs); flush stdout;
         with Parsing.Parse_error -> Printf.printf "Parse Error!\n"
           | Not_found -> failwith "QUERY_STRING missing `='?\n" )
   with
