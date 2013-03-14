@@ -43,6 +43,9 @@ unify_install: unify_www_ unify
 	(git archive --prefix=mechecker/ HEAD -o www/mechecker_src.tar && gzip -f -9 www/mechecker_src.tar) || cp ../mechecker_src.tar.gz www
 	cp unify_www/* /var/www
 	mkdir -p /var/data/unify
+	touch /var/data/unify/log.3
+	chmod 666  /var/data/unify/log.3
+	chmod 777  /var/data/unify/mark/out
 	#mkdir -p /var/data/unify
 	#cp -rv mark/ /var/data/unify/mark	
 	#cp -rv mlsolver/ /var/data/unify/mlsolver
