@@ -17,6 +17,11 @@ let newline_split s ind =
 
 let append_char s c = s ^ (String.make 1 c)
 
+let get_url_argument key s =
+      let r = Str.regexp (key^"=\\([^&#]*\\)") in
+        Str.search_forward r s 0;
+        fixstr (Str.matched_group 1 s)
+
 let reverse s_ =
 	let s = String.copy s_ in 
 	let last_pos = (String.length s) - 1  in
