@@ -285,7 +285,7 @@ let simplify_root rules t_in =
   let simplify1 rule = (
     try ( 
       let t2 = apply_rule (!t) rule in
-      if (simpler_than t2 (!t)) then (t := t2; finished := false)
+      if (simpler_than t2 (!t)) then ( Printf.printf "subst %s -> %s\n" (format_tree (!t)) (format_tree t2) ; t := t2; finished := false)
     ) with _ -> () ) in
   while (not (!finished)) do
     finished := true;
@@ -422,24 +422,8 @@ let required_tasks t =
 (*if not Sys.file_exists *)
 
 
-
-
-
-(*let do_mlsolver t = ignore (Do_parallel.do_commands (fun () ->  [|
- [| "../../4mlsolver/mlsolver/bin/mlsolver.exe"; "-pgs"; "recursive";
- "-ve"; "-val"; "ctlstar"; format_tree2 t  |]
- |] 1.9 3)  *)
-
-let do_string_ s =
-  clear_result_info();
-  let status = ref "bad" in
-    try
-(*      print_endline origcwd; *)
-      let formula_tree = parse_ctls_formula s in
-        print_string ("Input formula: " ^ (format_tree formula_tree) ^ "\n");
-        let formula_tree = if (!settings_simplify) then simplify (!rule_list) (rename_variables formula_tree) else formula_tree in
+let do_formula_tree formula_tree =
           let normal_s = (format_tree formula_tree) ^ "\n" in
-          print_string ("Normalised to: " ^ normal_s);
       	  append_s_to_fname_ [Open_append;Open_creat] normal_s ("log." ^ max_runtime);
           (*List.iter print_string (tree_leafs formula_tree);
           print_string ((format_tree (remap_leafs formula_tree)) ^ "\n");
@@ -455,7 +439,31 @@ let do_string_ s =
                          print_string "\n"
           ) result_info
 
-    with
+
+
+(*let do_mlsolver t = ignore (Do_parallel.do_commands (fun () ->  [|
+ [| "../../4mlsolver/mlsolver/bin/mlsolver.exe"; "-pgs"; "recursive";
+ "-ve"; "-val"; "ctlstar"; format_tree2 t  |]
+ |] 1.9 3)  *)
+
+let do_string s =
+  clear_result_info();
+  let status = ref "bad" in
+    try (
+(*      print_endline origcwd; *)
+      let formula_tree = parse_ctls_formula s in
+        print_string ("Input formula: " ^ (format_tree formula_tree) ^ "\n");
+        let formula_tree = rename_variables formula_tree in 
+        print_string ("Normalised to: " ^ (format_tree formula_tree) ^ "\n");
+        let formula_tree = (if (!settings_simplify) 
+		then simplify (!rule_list) (rename_variables formula_tree)
+		else formula_tree) in
+        (if (!settings_simplify) then print_string ("Simplified to: " ^ (format_tree formula_tree) ^ "\n"));
+	do_formula_tree formula_tree;
+        let formula_tree = {l="-"; c=[formula_tree]} in 
+        print_string ("Negation: " ^ (format_tree formula_tree) ^ "\n");
+	do_formula_tree formula_tree
+    ) with
         Parsing.Parse_error-> print_string "Could not parse Formula.\n"
                                 ;
                               Mainlib.print_count "Program" "unify_stats.txt";
@@ -463,7 +471,7 @@ let do_string_ s =
                                 (Mainlib.string_map (fun c->if c='\n' then ' ' else c) s)
 ;;
 
-let do_string s = do_string_ s ; do_string_ ("-(" ^ s ^ ")")
+(*let do_string__ s = do_string_ s ; do_string_ ("-(" ^ s ^ ")")*)
 
 let main () =
   print_string "main loop";
