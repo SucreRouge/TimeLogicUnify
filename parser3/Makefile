@@ -48,8 +48,9 @@ unify_install: unify_www_ unify
 	mkdir -p /var/data/unify/mark/out
 	chmod 777  /var/data/unify/mark/out
 	chmod 777  /var/data/unify/out
-	touch /var/data/unify/out/rules.txt
-	chmod 666 /var/data/unify/out/rules.txt
+	#touch /var/data/unify/out/rules.txt
+	touch /var/www/urules.txt
+	chmod 666 /var/www/urules.txt
 	#mkdir -p /var/data/unify
 	#cp -rv mark/ /var/data/unify/mark	
 	#cp -rv mlsolver/ /var/data/unify/mlsolver

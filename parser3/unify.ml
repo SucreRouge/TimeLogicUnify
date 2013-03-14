@@ -203,6 +203,7 @@ let my_rules = List.map parse_rule ["(--p)=p";
 ] ;;
  *)
 let rule_fname = "out/rules.txt"
+let rule_fname = "/var/www/urules.txt"
 
 let rule_descriptions = ref (read_all_lines rule_fname)
 let rule_list = ref (List.map parse_rule (!rule_descriptions))
