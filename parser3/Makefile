@@ -22,7 +22,8 @@ unify_www_:
 	#bash -c "(echo '<html>' ; cat unify2.html) > unify_www/mechecker_plain.html"
 	#bash -c "cat unify1.html unify2.html > unify_www/unified.html"
 	./makehtml.sh unify unify_www/unified
-	#(git archive --prefix=mechecker/ HEAD -o www/mechecker_src.tar && gzip -f -9 www/mechecker_src.tar) || cp ../mechecker_src.tar.gz www
+	mkdir -p www
+	(git archive --prefix=mechecker/ HEAD -o www/mechecker_src.tar && gzip -f -9 www/mechecker_src.tar) || cp ../mechecker_src.tar.gz www
 
 precheck:
 	which $(OCAMLC) || (echo "The $(OCAMLC) compiler was not found.\nUsing 'make OCAMLC=ocamlc' in place of 'make' may help (but will cause slower bytecode to be used)" && false) 
@@ -36,7 +37,10 @@ install: www_ mechecker.cgi
 	cp www/* /var/www
 
 unify_install: unify_www_ unify
+	mkdir -p  /usr/lib/cgi-bin
+	mkdir -p  /var/www
 	cp unify /usr/lib/cgi-bin/unify.cgi
+
 	#bash -c "(echo '<html>' ; cat mechecker2.html) > /var/www/mechecker_plain.html"
 	#bash -c "cat mechecker1.html mechecker2.html > /var/www/mechecker.html"
 	(git archive --prefix=mechecker/ HEAD -o www/mechecker_src.tar && gzip -f -9 www/mechecker_src.tar) || cp ../mechecker_src.tar.gz www

@@ -15,10 +15,14 @@ type 'a tree = {l: 'a; c: 'a tree list}
 	| ifixsi PREFIX ifixsi	{ {l= $2; c=[$3; $1]} } 
         ifixsi 			{ $1 }
 	| UNI ifix		{ {l= $1; c=[$2]} }
+	|  ifixsi BINARY ifixsi 	{ {l= $2; c=[$1; $3]} }
+	|  ifixsi PREFIX ifixsi 	{ {l= $2; c=[$1; $3]} }
 *)
 open Me
 %}
 
+
+%token  <string> EQUALS
 %token LPAREN RPAREN
 %token UNTIL SINCE EOF
 %token SEMICOLON COMMA
@@ -26,7 +30,9 @@ open Me
 %token <string> ATOM
 %token <string> BINARY
 %token <string> PREFIX 
+%token <string> BINARY
 
+%left EQUALS
 %left COMMA
 %left SEMICOLON
 %left BINARY UNTIL SINCE
@@ -62,8 +68,10 @@ ifix:  ATOM			{ {l= $1; c=[]} }
 
 ifixsi:  ATOM			{ {l= $1; c=[]} }
 	| UNI ifixsi		{ {l= $1; c=[$2]} }
+	| LPAREN ifixsi EQUALS ifixsi RPAREN	{ {l= $3; c=[$2; $4]} }
 	| LPAREN ifixsi BINARY ifixsi RPAREN	{ {l= $3; c=[$2; $4]} }
 	| LPAREN ifixsi PREFIX ifixsi RPAREN	{ {l= $3; c=[$2; $4]} }
+	|  ifixsi EQUALS ifixsi 	{ {l= $2; c=[$1; $3]} }
 	|  ifixsi BINARY ifixsi 	{ {l= $2; c=[$1; $3]} }
 	|  ifixsi PREFIX ifixsi 	{ {l= $2; c=[$1; $3]} }
         /* perhaps it would be better to define our data structures such
@@ -73,8 +81,6 @@ ifixsi:  ATOM			{ {l= $1; c=[]} }
 ;
 ifixs:  
         ifixsi 			{ $1 }
-	|  ifixsi BINARY ifixsi 	{ {l= $2; c=[$1; $3]} }
-	|  ifixsi PREFIX ifixsi 	{ {l= $2; c=[$1; $3]} }
         /* perhaps it would be better to define our data structures such
          * that c=[$1;$3] for ifix "PREFIX" operators and instead have
          * c=[$3;$1] for phi "PREFIX" operators

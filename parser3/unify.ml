@@ -55,8 +55,10 @@ let append_s_to_fname_ l s fname =
 let append_s_to_fname = append_s_to_fname_ [Open_append] ;;
 let appendc_s_to_fname = append_s_to_fname_ [Open_append; Open_creat] ;;
 
-let settings_solvers = ref ["mlsolver"; "BPATH"]
+let split = Str.split (Str.regexp " +");;
+let settings_solvers = ref try split (Sys.getenv "UNIFY_SOLVERS") with _ -> ["mlsolver"; "BPATH"]
 let settings_simplify = ref true
+
 
 (*let max_runtime = try getenv "MAX_RUNTIME" with Not_found -> "2" 
 let max_concurrent = try int_of_string (getenv "MAX_CONCURRENT") with Not_found -> 2  *)
@@ -162,12 +164,16 @@ let stringmap_set x y m =
   with Not_found -> ());
   StringMap.add x y m
 
+let isvar_c c = match c with 'a' .. 'z' -> true | _ -> false;;
+let isvar_s s = isvar_c (String.get s 0);;
+let isvar t = isvar_s t.l;;
+
 let match_tree_pattern t p =
   let map = ref StringMap.empty in
   let rec f t p = (
         (*let degree = List.length p.c in
         if degree > 0 then*)
-        if p.c = [] then (
+        if isvar p then (
                 map := (stringmap_set p.l t (!map)) 
         ) else (
           (if t.l <> p.l then raise Not_matched);
@@ -176,16 +182,21 @@ let match_tree_pattern t p =
   ) in
     f t p; (!map)
 
-let tree_leaf_map f t =
+(*let tree_x_map (isleaf : string -> bool) f t = *)
+let tree_x_map (isleaf : string Me.tree -> bool) f t =
+  (*ignore (isleaf : string Me.tree -> bool);*)
   let rec r t =
         if isleaf t 
         then (f t.l)
         else {l=t.l; c=(List.map r t.c)}
   in (r t);;
 
+let tree_leaf_map = (tree_x_map isleaf)
+let tree_var_map  = (tree_x_map isvar)
+
 let apply_rule t (a,b) =
   let map = match_tree_pattern t a in
-    tree_leaf_map (fun e -> StringMap.find e map) b
+    tree_var_map (fun e -> StringMap.find e map) b
 
 let parse_rule s =
       let t = parse_ctls_formula s in
@@ -219,7 +230,9 @@ let rec format_tree t = let degree = List.length t.c in
 let add_rule t = (
   if (t.l = "=") then (
    let s = (format_tree t) in
-   if (not (List.mem s (!rule_descriptions))) then (
+   if ((List.mem s (!rule_descriptions))) then (
+     print_endline ("Is existing rule: " ^ s) 
+   ) else (
     rule_descriptions := s::(!rule_descriptions);
     rule_list := (parse_rule s)::(!rule_list);
     (*appendc_s_to_fname (s^"\n") rule_fname*)
@@ -308,6 +321,8 @@ let l = match t.l with
   | ">" -> "==>"
   | "=" -> "<==>"
   | "-" -> "~"
+  | "0" -> "((a) & (~ a))"
+  | "1" -> "((a) | (~ a))"
   | _ -> t.l in
   match degree with
       0 -> l
@@ -316,9 +331,9 @@ let l = match t.l with
            (format_tree2 (List.nth t.c 1)) ^ "))"
     | _ -> failwith "Unexpected Error: invalid formula tree"
 
-let tree_leafs t =
+let tree_vars t =
   let set_add m lst = if List.mem m lst then lst else m::lst in
-  let rec f leafs t = if t.c = []
+  let rec f leafs t = if isvar t
   then set_add t.l leafs
   else List.fold_left f leafs t.c
   in
@@ -329,20 +344,20 @@ let tree_leafs t =
  * only supports single character names *)
 
 let remap_leafs_ m t =
-  let leafs = tree_leafs t in
+  let leafs = tree_vars t in
     if List.length leafs > 26 then failwith "Cannot map more than 26 variables to letters";
     let a = Array.make 26 "" in
     let idx s = m * (Char.code (String.get s 0) - Char.code 'a') in
-    let isvar s = (let i = idx s in i < 26 && i >= 0) in
+ (*   let isvar s = (let i = idx s in i < 26 && i >= 0) in *)
     let rec findfrom m i = if a.(i) = m
     then i
     else findfrom m (if i < 25 then i+1 else 0) in
-      List.iter (fun m -> if (isvar m)
+      List.iter (fun m -> if (isvar_s m)
                  then a.(findfrom "" (idx m)) <- m
                  else () ) leafs;
       let charof m = Char.escaped (Char.chr (Char.code 'a' + findfrom m (idx m) )) in
-      let rec f t = if t.c = []
-      then {l = if isvar t.l then charof t.l else t.l; c=[]}
+      let rec f t = if isvar t
+      then {l = charof t.l; c=[]}
       else {l = t.l; c=List.map f t.c}
       in
         f t
@@ -456,6 +471,7 @@ let do_string s =
         print_string ("Input formula: " ^ (format_tree formula_tree) ^ "\n");
         let formula_tree = rename_variables formula_tree in 
         print_string ("Normalised to: " ^ (format_tree formula_tree) ^ "\n");
+        print_string ("mlsolver fmt: " ^ (format_tree2 formula_tree) ^ "\n");
         let formula_tree = (if (!settings_simplify) 
 		then simplify (!rule_list) (rename_variables formula_tree)
 		else formula_tree) in
@@ -485,7 +501,9 @@ let main () =
         print_string "\n# ";
         let line = try read_line() with End_of_file -> (print_string "End of input\n" ; flush stdout; exit 0)  in
           print_string (line ^ "\n"); flush stdout;
-          do_string (line)
+          match line with 
+              "R" -> cat rule_fname
+            | _ -> do_string (line)
       with
           Parsing.Parse_error -> Printf.printf "Parse Error!\n"
         | Not_found -> print_string "Divider `:' not found in input."

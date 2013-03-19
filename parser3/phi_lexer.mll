@@ -12,14 +12,15 @@ include Char
 }
 let lower = ['a'-'z']
 let atom  = (['a'-'z']|'_')+
-let biary = ('&'|'|'|'='|'<'|'>'|'Z')
+let biary = ('&'|'|'|'<'|'>'|'Z')
 let pre2 = ('U'|'S')
 let digit = ['0'-'9']
-let atm   = lower (lower|digit)* 
+let atm   = (lower (lower|digit)*|'0'|'1') 
 rule token = parse
   | [' ' '\t']	{ token lexbuf }
   | biary as c  { BINARY(Char.escaped c) }
   | '^'		{ BINARY("&") }
+  | '='		{ EQUALS("=") }
   | '-'		{ UNI("-") }
   | '~'		{ UNI("~") }
   | ['A' 'E' 'F' 'G' 'X'] as c { UNI(Char.escaped c) } 
