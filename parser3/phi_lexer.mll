@@ -22,7 +22,7 @@ rule token = parse
   | '^'		{ BINARY("&") }
   | '='		{ EQUALS("=") }
   | '-'		{ UNI("-") }
-  | '~'		{ UNI("~") }
+  | '~'		{ UNI("-") }
   | ['A' 'E' 'F' 'G' 'X'] as c { UNI(Char.escaped c) } 
   | 'N'         { UNI(Char.escaped 'X') } 
   | pre2 as c   { PREFIX(Char.escaped c) }

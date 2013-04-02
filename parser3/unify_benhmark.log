@@ -1,0 +1,22 @@
+
+[Tue Apr 02 09:50:33 ~/uni/PhD/code/ocaml/parser3]$ ./make_random_ctls_formulas.ml 50 1 1000 2999 | sed s/^/S/ | make runu | grep LEN | cut -f 3 | paste -sd+ | bc
+54491
+
+Disable sorting; simpler_that == shorter_than
+[Tue Apr 02 09:50:53 ~/uni/PhD/code/ocaml/parser3]$ ./make_random_ctls_formulas.ml 50 1 1000 2999 | sed s/^/S/ | make runu | grep LEN | cut -f 3 | paste -sd+ | bc
+60953
+
+
+[Tue Apr 02 09:51:49 ~/uni/PhD/code/ocaml/parser3]$ vim unify_benhmark.log
+[Tue Apr 02 10:14:20 ~/uni/PhD/code/ocaml/parser3]$ ./make_random_ctls_formulas.ml 50 1 1000 2999 | sed s/^/S/ | make runu | grep LEN | cut -f 3 | paste -sd+ | bc
+54491
+[Tue Apr 02 10:14:34 ~/uni/PhD/code/ocaml/parser3]$ ./make_random_ctls_formulas.ml 50 2 1000 2999 | sed s/^/S/ | make runu | grep LEN | cut -f 3 | paste -sd+ | bc
+76463
+[Tue Apr 02 10:14:42 ~/uni/PhD/code/ocaml/parser3]$ ./make_random_ctls_formulas.ml 50 9 1000 2999 | sed s/^/S/ | make runu | grep LEN | cut -f 3 | paste -sd+ | bc
+9147518L, 200C                                                                                                                                          1,1           A[Tue Apr 02 10:14:51 ~/uni/PhD/code/ocaml/parser3]$ ./make_random_ctls_formulas.ml 50 9 1000 2999 | sed s/^/S/ | make runu | grep LEN | cut -f 3 | paste -sd+ | bc
+91475
+[Tue Apr 02 10:14:55 ~/uni/PhD/code/ocaml/parser3]$
+[Tue Apr 02 10:14:55 ~/uni/PhD/code/ocaml/parser3]$ ./make_random_ctls_formulas.ml 50 25 1000 2999 | sed s/^/S/ | make runu | grep LEN | cut -f 3 | paste -sd+ | bc
+94064
+[Tue Apr 02 10:15:18 ~/uni/PhD/code/ocaml/parser3]$ ./make_random_ctls_formulas.ml 50 25 1000 2999 | sed s/^/S/ | make runu | grep LEN | cut -f 2 | paste -sd+ | bc
+100000
