@@ -336,9 +336,9 @@ let simpler_than t1 t2 =
     )
   )
 
-(* Version of simpler than that just picks shortest formula
+(* Version of simpler than that just picks shortest formula *)
 
- let simpler_than t1 t2 =
+ let shorter_than t1 t2 =
   let (ft1, ft2) = (format_tree_prefix t1, format_tree_prefix t2) in
   let (lt1, lt2) = (String.length ft1, String.length ft2) in
   if (lt1 < lt2) then true else (
@@ -537,6 +537,30 @@ let test_rule_ rule = Printf.printf "STUB: Test rule %s\n" (format_tree rule)
                         *)
 let test_rule t1 t2 = if (tree_length t2) < (tree_length t1) then test_rule_ {l="="; c=[t1;t2]}  
 
+let replace = Str.global_replace (Str.regexp_string find) replace_string
+
+let simplify_rule t1_ t2_ =
+  rule_found := true;
+  let rule = ref (t1_,t2_)
+  let rec r t pt1 pt2 = 
+    if not (!rule_found) then 
+    let pt = format_tree_prefix t
+      let regex = Str.regexp_string pt in
+      let t1b = parse_tree_prefix (Str.global_replace regex pt1) in
+      let t2b = parse_tree_prefix (Str.global_replace regex pt2) in
+        if (shorter_than t2b t1b) then (
+          test_rule t2b t1b; 
+          if (!rule_found) then rule := (t1b, t2b)
+        )
+       
+
+       
+
+
+
+    if (t != t1)  
+
+
 let find_rule t =
   rule_found := false;
   (* let found = ref false in 
@@ -548,6 +572,7 @@ let find_rule t =
           if not (!rule_found) then (
             List.iter rr simple.c;
             test_rule subtree simple
+              if (!rule_found) then simplify_rule subtree simple
           )
         ) in
         rr subtree
