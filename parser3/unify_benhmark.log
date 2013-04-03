@@ -20,3 +20,9 @@ Disable sorting; simpler_that == shorter_than
 94064
 [Tue Apr 02 10:15:18 ~/uni/PhD/code/ocaml/parser3]$ ./make_random_ctls_formulas.ml 50 25 1000 2999 | sed s/^/S/ | make runu | grep LEN | cut -f 2 | paste -sd+ | bc
 100000
+
+
+(GAFGa=AFGa)
+(AFAFa=AFa)
+(GAFAGa=AFAGa)
+(AAa=Aa)

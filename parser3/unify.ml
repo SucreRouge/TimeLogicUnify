@@ -172,6 +172,8 @@ let encode str = Str.global_substitute url_encoding encoding str;;
 let isleaf t = t.c = []
 module StringMap = Map.Make (String)
 
+let known_lhs = Hashtbl.create 8;;
+
 exception Not_matched
 (*exception Not_matchedt *)
 let stringmap_set x y m = 
@@ -262,11 +264,16 @@ let add_rule t = (
     ) else ( if (List.hd t.c) = (List.hd (List.tl t.c)) 
     then  print_endline ("Ignoring trivial rewrite rule of form p=p: " ^ s) 
     else (
-    rule_descriptions := list_append (!rule_descriptions) s;
-    rule_list := list_append (!rule_list) (parse_rule s);
-    (*appendc_s_to_fname (s^"\n") rule_fname*)
-     append_s_to_fname_ [Open_append; Open_creat] (s^"\n") rule_fname;
-     print_endline ("Added new rule: " ^ s)
+      rule_found := true;
+      if (!store_rules) then (
+        rule_descriptions := list_append (!rule_descriptions) s;
+        rule_list := list_append (!rule_list) (parse_rule s);
+        (*appendc_s_to_fname (s^"\n") rule_fname*)
+        append_s_to_fname_ [Open_append; Open_creat] (s^"\n") rule_fname;
+        print_endline ("Added new rule: " ^ s)
+      ) else (
+        print_endline ("Suppressed new rule: " ^ s)
+      )
    ))
 ));;
   (*if ((t.l = "=") and (not (List.mem s (!rule_descriptions)))) then *)
@@ -295,10 +302,9 @@ let process_file name fname t =
                      (match (title, name, t) with
                          (* "  UNsatisfiable: "title_unsat_str, "BPATH", {l="-";
                           * c=[rule]}) -> *)
-                         ( "  UNsatisfiable: ", ("BPATH" | "BPATHUE"), {l="-"; c=[rule]}) -> 
-                                rule_found := true;
+                         ( "  UNsatisfiable: ", ("BPATH" | "BPATHUE"), {l="-"; c=[rule]}) -> add_rule rule
                            (*if (title == title_unsat_str) then (
-                           Printf.printf "Title is %s\n" title ;*) if !store_rules then add_rule rule
+                           Printf.printf "Title is %s\n" title ; if !store_rules then add_rule rule *)
                            (* ) *)
                         | _ -> ());
                      Printf.printf "%s%s\n" title result_str; flush stdout;
@@ -587,24 +593,57 @@ let simplify_rule t1_ t2_ =
 
 let find_rule t =
   rule_found := false;
-  store_rules := false;
   (* let found = ref false in 
   let rule = ref {l=""; c=[]} in *)
   let rec r subtree = (
-      if not (!rule_found) then  (
+    if not ((!rule_found) || Hashtbl.mem known_lhs (format_tree_prefix subtree)) then ( 
+      store_rules := true;
+      if not (!rule_found) then test_rule t {l="0"; c=[]};
+      if not (!rule_found) then test_rule t {l="1"; c=[]};
+      if not (!rule_found) then (
         List.iter r subtree.c;
         let rec rr simple = (
           if not (!rule_found) then (
             List.iter rr simple.c;
+            store_rules := false;
             test_rule subtree simple;
-              if (!rule_found) then simplify_rule subtree simple
+              if (!rule_found) then simplify_rule subtree simple;
+            store_rules := true;
           )
         ) in
         rr subtree
-      )
+      );
+      Hashtbl.replace known_lhs (format_tree_prefix subtree) ();
+    )
   ) in
     r t;
    !rule_found
+
+     (*
+let find_rule__ t = 
+  rule_found := false;
+  test_rule t {l="0"; c=[]};
+  if (!rule_found) then 
+    true 
+  else (
+    test_rule t {l="1"; c=[]};
+    if (!rule_found) then 
+      true
+    else find_rule_ t
+  )
+
+let find_rule t =
+  let prefix_lhs = format_tree_prefix t in 
+  if Hastbl.mem known_lhs prefix_lhs then 
+    false 
+  else (
+    let ret = find_rule__ t in
+    Hastbl.replace known_lhs prefix_lhs ();
+    ret
+  )
+      *)
+    
+   
 
 let rec simplify_learn t_in =
   let t = (simplify_star t_in) in
