@@ -247,7 +247,10 @@ let rule_descriptions = ref (read_all_lines rule_fname)
 let rule_list = ref (List.map parse_rule (!rule_descriptions))
 let list_append l e = List.rev (e::(List.rev l))
 
+                        
+
 let rule_found = ref false
+let store_rules = ref true
 
 let add_rule t = (
    let s = (format_tree t) in
@@ -295,7 +298,7 @@ let process_file name fname t =
                          ( "  UNsatisfiable: ", ("BPATH" | "BPATHUE"), {l="-"; c=[rule]}) -> 
                                 rule_found := true;
                            (*if (title == title_unsat_str) then (
-                           Printf.printf "Title is %s\n" title ;*) add_rule rule
+                           Printf.printf "Title is %s\n" title ;*) if !store_rules then add_rule rule
                            (* ) *)
                         | _ -> ());
                      Printf.printf "%s%s\n" title result_str; flush stdout;
@@ -345,8 +348,6 @@ let simpler_than t1 t2 =
     false
   )
 
- *)
-
 let simplify_root rules t_in =
   let t = ref t_in in
   let finished = ref false in 
@@ -377,6 +378,8 @@ let rec simplify rules t =
  *  This reruns the loop over again *)
 let rec simplify_star t_in =
   let rules = (!rule_list) in
+  printf "Num rules %d\n" (List.length rules);
+
   let t = ref t_in in
   let t_new = ref (simplify rules t_in) in
   while (not ((!t) = (!t_new))) do
@@ -537,32 +540,54 @@ let test_rule_ rule = Printf.printf "STUB: Test rule %s\n" (format_tree rule)
                         *)
 let test_rule t1 t2 = if (tree_length t2) < (tree_length t1) then test_rule_ {l="="; c=[t1;t2]}  
 
-let replace = Str.global_replace (Str.regexp_string find) replace_string
+let rule_of_formula phi = match phi with {l="-"; c=[alpha; beta]} -> (alpha,beta) 
+let formula_of_rule alpha beta = {l="-"; c=[alpha; beta]}
+
+
+
+(* let replace = Str.global_replace (Str.regexp_string find) replace_string *)
 
 let simplify_rule t1_ t2_ =
+      printf "Ximplify rule: %s :: %s\n" (format_tree t1_) (format_tree t2_);
   rule_found := true;
-  let rule = ref (t1_,t2_)
-  let rec r t pt1 pt2 = 
-    if not (!rule_found) then 
-    let pt = format_tree_prefix t
+  let max_lhs = 9 in
+  (*print_endline "AA";*)
+  let rule = ref (t1_,t2_) in
+  let rec r pt1 pt2 t = (
+    if not (!rule_found || t.c = []) then 
+    let pt = format_tree_prefix t in
       let regex = Str.regexp_string pt in
-      let t1b = parse_tree_prefix (Str.global_replace regex pt1) in
-      let t2b = parse_tree_prefix (Str.global_replace regex pt2) in
-        if (shorter_than t2b t1b) then (
-          test_rule t2b t1b; 
-          if (!rule_found) then rule := (t1b, t2b)
-        )
-       
-
-       
-
-
-
-    if (t != t1)  
+      let pt1b = Str.global_replace regex "z" pt1 in
+      let pt2b = Str.global_replace regex "z" pt2 in
+      let lt1b = String.length pt1b in
+      let lt2b = String.length pt2b in
+  (*print_endline "AX";*)
+      if ((lt1b < max_lhs) && (lt2b < lt1b)) then (
+          let t1b = parse_tree_prefix (Str.global_replace regex "z" pt1) in
+          let t2b = parse_tree_prefix (Str.global_replace regex "z" pt2) in
+          printf "  Is Simpler? %s :: %s\n" (format_tree t1b) (format_tree t2b);
+          test_rule t1b t2b; 
+          if (!rule_found) then print_endline "YES!";
+          if (!rule_found) then rule := rule_of_formula (rename_variables (formula_of_rule t1b t2b))
+        );
+      List.iter (r pt1 pt2) t.c
+  ) in
+  while (!rule_found) do 
+  rule_found := false;
+    let t1, t2 = (!rule) in
+      printf " Simplify rule: %s :: %s\n" (format_tree t1) (format_tree t2);
+      (r (format_tree_prefix t1) (format_tree_prefix t2) t1)
+  done;
+  store_rules := true;
+  let t1, t2 = (!rule) in
+  rule_found := true;
+  test_rule t1 t2 
+;;
 
 
 let find_rule t =
   rule_found := false;
+  store_rules := false;
   (* let found = ref false in 
   let rule = ref {l=""; c=[]} in *)
   let rec r subtree = (
@@ -571,7 +596,7 @@ let find_rule t =
         let rec rr simple = (
           if not (!rule_found) then (
             List.iter rr simple.c;
-            test_rule subtree simple
+            test_rule subtree simple;
               if (!rule_found) then simplify_rule subtree simple
           )
         ) in
