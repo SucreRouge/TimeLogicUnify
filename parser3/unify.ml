@@ -722,12 +722,13 @@ let main () =
         print_string "\n# ";
         let line = try read_line() with End_of_file -> (print_string "End of input\n" ; flush stdout; exit 0)  in
           print_string (line ^ "\n"); flush stdout;
-          match line.[0] with 
+          match (line^"#").[0] with 
               'R' -> cat rule_fname
             | '<' -> settings_simplify := false
             | '>' -> settings_simplify := true 
             | 'S' -> do_simplify simplify_star  (split_at_n_r line 1)
             | 'L' -> do_simplify simplify_learn (split_at_n_r line 1)
+            | '#' -> ()
             | _ -> do_string (line)
       with
           Parsing.Parse_error -> Printf.printf "Parse Error!\n"
