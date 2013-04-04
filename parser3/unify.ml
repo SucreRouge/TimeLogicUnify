@@ -96,7 +96,7 @@ let cat fname =
             if len > 1
             then print_string (String.sub buffer 0 len)
             else eof := true
-        done; ()
+        done; close_in_noerr chan
   ) else (
     print_string (fname ^ " does not exist\n")
   );
@@ -283,9 +283,10 @@ let process_file name fname t =
   if verbose then Printf.printf "**** Begin %s\n" name;
   if (Sys.file_exists fname) then (
     let chan = open_in fname in
-    let size = 4 * 1024 in
+    let size = 40 * 1024 in
     let buffer = String.create size in
     let len = input chan buffer 0 size in
+    close_in_noerr chan;
     let s = (String.sub buffer 0 len) in
     let runtime_s = try
       let r = Str.regexp "RUNTIME: \\([0-9.]*\\)" in
@@ -597,11 +598,11 @@ let find_rule t =
   let rule = ref {l=""; c=[]} in *)
   let rec r subtree = (
     if not ((!rule_found) || Hashtbl.mem known_lhs (format_tree_prefix subtree)) then ( 
-      store_rules := true;
-      if not (!rule_found) then test_rule t {l="0"; c=[]};
-      if not (!rule_found) then test_rule t {l="1"; c=[]};
-      if not (!rule_found) then (
         List.iter r subtree.c;
+        store_rules := true;
+        if not (!rule_found) then test_rule subtree {l="0"; c=[]};
+        if not (!rule_found) then test_rule subtree {l="1"; c=[]};
+      if not (!rule_found) then (
         let rec rr simple = (
           if not (!rule_found) then (
             List.iter rr simple.c;

@@ -1,0 +1,7 @@
+(FXXGa=FGa)
+((FaUAa)=FAa)
+(G(XXa&a)=Ga)
+((FXa>a)=(Fa>a))
+(FXGa=FGa)
+(XGa=GXa)
+((Gb|(GbUa))=(Gb|a))
