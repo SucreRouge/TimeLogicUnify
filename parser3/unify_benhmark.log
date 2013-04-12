@@ -27,6 +27,12 @@ Disable sorting; simpler_that == shorter_than
 (GAFAGa=AFAGa)
 (AAa=Aa)
 
+(AAa,	Aa)
+(AFAFa,	AFa)
+(GAFGa,	AFGa)
+(GAFAGa,	AFAGa)
+
+
 # to make urules_auto.txt
  make unify && echo -n > /var/www/urules.txt && for i in seq 1000 1999 ;
  do ./make_random_ctls_formulas.ml 20 3 ${i}00 ${i}99 | sed s/^/L/ | UNIFY_SOLVERS=BPATHUE ./unify ; done

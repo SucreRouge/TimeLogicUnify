@@ -70,7 +70,9 @@ let settings_simplify = ref true
     else default  *)
  
 let getenv_kd k d = try Sys.getenv k with Not_found -> d
+let getenvi_kd k d = try int_of_string (Sys.getenv k) with Not_found -> d
 
+let settings_do_negation = (getenv_kd "UNIFY_DO_NEG" "Y") = "Y"
 (* split a string a position n and return (l)eft or (r)ight part *)
 let split_at_n_l s n =  String.sub s 0 n  
 let split_at_n_r s n = let len = String.length s in
@@ -78,7 +80,9 @@ let split_at_n_r s n = let len = String.length s in
 
 (*let max_runtime = try getenv "MAX_RUNTIME" with Not_found -> "2" 
 let max_concurrent = try int_of_string (getenv "MAX_CONCURRENT") with Not_found -> 2  *)
-let (max_runtime, max_concurrent) = try ignore(Sys.getenv "UNIFY_OFFLINE"); ("3600", 1) with Not_found -> (getenv_kd "UNIFY_TIMEOUT" "3", NUM_CPUS) ;;
+let (max_runtime, max_concurrent) = try 
+  ignore(Sys.getenv "UNIFY_OFFLINE"); ("3600", 1) 
+with Not_found -> (getenv_kd "UNIFY_TIMEOUT" "3", getenvi_kd "UNIFY_CPUS" NUM_CPUS) ;;
 let max_runtime_float = float_of_string max_runtime 
 let verbose = false 
 
@@ -303,7 +307,7 @@ let process_file name fname t =
                      (match (title, name, t) with
                          (* "  UNsatisfiable: "title_unsat_str, "BPATH", {l="-";
                           * c=[rule]}) -> *)
-                         ( "  UNsatisfiable: ", ("BPATH" | "BPATHUE"), {l="-"; c=[rule]}) -> add_rule rule
+                         ( "  UNsatisfiable: ", ("BPATH" | "BPATHUE"), {l="-"; c=[rule]}) -> if (rule.l="=") then add_rule rule;
                            (*if (title == title_unsat_str) then (
                            Printf.printf "Title is %s\n" title ; if !store_rules then add_rule rule *)
                            (* ) *)
@@ -504,7 +508,7 @@ let required_tasks t =
   let tasks = ref [] in
     List.iter  ( fun e -> 
                    let (solver_name, prefix, f) = e in
-		   if List.mem solver_name (!settings_solvers) then (
+		   if (List.mem solver_name (!settings_solvers)) || ((!settings_solvers=["*"])) then (
                    let fname_ = "out/" ^ (canonical_file t) ^ "." ^ solver_name in
                    let fullfname_ = prefix ^ fname_ in
                    let fullfname3600 = fullfname_ ^ "3600" in
@@ -698,9 +702,11 @@ let do_string s =
 		else formula_tree) in
         (if (!settings_simplify) then print_string ("Simplified to: " ^ (format_tree formula_tree) ^ "\n"));
 	do_formula_tree formula_tree;
-        let formula_tree = {l="-"; c=[formula_tree]} in 
-        print_string ("Negation: " ^ (format_tree formula_tree) ^ "\n");
-	do_formula_tree formula_tree
+        if settings_do_negation then (
+                let formula_tree = {l="-"; c=[formula_tree]} in 
+                print_string ("Negation: " ^ (format_tree formula_tree) ^ "\n");
+        	do_formula_tree formula_tree
+        )
     ) with
         Parsing.Parse_error-> print_string "Could not parse Formula.\n"
                                 ;
