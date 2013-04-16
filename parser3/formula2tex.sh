@@ -1,6 +1,6 @@
 2tex () {
 echo '\begin{eqnarray*}'
-awk '{ print length(), $0 | "sort -n" }'  | sed 's/.* //'  | head -n 35 |
+awk '{ print length(), $0 | "sort -n" }'  | sed 's/.* //'  | head -n 37 |
 sed -f formula2tex.sed
 echo '\end{eqnarray*}'
 }
