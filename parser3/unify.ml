@@ -136,7 +136,7 @@ let clear_result_info () = List.iter (fun e -> (fst e) := []) result_info
 
 (*let cat filename =
  Printf.printf "*AT %s\n" filename
- type 'a tree = {l: 'a; c: 'a tree list
+ type 'a tree = {l: 'a; c: 'a tree list}
  let tree = Me.tree*)
 
 (* URL encoding *)
@@ -162,6 +162,8 @@ let encoding str =
     ("%" ^ Printf.sprintf  "%x" (Char.code (String.get str 0)))
 
 let encode str = Str.global_substitute url_encoding encoding str;;
+
+
 
 
 (*
@@ -198,7 +200,6 @@ let rec format_tree t = let degree = List.length t.c in
            (format_tree (List.nth t.c 1)) ^ ")"
     | _ -> failwith "Unexpected Error: invalid formula tree";;
 
-
 let match_tree_pattern t p =
   (* Printf.printf "T: %s %s\n" (format_tree t) (format_tree p); *)
   let map = ref StringMap.empty in
@@ -226,6 +227,55 @@ let tree_x_map (isleaf : string Me.tree -> bool) f t =
 
 let tree_leaf_map = (tree_x_map isleaf)
 let tree_var_map  = (tree_x_map isvar)
+
+let tree_deequals t =
+  (*ignore (isleaf : string Me.tree -> bool);*)
+  let rec r t =
+        let mapc = (List.map r t.c) in 
+        if t.l = "=" 
+        then (let [x; y] = t.c in {l="&";c=[{l=">";c=mapc};{l="<";c=mapc}]} )
+        else {l=t.l; c=mapc}
+  in (r t);;
+
+
+let tree_x_map_sign (isleaf : string Me.tree -> bool) f t_in =
+  (*ignore (isleaf : string Me.tree -> bool);*)
+  let op_sign_list = [('<',[1;(-1)]);
+                ('>',[-1;1]);
+                ('-',[-1]);
+                ('&',[1;1]);
+                ('|',[1;1]);
+                ('U',[1;1]);
+                ('F',[1]);
+                ('G',[1]);
+                ('A',[1]);
+                ('X',[1]);
+                ('0',[]);
+                ('1',[]);
+                ('E',[1])] in
+  let rec r t_and_sign =
+        let (t, sign) = t_and_sign in
+        if isleaf t 
+        then (f t sign)
+        else ( try 
+                 (
+                 let op_sign = List.assoc (String.get t.l 0) op_sign_list in
+                 let child_sign = List.map (fun i -> i * sign) op_sign in
+                 {l=t.l; c=(List.map r (List.combine (t.c) (child_sign)))}
+                 ) with Not_found -> (failwith ("\nUnknown Operator: " ^ t.l ^"\n"))
+        )
+  in  
+    (r (t_in, 1))
+ ;;
+
+let tree_var_map_sign  = (tree_x_map_sign isvar)
+
+let force_state_var t = (tree_var_map_sign (fun t i -> match i with
+                          1 -> {l="A"; c = [t]}
+                     | (-1) -> {l="E"; c = [t]}
+                )) (tree_deequals t)
+
+let _ = format_tree (force_state_var {l="p"; c = []})
 
 let apply_rule t (a,b) =
   let map = match_tree_pattern t a in
@@ -480,6 +530,7 @@ let redirect_output fname =
   let _ = Unix.dup2 outfile Unix.stdout in
   let _ = Unix.dup2 outfile Unix.stderr in ()
 
+(* this is creates an entry for a java solver *)                                             
 let java_entry name = ( name, "mark/",  fun t fname ->
                           redirect_output "/dev/null";
                           Unix.chdir "mark/";
@@ -489,6 +540,16 @@ let java_entry name = ( name, "mark/",  fun t fname ->
                             (*Unix.execvp "echo" args;*)
                             Unix.execvp "java" args )
 
+(* As above but translates the formula so that all variables are forced to be
+ * treated as state variables, even if we are using a non-local logic *)
+let java_entry_f name = ( name ^ "f", "mark/",  fun t fname ->
+                          redirect_output "/dev/null";
+                          Unix.chdir "mark/";
+                          let args =
+                            [| "java"; "-Djava.awt.headless=true"; "JApplet";
+                               format_tree_mark (force_state_var t); name ; fname |] in
+                            (*Unix.execvp "echo" args;*)
+                            Unix.execvp "java" args )
 (* Note mlsolver effectively adds an "A" before the formula, so we need to add 
  * an a so eg. -(EXp>Xp) is reported as satisfiable *)                          
 
@@ -504,7 +565,7 @@ let md5 s = Digest.to_hex (Digest.string s)
 let canonical_file t = md5 (format_tree_mark t)
 
 let required_tasks t =
-  let solver_entries = [mlsolver_entry; java_entry "BCTLNEW"; java_entry "BCTLOLD" ; java_entry "CTL"; java_entry "BPATH" ; java_entry "BPATHUE"; java_entry "BCTLHUE"  ] in
+  let solver_entries = [mlsolver_entry; java_entry "BCTLNEW"; java_entry "BCTLOLD" ; java_entry "CTL"; java_entry "BPATH" ; java_entry "BPATHUE";java_entry_f "BPATH" ; java_entry_f "BPATHUE";  java_entry "BCTLHUE"  ] in
   let tasks = ref [] in
     List.iter  ( fun e -> 
                    let (solver_name, prefix, f) = e in
@@ -697,6 +758,7 @@ let do_string s =
         let formula_tree = rename_variables formula_tree in 
         print_string ("Normalised to: " ^ (format_tree formula_tree) ^ "\n");
         print_string ("mlsolver fmt: " ^ (format_tree2 formula_tree) ^ "\n");
+        print_string ("Force State Var: " ^ (format_tree (force_state_var formula_tree)) ^ "\n");
         let formula_tree = (if (!settings_simplify) 
 		then simplify (!rule_list) (rename_variables formula_tree)
 		else formula_tree) in
@@ -738,7 +800,7 @@ let main () =
             | _ -> do_string (line)
       with
           Parsing.Parse_error -> Printf.printf "Parse Error!\n"
-        | Not_found -> print_string "Divider `:' not found in input."
+        | Not_found -> print_string "Not_Found Error XYZ" 
     done;
   with 
        | End_of_file -> (print_string "End of input??\n" ; flush stdout; exit 0) 

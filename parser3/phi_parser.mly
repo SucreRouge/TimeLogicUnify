@@ -66,11 +66,24 @@ ifix:  ATOM			{ {l= $1; c=[]} }
          */
 ;
 
+
+ifixsu:  ATOM			{ {l= $1; c=[]} }
+	| UNI ifixsu		{ {l= $1; c=[$2]} }
+	| LPAREN ifixsi EQUALS ifixsi RPAREN	{ {l= $3; c=[$2; $4]} }
+	| LPAREN ifixsi BINARY ifixsi RPAREN	{ {l= $3; c=[$2; $4]} }
+	| LPAREN ifixsi PREFIX ifixsi RPAREN	{ {l= $3; c=[$2; $4]} }
+        /* perhaps it would be better to define our data structures such
+         * that c=[$1;$3] for ifix "PREFIX" operators and instead have
+         * c=[$3;$1] for phi "PREFIX" operators
+         */
+;
+
 ifixsi:  ATOM			{ {l= $1; c=[]} }
 	| UNI ifixsi		{ {l= $1; c=[$2]} }
 	| LPAREN ifixsi EQUALS ifixsi RPAREN	{ {l= $3; c=[$2; $4]} }
 	| LPAREN ifixsi BINARY ifixsi RPAREN	{ {l= $3; c=[$2; $4]} }
 	| LPAREN ifixsi PREFIX ifixsi RPAREN	{ {l= $3; c=[$2; $4]} }
+	| LPAREN ifixsu RPAREN	{ $2 }
 	|  ifixsi EQUALS ifixsi 	{ {l= $2; c=[$1; $3]} }
 	|  ifixsi BINARY ifixsi 	{ {l= $2; c=[$1; $3]} }
 	|  ifixsi PREFIX ifixsi 	{ {l= $2; c=[$1; $3]} }
