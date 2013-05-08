@@ -123,8 +123,8 @@ let is_sat_regexp = Str.regexp_case_fold "is satisfiable";;
 let is_sat_regexp = Str.regexp " unsatisfiable"
 
 let title_unsat_str =  "  UNsatisfiable: " 
-let result_parse_info = [ ( Str.regexp_case_fold "is satisfiable", "  Satisfiable: ");
-                          ( Str.regexp " unsatisfiable",           title_unsat_str) ]
+let result_parse_info = [ ( Str.regexp_case_fold "is satisfiable", true);
+                          ( Str.regexp " unsatisfiable",           false) ]
 let add_ref_list a : string list ref * 'a = (ref [],a)
 let result_info = List.map add_ref_list result_parse_info
 let clear_result_info () = List.iter (fun e -> (fst e) := []) result_info
@@ -233,7 +233,7 @@ let tree_deequals t =
   let rec r t =
         let mapc = (List.map r t.c) in 
         if t.l = "=" 
-        then (let [x; y] = t.c in {l="&";c=[{l=">";c=mapc};{l="<";c=mapc}]} )
+        then ({l="&";c=[{l=">";c=mapc};{l="<";c=mapc}]} )
         else {l=t.l; c=mapc}
   in (r t);;
 
@@ -246,6 +246,7 @@ let tree_x_map_sign (isleaf : string Me.tree -> bool) f t_in =
                 ('&',[1;1]);
                 ('|',[1;1]);
                 ('U',[1;1]);
+                ('=',[0;0]);
                 ('F',[1]);
                 ('G',[1]);
                 ('A',[1]);
@@ -274,6 +275,8 @@ let force_state_var t = (tree_var_map_sign (fun t i -> match i with
                           1 -> {l="A"; c = [t]}
                      | (-1) -> {l="E"; c = [t]}
                 )) (tree_deequals t)
+
+let force_state_var_A t = tree_var_map_sign (fun t i -> {l="A"; c = [t]}) t
 
 let _ = format_tree (force_state_var {l="p"; c = []})
 
@@ -332,8 +335,18 @@ let add_rule t = (
 ));;
   (*if ((t.l = "=") and (not (List.mem s (!rule_descriptions)))) then *)
 
+let regexp_get_num r fmt default s = try
+        ignore(Str.search_forward r s 0);
+        let ret = Str.matched_group 1 s in
+        Printf.sprintf fmt (float_of_string ret)
+    with Not_found -> default
 
-let process_file name fname t =
+let runtime_regexp_ = Str.regexp "RUNTIME: \\([0-9.]*\\)"
+let colour_regexp_ = Str.regexp " \\([0-9.]*\\) colours,"
+let hue_regexp_ = Str.regexp " \\([0-9.]*\\) hues,"
+
+let process_file_stats name fname t =
+  let sat_s = ref "?" in
   if verbose then Printf.printf "**** Begin %s\n" name;
   if (Sys.file_exists fname) then (
     let chan = open_in fname in
@@ -342,35 +355,39 @@ let process_file name fname t =
     let len = input chan buffer 0 size in
     close_in_noerr chan;
     let s = (String.sub buffer 0 len) in
-    let runtime_s = try
-      let r = Str.regexp "RUNTIME: \\([0-9.]*\\)" in
-        ignore(Str.search_forward r s 0);
-        let time_s = Str.matched_group 1 s in
-        Printf.sprintf "(%0.2f)" (float_of_string time_s)
-    with Not_found -> "(?.?)" in
+    let runtime_s = regexp_get_num runtime_regexp_ "%0.2f" "?.??" s in
+    let  colour_s = regexp_get_num  colour_regexp_ "%0.0f"  "?"     s in
+    let     hue_s = regexp_get_num     hue_regexp_ "%0.0f"  "?"     s in
     if verbose then print_string (s);
     if (len >= size) then print_string "Data file too long\n";
     List.iter (fun x ->
-                 let (l,(regexp,title)) = x in
-                 let result_str = (name^runtime_s) in
-                 try ignore(Str.search_forward regexp s 0) ;
-                     (match (title, name, t) with
+                 let (l,(regexp,issat)) = x in
+                 let result_str = (name^"("^runtime_s^")") in
+                 try ignore(Str.search_forward regexp s 0);
+                     let title = if issat then (sat_s := "Y" ; "  Satisfiable: ") else (sat_s := "N" ; "  UNsatisfiable: ") in
+                     (match (issat, name, t) with
                          (* "  UNsatisfiable: "title_unsat_str, "BPATH", {l="-";
                           * c=[rule]}) -> *)
-                         ( "  UNsatisfiable: ", ("BPATH" | "BPATHUE"), {l="-"; c=[rule]}) -> if (rule.l="=") then add_rule rule;
+                         ( false, ("BPATH" | "BPATHUE"), {l="-"; c=[rule]}) -> if (rule.l="=") then add_rule rule;
                            (*if (title == title_unsat_str) then (
                            Printf.printf "Title is %s\n" title ; if !store_rules then add_rule rule *)
                            (* ) *)
                         | _ -> ());
                      Printf.printf "%s%s\n" title result_str; flush stdout;
-                     l := (name^runtime_s)::(!l)
+                     l := (name^"("^runtime_s^")")::(!l)
                  with Not_found -> ()
-    ) result_info
+    ) result_info;
+    if verbose then Printf.printf "**** End %s\n" fname;
+    [!sat_s; runtime_s; colour_s; hue_s]
   ) else (
-    print_string (fname ^ " does not exist\n")
-  );
-  if verbose then Printf.printf "**** End %s\n" fname;
-  ()
+    print_string (fname ^ " does not exist\n");
+    []
+  )
+
+let process_file name fname t = ignore ( process_file_stats name fname t )
+
+
+let process_file name fname t = Printf.printf "%s\n" (String.concat "\t" ( process_file_stats name fname t ))
 
 let rec format_tree_prefix t = t.l ^ (String.concat "" (List.map format_tree_prefix t.c))
 let parse_tree_prefix s = let rec r i = (
@@ -466,6 +483,25 @@ let l = match t.l with
     | 1 -> l ^ " " ^ (format_tree2 (List.hd t.c))
     | 2 -> "((" ^ (format_tree2 (List.hd t.c)) ^ ") " ^ l ^ " (" ^
            (format_tree2 (List.nth t.c 1)) ^ "))"
+    | _ -> failwith "Unexpected Error: invalid formula tree"
+
+let rec format_tree_tex t = let degree = List.length t.c in
+let l = match t.l with
+    "<" -> "\\leftarrow"
+  | ">" -> "\\rightarrow"
+  | "=" -> "\\leftrightarrow"
+  | "-" -> "\\neg"
+  | "~" -> "\\neg"
+  | "0" -> "\\bot"
+  | "1" -> "\\top"
+  | "&" -> "\\wedge"
+  | "|" -> "\\vee"
+  | _ -> t.l in
+  match degree with
+      0 -> l
+    | 1 -> l ^ " " ^ (format_tree_tex (List.hd t.c))
+    | 2 -> "(" ^ (format_tree_tex (List.hd t.c)) ^ " " ^ l ^ " " ^
+           (format_tree_tex (List.nth t.c 1)) ^ ")"
     | _ -> failwith "Unexpected Error: invalid formula tree"
 
 let tree_vars t =
@@ -597,14 +633,14 @@ let do_formula_tree formula_tree =
           print_string ((format_tree2 formula_tree) ^ "\n");
           do_mlsolver formula_tree ;
            do_mark formula_tree*)
-          ignore (Do_parallel.do_commands (required_tasks formula_tree) max_runtime_float max_concurrent);
+          ignore (Do_parallel.do_commands (required_tasks formula_tree) max_runtime_float max_concurrent)
 
-          if verbose then List.iter (fun x ->
+          (*if verbose then List.iter (fun x ->
                        let (l,(regexp,title)) = x in
                          print_string title;
                          List.iter (fun s -> print_string (s ^ " ")) (!l);
                          print_string "\n"
-          ) result_info
+          ) result_info *)
 
 let test_rule_ rule = do_formula_tree {l="-"; c=[rule]}
                         (*
@@ -615,7 +651,13 @@ let test_rule t1 t2 = if (tree_length t2) < (tree_length t1) then test_rule_ {l=
 let rule_of_formula phi = match phi with {l="-"; c=[alpha; beta]} -> (alpha,beta) 
 let formula_of_rule alpha beta = {l="-"; c=[alpha; beta]}
 
-
+                                  
+let rec squeeze ll = 
+  if (List.hd ll) = [] then [] else List.concat [
+                  List.map List.hd ll;
+      squeeze     (List.map List.tl ll)
+ ];;
+    
 
 (* let replace = Str.global_replace (Str.regexp_string find) replace_string *)
 
@@ -777,7 +819,73 @@ let do_string s =
                                 (Mainlib.string_map (fun c->if c='\n' then ' ' else c) s)
 ;;
 
+let do_benchmark s =
+  clear_result_info();
+  let status = ref "bad" in
+    try (
+(*      print_endline origcwd; *)
+      let ft_ = parse_ctls_formula s in
+        print_string ("Input formula: " ^ (format_tree ft_) ^ "\n");
+        let ft = rename_variables ft_ in
+       List.iter (fun (out_fname, tasks) ->
+        let results = List.map ( fun (solver_name, t) ->
+                let fname = "mark/out/" ^ (canonical_file t) ^ "." ^ solver_name ^ "3600" in
+                (process_file_stats solver_name fname t)) tasks in
+        appendc_s_to_fname (String.concat " & " (("$"^format_tree_tex ft_^"$")::(squeeze results)) ^ "\\\\ \n") out_fname 
+       ) [
+           ("out/benchmark.log",    [("BPATH"  , ft); ("BPATHf"  , ft); ("BPATH"  , force_state_var_A ft); ("BCTLNEW", ft)]);
+           ("out/benchmarkhue.log", [("BPATHUE", ft); ("BPATHUEf", ft); ("BPATHUE", force_state_var_A ft); ("BCTLHUE", ft)])
+          ] 
+    ) with
+        Parsing.Parse_error-> print_string "Could not parse Formula.\n"
+                                ;
+                              Mainlib.print_count "Program" "unify_stats.txt";
+                              Mainlib.log (Mainlib.log_dir ^ "unify_" ^ !status ^ ".log")
+                                (Mainlib.string_map (fun c->if c='\n' then ' ' else c) s)
+
 (*let do_string__ s = do_string_ s ; do_string_ ("-(" ^ s ^ ")")*)
+
+(* Benchmark Stuff *)
+(*
+let b_process_file name fname t =
+  if verbose then Printf.printf "**** Begin %s\n" name;
+  if (Sys.file_exists fname) then (
+    let chan = open_in fname in
+    let size = 80 * 1024 in
+    let buffer = String.create size in
+    let len = input chan buffer 0 size in
+    close_in_noerr chan;
+    let s = (String.sub buffer 0 len) in
+    let runtime_s = try
+      let r = Str.regexp "RUNTIME: \\([0-9.]*\\)" in
+        ignore(Str.search_forward r s 0);
+        let time_s = Str.matched_group 1 s in
+        Printf.sprintf "%0.2f" (float_of_string time_s)
+    with Not_found -> "?.??" in
+    if verbose then print_string (s);
+    if (len >= size) then print_string "Data file too long\n";
+    List.iter (fun x ->
+                 let (l,(regexp,title)) = x in
+                 let result_str = (name^runtime_s) in
+                 try ignore(Str.search_forward regexp s 0) ;
+                     (match (title, name, t) with
+                         (* "  UNsatisfiable: "title_unsat_str, "BPATH", {l="-";
+                          * c=[rule]}) -> *)
+                         ( "  UNsatisfiable: ", ("BPATH" | "BPATHUE"), {l="-"; c=[rule]}) -> if (rule.l="=") then add_rule rule;
+                           (*if (title == title_unsat_str) then (
+                           Printf.printf "Title is %s\n" title ; if !store_rules then add_rule rule *)
+                           (* ) *)
+                        | _ -> ());
+                     Printf.printf "%s%s\n" title result_str; flush stdout;
+                     l := (name^runtime_s)::(!l)
+                 with Not_found -> ()
+    ) result_info
+  ) else (
+    print_string (fname ^ " does not exist\n")
+  );
+  if verbose then Printf.printf "**** End %s\n" fname;
+  ()
+ *)
 
 let main () =
   print_string "main loop";
@@ -796,6 +904,7 @@ let main () =
             | '>' -> settings_simplify := true 
             | 'S' -> do_simplify simplify_star  (split_at_n_r line 1)
             | 'L' -> do_simplify simplify_learn (split_at_n_r line 1)
+            | 'B' -> do_benchmark (split_at_n_r line 1)
             | '#' -> ()
             | _ -> do_string (line)
       with
