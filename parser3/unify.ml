@@ -833,8 +833,8 @@ let do_benchmark s =
                 (process_file_stats solver_name fname t)) tasks in
         appendc_s_to_fname (String.concat " & " (("$"^format_tree_tex ft_^"$")::(squeeze results)) ^ "\\\\ \n") out_fname 
        ) [
-           ("out/benchmark.log",    [("BPATH"  , ft); ("BPATHf"  , ft); ("BPATH"  , force_state_var_A ft); ("BCTLNEW", ft)]);
-           ("out/benchmarkhue.log", [("BPATHUE", ft); ("BPATHUEf", ft); ("BPATHUE", force_state_var_A ft); ("BCTLHUE", ft)])
+           ("out/benchmark.tex",    [("BPATH"  , ft); ("BPATHf"  , ft); ("BPATH"  , force_state_var_A ft); ("BCTLNEW", ft)]);
+           ("out/benchmarkhue.tex", [("BPATHUE", ft); ("BPATHUEf", ft); ("BPATHUE", force_state_var_A ft); ("BCTLHUE", ft)])
           ] 
     ) with
         Parsing.Parse_error-> print_string "Could not parse Formula.\n"
