@@ -64,6 +64,10 @@ install_home: www_
 	cp www/* ~/WWW/papers/
 	sed  -i "s/cgi-bin/http:\/\/gmatht.homelinux.net\/cgi-bin/"   ~/WWW/papers/mechecker_plain.html ~/WWW/papers/mechecker.html
 
+install_homeu: unify_www_
+	cp unify_www/* ~/WWW/papers/
+	sed  -i "s,cgi-bin\|urules,http://gmatht.homelinux.net/&,g"  ~/WWW/papers/unified_plain.html ~/WWW/papers/unified.html
+
 
 mechecker.cgi_: me.cmo me.cmx mechecker.cgi
 
