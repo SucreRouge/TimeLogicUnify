@@ -62,7 +62,8 @@ unify_install: unify_www_ unify
 # Install to a non-root web-directory where cgi-bin is not allowed (link back to machine where cgi-bin is installed)
 install_home: www_
 	cp www/* ~/WWW/papers/
-	sed  -i "s/cgi-bin/http:\/\/gmatht.homelinux.net\/cgi-bin/"   ~/WWW/papers/mechecker_plain.html ~/WWW/papers/mechecker.html
+	sed  -i "s/cgi-bin/http:\/\/gmatht.homelinux.net\/cgi-bin/\
+s/urules/gmatht.homelinux.net\/urules/g"   ~/WWW/papers/mechecker_plain.html ~/WWW/papers/mechecker.html
 
 install_homeu: unify_www_
 	cp unify_www/* ~/WWW/papers/
