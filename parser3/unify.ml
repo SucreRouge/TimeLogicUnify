@@ -50,7 +50,13 @@ let rec ww t = [] :: (List.concat (list_mapi (fun n e -> List.map (fun ee -> n::
 
 let origcwd = Sys.getcwd ()
 
-let _ = Unix.chdir "/var/data/unify"
+let _ = Unix.chdir "/var/data/unify";;
+let x  = try Unix.chdir "/var/data/unify" ; "/var/www/urules.txt" 
+         with Unix.Unix_error (Unix.ENOENT, "chdir", _ )  ->  Unix.chdir "~/data/unify" ; "~/public-html/urules.txt" 
+
+let rule_fname = "/var/www/urules.txt";;
+
+let x  = try Unix.chdir "." ; "OK" with Unix.Unix_error (Unix.ENOENT, "chdir", "asdfadfafds")  -> "BAD" 
 
 let append_s_to_fname_ l s fname =
   let f = open_out_gen l  0o666 fname in
@@ -298,9 +304,8 @@ let my_rules = List.map parse_rule ["(--p)=p";
                          "((p&q)&r)=(p&(q&r))";
                          "(p<q)=(q>p)";
 ] ;;
- *)
 let rule_fname = "out/rules.txt"
-let rule_fname = "/var/www/urules.txt";;
+ *)
 
 let rule_descriptions = ref (read_all_lines rule_fname)
 let rule_list = ref (List.map parse_rule (!rule_descriptions))
