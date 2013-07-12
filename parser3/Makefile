@@ -27,10 +27,12 @@ unify_www_:
 
 userdir: www_ unify_www_ unify mechecker.cgi
 	mkdir -p ~/public-html
-	cp www/* unify_www/* public-html
+	#cp www/* unify_www/* ~/public-html
+	install -m644 www/* unify_www/* ~/public-html
 	#cp unify 
-	cp unify 	 ~/public-html/cgi-bin/unify.cgi
-	cp mechecker.cgi ~/public-html/cgi-bin/mechecker.cgi
+	#cp unify 	 ~/public-html/cgi-bin/unify.cgi
+	install unify 	 ~/public-html/cgi-bin/unify.cgi
+	install mechecker.cgi ~/public-html/cgi-bin/mechecker.cgi
 
 
 precheck:
@@ -77,7 +79,7 @@ s/urules/gmatht.homelinux.net\/urules/g"   ~/WWW/papers/mechecker_plain.html ~/W
 mechecker.cgi_: me.cmo me.cmx mechecker.cgi
 
 mechecker.cgi: precheck me.ml  phi_lexer.ml phi_parser.ml  me_parser.ml me_parser.mli me_lexer.ml main.ml phi_parser.cmi me_parser.cmi
-	$(OCAMLC) -o mechecker.cgi me.ml phi_parser.ml phi_lexer.ml  me_lexer.ml me_parser.ml mainlib.ml main.ml  
+	$(OCAMLC) -o mechecker.cgi str.cmxa me.ml phi_parser.ml phi_lexer.ml  me_lexer.ml me_parser.ml mainlib.ml main.ml  
 	#ocamlopt.opt -g -o mechecker.cgi  mainlib.ml me.ml phi_parser.ml phi_lexer.ml  me_lexer.ml me_parser.ml main.ml
 
 mvroot:
