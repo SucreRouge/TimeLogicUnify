@@ -1,4 +1,6 @@
 OCAMLC = $(shell which ocamlopt.opt ocamlopt | head -n1)
+#REMOTE = "http://gmatht.homelinux.net"
+REMOTE = "http://gmatht.mooo.com"
 
 main: precheck me.ml mainlib.ml phi_lexer.ml phi_parser.ml  me_parser.ml me_parser.mli me_lexer.ml main.ml phi_parser.cmi me_parser.cmi me_parser.cmo me_parser.cmo
 	$(OCAMLC) -o main str.cmxa me.ml phi_parser.ml phi_lexer.ml  me_lexer.ml me_parser.ml mainlib.ml main.ml  
@@ -72,8 +74,11 @@ unify_install: unify_www_ unify
 # Install to a non-root web-directory where cgi-bin is not allowed (link back to machine where cgi-bin is installed)
 install_home: www_
 	cp www/* ~/WWW/papers/
-	sed  -i "s/cgi-bin/http:\/\/gmatht.homelinux.net\/cgi-bin/\
-s/urules/gmatht.homelinux.net\/urules/g"   ~/WWW/papers/mechecker_plain.html ~/WWW/papers/mechecker.html
+	sed  -i "s,cgi-bin,$(REMOTE)/cgi-bin," ~/WWW/papers/mechecker_plain.html ~/WWW/papers/mechecker.html
+
+install_homeu: unify_www_
+	cp unify_www/* ~/WWW/papers/
+	sed  -i "s,cgi-bin\|urules,$(REMOTE)/&,g"  ~/WWW/papers/unified_plain.html ~/WWW/papers/unified.html
 
 
 mechecker.cgi_: me.cmo me.cmx mechecker.cgi
