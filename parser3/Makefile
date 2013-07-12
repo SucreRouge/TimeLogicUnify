@@ -35,6 +35,21 @@ userdir: www_ unify_www_ unify mechecker.cgi
 	#cp unify 	 ~/public-html/cgi-bin/unify.cgi
 	install unify 	 ~/public-html/cgi-bin/unify.cgi
 	install mechecker.cgi ~/public-html/cgi-bin/mechecker.cgi
+	chmod 1777 ~/public-html/.data/unify/mark/out/
+	chmod 1777 ~/public-html/.data/unify/out/
+	chmod u+r  ~/public-html/.data/unify/log*
+	chmod go-r  ~/public-html/.data/unify/log*
+	chmod u+r  ~/public-html/.data/unify/mark/*java
+	chmod go-r  ~/public-html/.data/unify/mark/*java
+	test -e ~/public-html/.data/unify_stats.txt || echo 0 > ~/public-html/.data/unify_stats.txt
+	test -e ~/public-html/.data/mechecker_stats.txt || echo 0 > ~/public-html/.data/mechecker_stats.txt
+	touch  ~/public-html/.data/unify_bad.log 
+	touch  ~/public-html/.data/unify_good.log 
+	chmod a+w ~/public-html/.data/unify_*.log
+	chmod a+w  ~/public-html/.data/*_stats.txt
+
+
+	
 
 
 precheck:

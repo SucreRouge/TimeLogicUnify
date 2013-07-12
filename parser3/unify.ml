@@ -40,6 +40,7 @@
 
  *  *)
 
+
 open Mainlib
 open Me (* only for type tree *)
 
@@ -48,15 +49,21 @@ let list_mapi f ll = let rec r n l = match l with [] -> [] | e::rem -> (f n e)::
 let rec ww t = [] :: (List.concat (list_mapi (fun n e -> List.map (fun ee -> n::ee) (ww e)) t.c));;
  *)
 
-let origcwd = Sys.getcwd ()
+(*let origcwd = Sys.getcwd ()
+(*let _ = Sys.command "/usr/bin/whoami" *)
 
-let _ = Unix.chdir "/var/data/unify";;
-let x  = try Unix.chdir "/var/data/unify" ; "/var/www/urules.txt" 
-         with Unix.Unix_error (Unix.ENOENT, "chdir", _ )  ->  Unix.chdir "~/data/unify" ; "~/public-html/urules.txt" 
+(* Assume that if HOME is not set it is because we are being run in public-html/cgi-bin *)
+let home = try Sys.getenv "HOME" with _ -> origcwd^"/../.."
+*)
+(*let home = try Sys.getenv "HOME" with _ -> print_string ("Could not find HOME, trying"^origcwd^"/../..") ; origcwd^"/../.."*)
+(*let _ = Unix.chdir "/var/data/unify";;*)
+let rule_fname  = try Unix.chdir "/var/data/unify" ; "/var/www/urules.txt" 
+         with Unix.Unix_error (Unix.ENOENT, "chdir", _ )  ->  (*let publichtml = home ^ "/public-html/" in*)
+		Unix.chdir (Mainlib.publichtml^".data/unify") ; Mainlib.publichtml^"urules.txt" 
 
+         (*with Unix.Unix_error (_, "chdir", _ )  ->  Unix.chdir "~/data/unify" ; "~/public-html/urules.txt"
 let rule_fname = "/var/www/urules.txt";;
-
-let x  = try Unix.chdir "." ; "OK" with Unix.Unix_error (Unix.ENOENT, "chdir", "asdfadfafds")  -> "BAD" 
+*)  
 
 let append_s_to_fname_ l s fname =
   let f = open_out_gen l  0o666 fname in
@@ -797,7 +804,7 @@ let do_simplify my_simplify s =
 
 let do_string s =
   clear_result_info();
-  let status = ref "bad" in
+  let status = ref "bad" in (
     try (
 (*      print_endline origcwd; *)
       let formula_tree = parse_ctls_formula s in
@@ -815,19 +822,20 @@ let do_string s =
                 let formula_tree = {l="-"; c=[formula_tree]} in 
                 print_string ("Negation: " ^ (format_tree formula_tree) ^ "\n");
         	do_formula_tree formula_tree
-        )
+        );
+	status := "good"
     ) with
         Parsing.Parse_error-> print_string "Could not parse Formula.\n"
-                                ;
-                              Mainlib.print_count "Program" "unify_stats.txt";
-                              Mainlib.log (Mainlib.log_dir ^ "unify_" ^ !status ^ ".log")
-                                (Mainlib.string_map (fun c->if c='\n' then ' ' else c) s)
+  );
+  Mainlib.print_count "Program" "unify_stats.txt";
+  Mainlib.log (Mainlib.log_dir ^ "unify_" ^ !status ^ ".log")
+  (Mainlib.string_map (fun c->if c='\n' then ' ' else c) s)
 ;;
 
-let do_benchmark s =
+let do_benchmark s = (
   clear_result_info();
   let status = ref "bad" in
-    try (
+    (try (
 (*      print_endline origcwd; *)
       let ft_ = parse_ctls_formula s in
         print_string ("Input formula: " ^ (format_tree ft_) ^ "\n");
@@ -842,11 +850,12 @@ let do_benchmark s =
            ("out/benchmarkhue.tex", [("BPATHUE", ft); ("BPATHUEf", ft); ("BPATHUE", force_state_var_A ft); ("BCTLHUE", ft)])
           ] 
     ) with
-        Parsing.Parse_error-> print_string "Could not parse Formula.\n"
+        Parsing.Parse_error-> print_string "Could not parse Formula.\n")
                                 ;
                               Mainlib.print_count "Program" "unify_stats.txt";
                               Mainlib.log (Mainlib.log_dir ^ "unify_" ^ !status ^ ".log")
                                 (Mainlib.string_map (fun c->if c='\n' then ' ' else c) s)
+)
 
 (*let do_string__ s = do_string_ s ; do_string_ ("-(" ^ s ^ ")")*)
 
@@ -921,8 +930,8 @@ let main () =
        | x -> print_string (Printexc.get_backtrace ()) ; print_string (Printexc.to_string x); failwith "Unexpected exception 1"
 
 let _ =
+  Printf.printf "Content-type: text/plain\n\n";
   try
-    Printf.printf "Content-type: text/plain\n\n";
     let qs = Sys.getenv "QUERY_STRING" in
       Me.max_size := 10000;
       ( try
