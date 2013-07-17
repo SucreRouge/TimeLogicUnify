@@ -1,5 +1,13 @@
 #!/bin/bash
 outputhtml () {
+
+if [ "$1" == "unify" ] 
+then
+   formula="Gp|-p"
+else
+   formula="U(p,-q) : [{p};{p,q};{}]+\&lt;{p}"
+fi
+
 cat <<EOF
 <!DOCTYPE html>
 <html style="padding:0; margin:0; height:100%">
@@ -11,9 +19,9 @@ EOF
 if [ "$2" == full ] 
 then cat $1_header.html
 fi
-cat <<EOF | sed s/NAME/"$1"/g
+cat <<EOF | sed "s/NAME/$1/g" | sed "s/FMLA/$formula/g"
 <form action="cgi-bin/NAME.cgi#end" method="GET" target="my_iframe">
- <textarea name="i" cols=40 rows=2 onkeydown="if (event.keyCode == 13) { this.form.submit(); return false; }">Gp|-p</textarea>
+ <textarea name="i" cols=40 rows=2 onkeydown="if (event.keyCode == 13) { this.form.submit(); return false; }">FMLA</textarea>
 EOF
 if [ "$1" == "unify" ] 
 then #cat <<EOF

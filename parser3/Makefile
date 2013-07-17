@@ -1,7 +1,9 @@
 OCAMLC = $(shell which ocamlopt.opt ocamlopt | head -n1)
+#REMOTE = "http://gmatht.homelinux.net"
+REMOTE = "http://gmatht.mooo.com"
 
 main: precheck me.ml mainlib.ml phi_lexer.ml phi_parser.ml  me_parser.ml me_parser.mli me_lexer.ml main.ml phi_parser.cmi me_parser.cmi me_parser.cmo me_parser.cmo
-	$(OCAMLC) -o main me.ml phi_parser.ml phi_lexer.ml  me_lexer.ml me_parser.ml mainlib.ml main.ml  
+	$(OCAMLC) -o main str.cmxa me.ml phi_parser.ml phi_lexer.ml  me_lexer.ml me_parser.ml mainlib.ml main.ml  
 
 unify_.ml: unify.ml
 	sed s/NUM_CPUS/`< /proc/cpuinfo  grep ^processor | wc -l`/g < unify.ml > unify_.ml
@@ -24,6 +26,31 @@ unify_www_:
 	./makehtml.sh unify unify_www/unified
 	mkdir -p www
 	(git archive --prefix=mechecker/ HEAD -o www/mechecker_src.tar && gzip -f -9 www/mechecker_src.tar) || cp ../mechecker_src.tar.gz www
+
+userdir: www_ unify_www_ unify mechecker.cgi
+	mkdir -p ~/public-html
+	#cp www/* unify_www/* ~/public-html
+	install -m644 www/* unify_www/* ~/public-html
+	#cp unify 
+	#cp unify 	 ~/public-html/cgi-bin/unify.cgi
+	install unify 	 ~/public-html/cgi-bin/unify.cgi
+	install mechecker.cgi ~/public-html/cgi-bin/mechecker.cgi
+	chmod 1777 ~/public-html/.data/unify/mark/out/
+	chmod 1777 ~/public-html/.data/unify/out/
+	chmod u+r  ~/public-html/.data/unify/log*
+	chmod go-r  ~/public-html/.data/unify/log*
+	chmod u+r  ~/public-html/.data/unify/mark/*java
+	chmod go-r  ~/public-html/.data/unify/mark/*java
+	test -e ~/public-html/.data/unify_stats.txt || echo 0 > ~/public-html/.data/unify_stats.txt
+	test -e ~/public-html/.data/mechecker_stats.txt || echo 0 > ~/public-html/.data/mechecker_stats.txt
+	touch  ~/public-html/.data/unify_bad.log 
+	touch  ~/public-html/.data/unify_good.log 
+	chmod a+w ~/public-html/.data/unify_*.log
+	chmod a+w  ~/public-html/.data/*_stats.txt
+
+
+	
+
 
 precheck:
 	which $(OCAMLC) || (echo "The $(OCAMLC) compiler was not found.\nUsing 'make OCAMLC=ocamlc' in place of 'make' may help (but will cause slower bytecode to be used)" && false) 
@@ -62,14 +89,17 @@ unify_install: unify_www_ unify
 # Install to a non-root web-directory where cgi-bin is not allowed (link back to machine where cgi-bin is installed)
 install_home: www_
 	cp www/* ~/WWW/papers/
-	sed  -i "s/cgi-bin/http:\/\/gmatht.homelinux.net\/cgi-bin/\
-s/urules/gmatht.homelinux.net\/urules/g"   ~/WWW/papers/mechecker_plain.html ~/WWW/papers/mechecker.html
+	sed  -i "s,cgi-bin,$(REMOTE)/cgi-bin," ~/WWW/papers/mechecker_plain.html ~/WWW/papers/mechecker.html
+
+install_homeu: unify_www_
+	cp unify_www/* ~/WWW/papers/
+	sed  -i "s,cgi-bin\|urules,$(REMOTE)/&,g"  ~/WWW/papers/unified_plain.html ~/WWW/papers/unified.html
 
 
 mechecker.cgi_: me.cmo me.cmx mechecker.cgi
 
 mechecker.cgi: precheck me.ml  phi_lexer.ml phi_parser.ml  me_parser.ml me_parser.mli me_lexer.ml main.ml phi_parser.cmi me_parser.cmi
-	$(OCAMLC) -o mechecker.cgi me.ml phi_parser.ml phi_lexer.ml  me_lexer.ml me_parser.ml mainlib.ml main.ml  
+	$(OCAMLC) -o mechecker.cgi str.cmxa me.ml phi_parser.ml phi_lexer.ml  me_lexer.ml me_parser.ml mainlib.ml main.ml  
 	#ocamlopt.opt -g -o mechecker.cgi  mainlib.ml me.ml phi_parser.ml phi_lexer.ml  me_lexer.ml me_parser.ml main.ml
 
 mvroot:

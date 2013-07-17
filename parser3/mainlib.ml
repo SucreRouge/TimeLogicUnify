@@ -3,6 +3,10 @@
  * The is the main file used to do model checking. It is essentially a wrapper
  * around the model-checker found in me.ml *)
 
+let origcwd = Sys.getcwd ()
+(*let home = try Sys.getenv "HOME" with _ -> origcwd^"/../.."*)
+let publichtml = origcwd^"/../"
+
 let printf=Printf.printf
 
 let handle_error s f x =
@@ -131,9 +135,15 @@ let robust_parse fixers_ par lex s_ =
 		else ();
 	result
 
-let log_dir= try 
-	(Sys.getenv "HOME") ^ "/.config/"
-with Not_found -> "/var/www/.config/"
+let log_dir=publichtml^".data/" 
+	(* FIX !!!*)
+	(*(Sys.getenv "HOME") ^ "/.config/"
+with Not_found -> 
+	let cwd = Sys.getcwd () in 
+	if ((String.sub cwd 0 5)="/home") 
+		then cwd^"/../../.config/"
+		else "/var/www/.config/"
+	*)
 
 let print_count name file = Printf.printf "\nThis %s has been used %s times\n" name
 (try 
