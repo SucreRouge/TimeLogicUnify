@@ -214,9 +214,11 @@ let isvar t = isvar_s t.l;;
 let rec format_tree t = let degree = List.length t.c in
   match degree with
       0 -> t.l
+    (*| 1 -> t.l ^ "("^(format_tree (List.hd t.c))^")"
+    | 2 -> "(" ^ (format_tree (List.hd t.c)) ^ t.l ^ *)
     | 1 -> t.l ^ (format_tree (List.hd t.c))
-    | 2 -> "(" ^ (format_tree (List.hd t.c)) ^ t.l ^
-           (format_tree (List.nth t.c 1)) ^ ")"
+    | 2 -> "((" ^ (format_tree (List.hd t.c)) ^ ")"^t.l^"(" ^
+           (format_tree (List.nth t.c 1)) ^ "))"
     | _ -> failwith "Unexpected Error: invalid formula tree";;
 
 let match_tree_pattern t p =
