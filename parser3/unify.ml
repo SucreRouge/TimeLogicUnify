@@ -44,6 +44,12 @@
 open Mainlib
 open Me (* only for type tree *)
 
+module StringSet = Set.Make(String) ;; (* sets of strings *)
+
+
+let _cache_result_sat = ref [""]
+let _cache_result_unsat = ref [""]
+
 (*
 let list_mapi f ll = let rec r n l = match l with [] -> [] | e::rem -> (f n e)::(r (n+1) rem) in r 0 ll;;                
 let rec ww t = [] :: (List.concat (list_mapi (fun n e -> List.map (fun ee -> n::ee) (ww e)) t.c));;
@@ -376,7 +382,9 @@ let process_file_stats name fname t =
                  let (l,(regexp,issat)) = x in
                  let result_str = (name^"("^runtime_s^")") in
                  try ignore(Str.search_forward regexp s 0);
-                     let title = if issat then (sat_s := "Y" ; "  Satisfiable: ") else (sat_s := "N" ; "  UNsatisfiable: ") in
+                     let title = if issat 
+                        then (sat_s := "Y" ; _cache_result_sat   := name::!_cache_result_sat  ; "  Satisfiable: ") 
+                        else (sat_s := "N" ; _cache_result_unsat := name::!_cache_result_unsat; "  UNsatisfiable: ") in
                      (match (issat, name, t) with
                          (* "  UNsatisfiable: "title_unsat_str, "BPATH", {l="-";
                           * c=[rule]}) -> *)
@@ -636,6 +644,18 @@ let required_tasks t =
 
 (*if not Sys.file_exists *)
 
+let equivalent_solvers = [["CTL"; "mlsolver"]; ["BCTL";"BCTLNEW"; "BCTLOLD"; "BCTLHUE"; "BPATHf"]; ["BPATH"; "BPATHUE"]]
+
+let sat_implies = Hashtbl.create 40
+let _ =  print_string "test\n"; let stronger = ref [] in List.iter (
+  fun x -> stronger := List.concat [!stronger;x]; List.iter (
+    fun y -> List.iter (
+      fun z-> if (y <> z) then (
+         Hashtbl.add sat_implies (y^">"^z) "y";
+         (*print_string (y^">"^z^"\n")*))
+    ) x
+  ) !stronger
+) equivalent_solvers
 
 let do_formula_tree formula_tree =
           let normal_s = (format_tree formula_tree) ^ "\n" in
@@ -645,7 +665,16 @@ let do_formula_tree formula_tree =
           print_string ((format_tree2 formula_tree) ^ "\n");
           do_mlsolver formula_tree ;
            do_mark formula_tree*)
-          ignore (Do_parallel.do_commands (required_tasks formula_tree) max_runtime_float max_concurrent)
+          _cache_result_sat := []; 
+          _cache_result_unsat := []; 
+          ignore (Do_parallel.do_commands (required_tasks formula_tree) max_runtime_float max_concurrent);
+          List.iter ( fun y-> List.iter ( fun z-> 
+                let rule=(y^">"^z) in
+                  if (Hashtbl.mem sat_implies rule) then (
+                            print_string ("RULE Failed: "^rule^"\n");
+                             Mainlib.log (Mainlib.log_dir ^ "unify_BUG.log") (rule^" "^normal_s);
+                  )
+          ) !_cache_result_unsat ) !_cache_result_sat
 
           (*if verbose then List.iter (fun x ->
                        let (l,(regexp,title)) = x in
