@@ -27,6 +27,7 @@ unify_www_:
 	./makehtml.sh unify unify_www/unified
 	mkdir -p www
 	(git archive --prefix=mechecker/ HEAD -o www/mechecker_src.tar && gzip -f -9 www/mechecker_src.tar) || cp ../mechecker_src.tar.gz www
+	cp ../../../Waldmeister_Output_Rewrite.html unify_www
 
 userdir: www_ unify_www_ unify mechecker.cgi
 	mkdir -p ~/public-html
@@ -48,10 +49,6 @@ userdir: www_ unify_www_ unify mechecker.cgi
 	touch  ~/public-html/.data/unify_good.log 
 	chmod a+w ~/public-html/.data/unify_*.log
 	chmod a+w  ~/public-html/.data/*_stats.txt
-
-
-	
-
 
 precheck:
 	which $(OCAMLC) || (echo "The $(OCAMLC) compiler was not found.\nUsing 'make OCAMLC=ocamlc' in place of 'make' may help (but will cause slower bytecode to be used)" && false) 
@@ -95,6 +92,9 @@ install_home: www_
 install_homeu: unify_www_
 	cp unify_www/* ~/WWW/papers/
 	sed  -i "s,cgi-bin\|urules,$(REMOTE)/&,g"  ~/WWW/papers/unified_plain.html ~/WWW/papers/unified.html
+	#bash -c "cd ~/WWW/ && ln -s papers/unified*.html papers/urules.txt mechecker_src.tar. ."
+	chmod a+r ../../../Waldmeister_Output_Rewrite.html
+	cp redirect_unified.html ~/WWW/unified.html
 
 
 mechecker.cgi_: me.cmo me.cmx mechecker.cgi
