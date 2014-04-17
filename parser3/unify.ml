@@ -40,23 +40,36 @@
 
  *  *)
 
+
 open Mainlib
 open Me (* only for type tree *)
+
+module StringSet = Set.Make(String) ;; (* sets of strings *)
+
+
+let _cache_result_sat = ref [""]
+let _cache_result_unsat = ref [""]
 
 (*
 let list_mapi f ll = let rec r n l = match l with [] -> [] | e::rem -> (f n e)::(r (n+1) rem) in r 0 ll;;                
 let rec ww t = [] :: (List.concat (list_mapi (fun n e -> List.map (fun ee -> n::ee) (ww e)) t.c));;
  *)
 
-let origcwd = Sys.getcwd ()
+(*let origcwd = Sys.getcwd ()
+(*let _ = Sys.command "/usr/bin/whoami" *)
 
-let _ = Unix.chdir "/var/data/unify";;
-let x  = try Unix.chdir "/var/data/unify" ; "/var/www/urules.txt" 
-         with Unix.Unix_error (Unix.ENOENT, "chdir", _ )  ->  Unix.chdir "~/data/unify" ; "~/public-html/urules.txt" 
+(* Assume that if HOME is not set it is because we are being run in public-html/cgi-bin *)
+let home = try Sys.getenv "HOME" with _ -> origcwd^"/../.."
+*)
+(*let home = try Sys.getenv "HOME" with _ -> print_string ("Could not find HOME, trying"^origcwd^"/../..") ; origcwd^"/../.."*)
+(*let _ = Unix.chdir "/var/data/unify";;*)
+let rule_fname  = try Unix.chdir "/var/data/unify" ; "/var/www/urules.txt" 
+         with Unix.Unix_error (Unix.ENOENT, "chdir", _ )  ->  (*let publichtml = home ^ "/public-html/" in*)
+		Unix.chdir (Mainlib.publichtml^".data/unify") ; Mainlib.publichtml^"urules.txt" 
 
+         (*with Unix.Unix_error (_, "chdir", _ )  ->  Unix.chdir "~/data/unify" ; "~/public-html/urules.txt"
 let rule_fname = "/var/www/urules.txt";;
-
-let x  = try Unix.chdir "." ; "OK" with Unix.Unix_error (Unix.ENOENT, "chdir", "asdfadfafds")  -> "BAD" 
+*)  
 
 let append_s_to_fname_ l s fname =
   let f = open_out_gen l  0o666 fname in
@@ -201,9 +214,11 @@ let isvar t = isvar_s t.l;;
 let rec format_tree t = let degree = List.length t.c in
   match degree with
       0 -> t.l
+    (*| 1 -> t.l ^ "("^(format_tree (List.hd t.c))^")"
+    | 2 -> "(" ^ (format_tree (List.hd t.c)) ^ t.l ^ *)
     | 1 -> t.l ^ (format_tree (List.hd t.c))
-    | 2 -> "(" ^ (format_tree (List.hd t.c)) ^ t.l ^
-           (format_tree (List.nth t.c 1)) ^ ")"
+    | 2 -> "((" ^ (format_tree (List.hd t.c)) ^ ")"^t.l^"(" ^
+           (format_tree (List.nth t.c 1)) ^ "))"
     | _ -> failwith "Unexpected Error: invalid formula tree";;
 
 let match_tree_pattern t p =
@@ -369,7 +384,9 @@ let process_file_stats name fname t =
                  let (l,(regexp,issat)) = x in
                  let result_str = (name^"("^runtime_s^")") in
                  try ignore(Str.search_forward regexp s 0);
-                     let title = if issat then (sat_s := "Y" ; "  Satisfiable: ") else (sat_s := "N" ; "  UNsatisfiable: ") in
+                     let title = if issat 
+                        then (sat_s := "Y" ; _cache_result_sat   := name::!_cache_result_sat  ; "  Satisfiable: ") 
+                        else (sat_s := "N" ; _cache_result_unsat := name::!_cache_result_unsat; "  UNsatisfiable: ") in
                      (match (issat, name, t) with
                          (* "  UNsatisfiable: "title_unsat_str, "BPATH", {l="-";
                           * c=[rule]}) -> *)
@@ -629,6 +646,18 @@ let required_tasks t =
 
 (*if not Sys.file_exists *)
 
+let equivalent_solvers = [["CTL"; "mlsolver"]; ["BCTL";"BCTLNEW"; "BCTLOLD"; "BCTLHUE"; "BPATHf"]; ["BPATH"; "BPATHUE"]]
+
+let sat_implies = Hashtbl.create 40
+let _ =  print_string "test\n"; let stronger = ref [] in List.iter (
+  fun x -> stronger := List.concat [!stronger;x]; List.iter (
+    fun y -> List.iter (
+      fun z-> if (y <> z) then (
+         Hashtbl.add sat_implies (y^">"^z) "y";
+         (*print_string (y^">"^z^"\n")*))
+    ) x
+  ) !stronger
+) equivalent_solvers
 
 let do_formula_tree formula_tree =
           let normal_s = (format_tree formula_tree) ^ "\n" in
@@ -638,7 +667,16 @@ let do_formula_tree formula_tree =
           print_string ((format_tree2 formula_tree) ^ "\n");
           do_mlsolver formula_tree ;
            do_mark formula_tree*)
-          ignore (Do_parallel.do_commands (required_tasks formula_tree) max_runtime_float max_concurrent)
+          _cache_result_sat := []; 
+          _cache_result_unsat := []; 
+          ignore (Do_parallel.do_commands (required_tasks formula_tree) max_runtime_float max_concurrent);
+          List.iter ( fun y-> List.iter ( fun z-> 
+                let rule=(y^">"^z) in
+                  if (Hashtbl.mem sat_implies rule) then (
+                            print_string ("RULE Failed: "^rule^"\n");
+                             Mainlib.log (Mainlib.log_dir ^ "unify_BUG.log") (rule^" "^normal_s);
+                  )
+          ) !_cache_result_unsat ) !_cache_result_sat
 
           (*if verbose then List.iter (fun x ->
                        let (l,(regexp,title)) = x in
@@ -797,7 +835,7 @@ let do_simplify my_simplify s =
 
 let do_string s =
   clear_result_info();
-  let status = ref "bad" in
+  let status = ref "bad" in (
     try (
 (*      print_endline origcwd; *)
       let formula_tree = parse_ctls_formula s in
@@ -815,19 +853,20 @@ let do_string s =
                 let formula_tree = {l="-"; c=[formula_tree]} in 
                 print_string ("Negation: " ^ (format_tree formula_tree) ^ "\n");
         	do_formula_tree formula_tree
-        )
+        );
+	status := "good"
     ) with
         Parsing.Parse_error-> print_string "Could not parse Formula.\n"
-                                ;
-                              Mainlib.print_count "Program" "unify_stats.txt";
-                              Mainlib.log (Mainlib.log_dir ^ "unify_" ^ !status ^ ".log")
-                                (Mainlib.string_map (fun c->if c='\n' then ' ' else c) s)
+  );
+  Mainlib.print_count "Program" "unify_stats.txt";
+  Mainlib.log (Mainlib.log_dir ^ "unify_" ^ !status ^ ".log")
+  (Mainlib.string_map (fun c->if c='\n' then ' ' else c) s)
 ;;
 
-let do_benchmark s =
+let do_benchmark s = (
   clear_result_info();
   let status = ref "bad" in
-    try (
+    (try (
 (*      print_endline origcwd; *)
       let ft_ = parse_ctls_formula s in
         print_string ("Input formula: " ^ (format_tree ft_) ^ "\n");
@@ -842,11 +881,12 @@ let do_benchmark s =
            ("out/benchmarkhue.tex", [("BPATHUE", ft); ("BPATHUEf", ft); ("BPATHUE", force_state_var_A ft); ("BCTLHUE", ft)])
           ] 
     ) with
-        Parsing.Parse_error-> print_string "Could not parse Formula.\n"
+        Parsing.Parse_error-> print_string "Could not parse Formula.\n")
                                 ;
                               Mainlib.print_count "Program" "unify_stats.txt";
                               Mainlib.log (Mainlib.log_dir ^ "unify_" ^ !status ^ ".log")
                                 (Mainlib.string_map (fun c->if c='\n' then ' ' else c) s)
+)
 
 (*let do_string__ s = do_string_ s ; do_string_ ("-(" ^ s ^ ")")*)
 
@@ -921,8 +961,8 @@ let main () =
        | x -> print_string (Printexc.get_backtrace ()) ; print_string (Printexc.to_string x); failwith "Unexpected exception 1"
 
 let _ =
+  Printf.printf "Content-type: text/plain\n\n";
   try
-    Printf.printf "Content-type: text/plain\n\n";
     let qs = Sys.getenv "QUERY_STRING" in
       Me.max_size := 10000;
       ( try
