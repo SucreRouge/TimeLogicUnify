@@ -507,6 +507,28 @@ let l = match t.l with
            (format_tree2 (List.nth t.c 1)) ^ "))"
     | _ -> failwith "Unexpected Error: invalid formula tree"
 
+(* write out tree in form readable by tradtional Term Rewrite System software *)
+let rec format_tree_TRS_ t = let degree = List.length t.c in
+let l = match t.l with
+    "<" -> "impby"
+  | ">" -> "implies"
+  | "=" -> "eq"
+  | "-" -> "-"
+  | "0" -> "0"
+  | "1" -> "1"
+  | "&" -> "*"
+  | "|" -> "+"
+  | _ -> t.l in
+  match degree with
+      0 -> l
+    | 1 -> l ^ "(" ^ (format_tree_TRS_ (List.hd t.c)) ^ ")"
+    | 2 -> l ^ "(" ^ (format_tree_TRS_ (List.hd t.c)) ^ "," ^
+           (format_tree_TRS_ (List.nth t.c 1)) ^ ")"
+    | _ -> failwith "Unexpected Error: invalid formula tree"
+
+(*let format_tree_TRS t =
+	format_tree_TRS_(List.hd t.c)^"="^format_tree_TRS_(List.nth t.c 1)*)
+
 let rec format_tree_tex t = let degree = List.length t.c in
 let l = match t.l with
     "<" -> "\\leftarrow"
@@ -538,11 +560,11 @@ let tree_vars t =
 (* Replace all leafs in the tree with single characters. Useful if sat checker
  * only supports single character names *)
 
-let remap_leafs_ m t =
+let remap_leafs__ first_char m t =
   let leafs = tree_vars t in
     if List.length leafs > 26 then failwith "Cannot map more than 26 variables to letters";
     let a = Array.make 26 "" in
-    let idx s = m * (Char.code (String.get s 0) - Char.code 'a') in
+    let idx s = m * (Char.code (String.get s 0) - Char.code first_char) in
  (*   let isvar s = (let i = idx s in i < 26 && i >= 0) in *)
     let rec findfrom m i = if a.(i) = m
     then i
@@ -550,19 +572,31 @@ let remap_leafs_ m t =
       List.iter (fun m -> if (isvar_s m)
                  then a.(findfrom "" (idx m)) <- m
                  else () ) leafs;
-      let charof m = Char.escaped (Char.chr (Char.code 'a' + findfrom m (idx m) )) in
+      let charof m = Char.escaped (Char.chr (Char.code first_char + findfrom m (idx m) )) in
       let rec f t = if isvar t
       then {l = charof t.l; c=[]}
       else {l = t.l; c=List.map f t.c}
       in
         f t
 
+let remap_leafs_ = remap_leafs__ 'a'
 let remap_leafs_preserve_first_char = remap_leafs_ 1
 let remap_leafs = remap_leafs_ 0
 let rename_variables = remap_leafs_ 0
 
 
 let format_tree_mark f=(format_tree (remap_leafs f));;
+
+let format_tree_TRS t = format_tree_TRS_ t
+	(*format_tree_TRS_(remap_leafs__ 'x' 0 t)*)
+
+let dump_TRS() = 
+  let rules = (!rule_list) in
+  let rec r l = match l with 
+	  (x,y)::l2 -> (format_tree_TRS x) ^ "=" ^ (format_tree_TRS y) ^ "\n" ^ (r l2)
+	| _ -> "" in
+  r rules
+
 
 (*let do_mlsolver t = ignore (Do_parallel.do_commands
  [|
@@ -590,12 +624,15 @@ let redirect_output fname =
 
 (* this is creates an entry for a java solver *)                                             
 let java_entry name = ( name, "mark/",  fun t fname ->
-                          redirect_output "/dev/null";
                           Unix.chdir "mark/";
+                          print_string (name^"->"^fname^"\n");
                           let args =
                             [| "java"; "-Djava.awt.headless=true"; "JApplet";
                                format_tree_mark t; name ; fname |] in
                             (*Unix.execvp "echo" args;*)
+			    Array.iter print_string args;
+			    print_string "\n";
+                            redirect_output "/dev/null";
                             Unix.execvp "java" args )
 
 (* As above but translates the formula so that all variables are forced to be
@@ -848,6 +885,7 @@ let do_string s =
 		then simplify (!rule_list) (rename_variables formula_tree)
 		else formula_tree) in
         (if (!settings_simplify) then print_string ("Simplified to: " ^ (format_tree formula_tree) ^ "\n"));
+	print_endline ("ID: "^(canonical_file formula_tree));
 	do_formula_tree formula_tree;
         if settings_do_negation then (
                 let formula_tree = {l="-"; c=[formula_tree]} in 
@@ -932,7 +970,17 @@ let b_process_file name fname t =
   ()
  *)
 
+let expect_file fname = 
+  if not (Sys.file_exists fname) then (
+    Sys.command("pwd");();
+    print_endline ("Warning, cannot find file: "^fname)
+  )
+    
+
 let main () =
+  print_endline ("Data/current dir: "^(Sys.getcwd()));
+  expect_file "mark/JApplet.class";
+  expect_file "mlsolver/bin/mlsolver";
   print_string "main loop";
 
   Sys.set_signal Sys.sigfpe
@@ -950,7 +998,9 @@ let main () =
             | 'S' -> do_simplify simplify_star  (split_at_n_r line 1)
             | 'L' -> do_simplify simplify_learn (split_at_n_r line 1)
             | 'B' -> do_benchmark (split_at_n_r line 1)
+            | 'T' -> print_string (dump_TRS())
             | '#' -> ()
+            | '*' -> settings_solvers := ["*"]
             | _ -> do_string (line)
       with
           Parsing.Parse_error -> Printf.printf "Parse Error!\n"

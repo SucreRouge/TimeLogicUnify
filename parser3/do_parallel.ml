@@ -81,8 +81,9 @@ let do_commands commands timeout concurrent =
                  (try
                     (snd commands.(i)) run_times.(i);
                   with e ->
-                    (print_endline "Exception finalising task";
-                     print_endline (Printexc.to_string e);
+                    (print_endline ("Exception finalising task: "^(Printexc.to_string e));
+		     print_string("Current Directory: ");
+		     Sys.command("pwd");
                      Printexc.print_backtrace stderr));
                    running := list_remove i (!running);
                  Hashtbl.remove pid2i pid)
