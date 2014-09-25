@@ -32,6 +32,9 @@ One can compile and run this tool with:
 	make unify && ./unify
 Again, you probably want to run it via command editor, e.g
 	rlwrap ./unify
+It can farm out the rewritten formulas to external tableau. To do this they must be installed. To do this run
+	install_tableaux.sh
+
 
 
 

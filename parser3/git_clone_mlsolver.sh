@@ -1,3 +1,6 @@
+set -e
+set -x
+cd work
 git clone https://github.com/tcsprojects/mlsolver.git
 cd mlsolver/
 git clone https://github.com/tcsprojects/pgsolver

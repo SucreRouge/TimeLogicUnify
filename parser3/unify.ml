@@ -65,7 +65,9 @@ let home = try Sys.getenv "HOME" with _ -> origcwd^"/../.."
 (*let _ = Unix.chdir "/var/data/unify";;*)
 let rule_fname  = try Unix.chdir "/var/data/unify" ; "/var/www/urules.txt" 
          with Unix.Unix_error (Unix.ENOENT, "chdir", _ )  ->  (*let publichtml = home ^ "/public-html/" in*)
-		Unix.chdir (Mainlib.publichtml^".data/unify") ; Mainlib.publichtml^"urules.txt" 
+		try Unix.chdir (Mainlib.publichtml^".data/unify") ; Mainlib.publichtml^"urules.txt" 
+         		with Unix.Unix_error (Unix.ENOENT, "chdir", _ )  -> Unix.chdir ("work") ; "urules.txt" 
+	
 
          (*with Unix.Unix_error (_, "chdir", _ )  ->  Unix.chdir "~/data/unify" ; "~/public-html/urules.txt"
 let rule_fname = "/var/www/urules.txt";;
@@ -478,6 +480,25 @@ let rec simplify rules t =
  *  This reruns the loop over again *)
 let rec simplify_star t_in =
   let rules = (!rule_list) in
+  let used_rules = ref [] in
+  printf "Num rules %d\n" (List.length rules);
+
+  let t = ref t_in in
+  let t_new = ref (simplify rules t_in) in
+  List.iter ( fun e -> 
+	used_rules:=((!used_rules)@[e]);
+	let rules =(!used_rules) in
+  	while (not ((!t) = (!t_new))) do
+		printf "  .%s\n  .%s\n" (format_tree (!t)) (format_tree (!t_new));
+		t := !t_new;
+		t_new := simplify rules (!t);
+		printf "  %s\n  %s\n" (format_tree (!t)) (format_tree (!t_new))
+  	done; ()
+  ) rules;
+  (!t)
+
+(*let rec simplify_star_ t_in =
+  let rules = (!rule_list) in
   printf "Num rules %d\n" (List.length rules);
 
   let t = ref t_in in
@@ -489,7 +510,9 @@ let rec simplify_star t_in =
     printf "  %s\n  %s\n" (format_tree (!t)) (format_tree (!t_new))
                
   done;
-  (!t)
+  (!t) *)
+
+
 
 let rec format_tree2 t = let degree = List.length t.c in
 let l = match t.l with
@@ -623,11 +646,11 @@ let redirect_output fname =
   let _ = Unix.dup2 outfile Unix.stderr in ()
 
 (* this is creates an entry for a java solver *)                                             
-let java_entry name = ( name, "mark/",  fun t fname ->
-                          Unix.chdir "mark/";
+let java_entry name = ( name, "",  fun t fname ->
+                          (*Unix.chdir "mark/";*)
                           print_string (name^"->"^fname^"\n");
                           let args =
-                            [| "java"; "-Djava.awt.headless=true"; "JApplet";
+                            [| "java"; "-classpath"; "mark/src"; "-Djava.awt.headless=true"; "JApplet";
                                format_tree_mark t; name ; fname |] in
                             (*Unix.execvp "echo" args;*)
 			    Array.iter print_string args;
@@ -637,11 +660,11 @@ let java_entry name = ( name, "mark/",  fun t fname ->
 
 (* As above but translates the formula so that all variables are forced to be
  * treated as state variables, even if we are using a non-local logic *)
-let java_entry_f name = ( name ^ "f", "mark/",  fun t fname ->
+let java_entry_f name = ( name ^ "f", "",  fun t fname ->
                           redirect_output "/dev/null";
-                          Unix.chdir "mark/";
+                          (*Unix.chdir "mark/";*)
                           let args =
-                            [| "java"; "-Djava.awt.headless=true"; "JApplet";
+                            [| "java";"-classpath"; "mark/src"; "-Djava.awt.headless=true"; "JApplet";
                                format_tree_mark (force_state_var t); name ; fname |] in
                             (*Unix.execvp "echo" args;*)
                             Unix.execvp "java" args )
@@ -975,7 +998,7 @@ let expect_file fname =
     Sys.command("pwd");();
     print_endline ("Warning, cannot find file: "^fname)
   )
-    
+   
 
 let main () =
   print_endline ("Data/current dir: "^(Sys.getcwd()));
