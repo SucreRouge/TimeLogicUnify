@@ -21,7 +21,7 @@ do
 	killall -9 mlsolver) 2> /dev/null
 
 	F=unify_misc/${type}_formulas.txt
-	head -n 1000 < unify_misc/${type}_formulas.txt | sed 's/^/<\n/' > $F.tmp 
+	head -n $NUM_FORMULAS < unify_misc/${type}_formulas.txt | sed 's/^/<\n/' > $F.tmp 
        	UNIFY_SOLVERS="*" UNIFY_DO_NEG="N" UNIFY_CPUS=2 ./unify < $F.tmp > results/triv_${UNIFY_TIMEOUT}_${NUM_FORMULAS}_${type}.log
        	#UNIFY_SOLVERS="*" UNIFY_DO_NEG="N" UNIFY_CPUS=2 ./unify.exe < unify_misc/${type}_formulas.txt > results/triv_${type}.log
 done

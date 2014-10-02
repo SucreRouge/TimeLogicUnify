@@ -46,6 +46,16 @@ open Me (* only for type tree *)
 
 module StringSet = Set.Make(String) ;; (* sets of strings *)
 
+(* contains and replance based on stackoverflow *)
+let contains s2 s1 =
+    let re = Str.regexp_string s2
+    in
+        try ignore (Str.search_forward re s1 0); true
+        with Not_found -> false
+
+let replace input output =
+    Str.global_replace (Str.regexp_string input) output
+
 
 let _cache_result_sat = ref [""]
 let _cache_result_unsat = ref [""]
@@ -67,6 +77,8 @@ let rule_fname  = try Unix.chdir "/var/data/unify" ; "/var/www/urules.txt"
          with Unix.Unix_error (Unix.ENOENT, "chdir", _ )  ->  (*let publichtml = home ^ "/public-html/" in*)
 		try Unix.chdir (Mainlib.publichtml^".data/unify") ; Mainlib.publichtml^"urules.txt" 
          		with Unix.Unix_error (Unix.ENOENT, "chdir", _ )  -> Unix.chdir ("work") ; "urules.txt" 
+
+let rule_fname_TRS=rule_fname^".trs"
 	
 
          (*with Unix.Unix_error (_, "chdir", _ )  ->  Unix.chdir "~/data/unify" ; "~/public-html/urules.txt"
@@ -328,8 +340,6 @@ let rule_descriptions = ref (read_all_lines rule_fname)
 let rule_list = ref (List.map parse_rule (!rule_descriptions))
 let list_append l e = List.rev (e::(List.rev l))
 
-                        
-
 let rule_found = ref false
 let store_rules = ref true
 
@@ -530,24 +540,16 @@ let l = match t.l with
            (format_tree2 (List.nth t.c 1)) ^ "))"
     | _ -> failwith "Unexpected Error: invalid formula tree"
 
-(* write out tree in form readable by tradtional Term Rewrite System software *)
-let rec format_tree_TRS_ t = let degree = List.length t.c in
-let l = match t.l with
-    "<" -> "impby"
-  | ">" -> "implies"
-  | "=" -> "eq"
-  | "-" -> "-"
-  | "0" -> "0"
-  | "1" -> "1"
-  | "&" -> "*"
-  | "|" -> "+"
-  | _ -> t.l in
-  match degree with
-      0 -> l
-    | 1 -> l ^ "(" ^ (format_tree_TRS_ (List.hd t.c)) ^ ")"
-    | 2 -> l ^ "(" ^ (format_tree_TRS_ (List.hd t.c)) ^ "," ^
-           (format_tree_TRS_ (List.nth t.c 1)) ^ ")"
-    | _ -> failwith "Unexpected Error: invalid formula tree"
+(* From stackoverflow *)
+let contains s2 s1 =
+    let re = Str.regexp_string s2
+    in
+        try ignore (Str.search_forward re s1 0); true
+        with Not_found -> false
+
+let replace input output =
+    Str.global_replace (Str.regexp_string input) output
+
 
 (*let format_tree_TRS t =
 	format_tree_TRS_(List.hd t.c)^"="^format_tree_TRS_(List.nth t.c 1)*)
@@ -607,8 +609,84 @@ let remap_leafs_preserve_first_char = remap_leafs_ 1
 let remap_leafs = remap_leafs_ 0
 let rename_variables = remap_leafs_ 0
 
-
 let format_tree_mark f=(format_tree (remap_leafs f));;
+
+(* write out tree in form readable by tradtional Term Rewrite System software *)
+let rec format_tree_TRS_ t = let degree = List.length t.c in
+let l = match t.l with
+    "<" -> "impby"
+  | ">" -> "implies"
+  | "=" -> "eq"
+  | "-" -> "-"
+  | "0" -> "0"
+  | "1" -> "1"
+  | "&" -> "*"
+  | "|" -> "+"
+  | _ -> t.l in
+  match degree with
+      0 -> l
+    | 1 -> l ^ "(" ^ (format_tree_TRS_ (List.hd t.c)) ^ ")"
+    | 2 -> l ^ "(" ^ (format_tree_TRS_ (List.hd t.c)) ^ "," ^
+           (format_tree_TRS_ (List.nth t.c 1)) ^ ")"
+    | _ -> failwith "Unexpected Error: invalid formula tree"
+
+let rec parse_tree_TRS_ ptr s =
+	Printf.printf "%s %d\n" s ptr;
+	let junk = ptr + 1 in
+	let p = ref ptr in
+	let sym () = String.make 1 s.[!p] in
+	let chomp () = (while s.[!p] == ' ' do p:=1+(!p) done) in
+	chomp ();
+	(* should not be ( , or ) *)
+	let label = match sym() with 
+		  "]" -> ">"
+		| "[" -> "<"
+		| "*" -> "&"
+		| "+" -> "|" 
+		| _   -> sym() in
+	p:=1+(!p); chomp ();
+	let children = ref [] in
+	(if s.[!p] == '(' then (
+		(p:=1+(!p); chomp (););
+		let read_child() = (
+			let (np,nt) = parse_tree_TRS_ !p s in
+			let junk = format_tree nt in
+			p:=np;
+			children := nt::(!children);
+			chomp();
+		) in
+		if s.[!p] != ')' then read_child() else();
+		while s.[!p] == ',' do
+			(p:=1+(!p); chomp (););
+			read_child();
+		done;
+		(if s.[!p] == ')' then
+			p:=1+(!p)
+		else failwith ("')' expected but have: " ^ (String.make 1 (s.[!p])) ) )
+	) else (););
+	let t = {l=label; c=(List.rev (!children))} in
+	(*Printf.printf "%s, degree %d" (format_tree_mark t) *)
+	print_endline (format_tree t);
+(!p,t) 
+
+let rec parse_tree_TRS_rule_ s =
+	let s = replace "implies" ">" (s^") ") in
+	let (p1,t1) = parse_tree_TRS_ 0 s in
+	print_endline ("T1: "^(format_tree t1));
+	(* Now skip over " -> ", of length 4 *)
+	let (p2,t2) = parse_tree_TRS_ (p1+4) s in
+	print_endline ("T2: "^(format_tree t2));
+	(t1,t2)
+	
+let rule_descriptions_TRS = ref (List.filter (contains "->") (read_all_lines rule_fname_TRS))
+let rule_list_TRS = ref (List.map parse_tree_TRS_rule_ (!rule_descriptions_TRS))
+                        
+
+
+	
+
+	
+	
 
 let format_tree_TRS t = format_tree_TRS_ t
 	(*format_tree_TRS_(remap_leafs__ 'x' 0 t)*)
@@ -619,6 +697,49 @@ let dump_TRS() =
 	  (x,y)::l2 -> (format_tree_TRS x) ^ "=" ^ (format_tree_TRS y) ^ "\n" ^ (r l2)
 	| _ -> "" in
   r rules
+
+(* New TRS simplification functions *)
+
+let simplify_root_TRS rules t_in =
+  let t = ref t_in in
+  let finished = ref false in 
+  let simplify1 rule = (
+    try ( 
+      let t2 = apply_rule (!t) rule in
+      (* if (simpler_than t2 (!t)) then ( Printf.printf "subst %s -> %s\n" (format_tree (!t)) (format_tree t2) ; t := t2; finished := false) *)
+      ( Printf.printf "subst %s -> %s\n" (format_tree (!t)) (format_tree t2) ; t := t2; finished := false)
+    ) with Not_matched -> ()) in
+  while (not (!finished)) do
+    finished := true;
+    List.iter simplify1 rules;
+  done;
+  (!t)
+
+(*let simplify_root rules t_in =
+  let t = simplify_root_ rules t_in *) 
+
+let rec simplify_TRS rules t = 
+  if t.c = [] 
+  then t
+  else (simplify_root_TRS rules {l=t.l; c= List.map (simplify rules) t.c})
+
+(*  Simplify will use e.g
+ *  (Xa|Xa) -> X(a|a)
+ *  but then not be able to use a|a -> a
+ *  This reruns the loop over again *)
+let rec simplify_star_TRS t_in =
+  let rules = (!rule_list_TRS) in
+  printf "Num TRS rules %d\n" (List.length rules);
+
+  let t = ref t_in in
+  let t_new = ref (simplify rules t_in) in
+  while (not ((!t) = (!t_new))) do
+	printf "  .%s\n  .%s\n" (format_tree (!t)) (format_tree (!t_new));
+	t := !t_new;
+	t_new := simplify_TRS rules (!t);
+	printf "  %s\n  %s\n" (format_tree (!t)) (format_tree (!t_new))
+  done;
+  (!t)
 
 
 (*let do_mlsolver t = ignore (Do_parallel.do_commands
@@ -1035,6 +1156,9 @@ let main () =
 
 let _ =
   Printf.printf "Content-type: text/plain\n\n";
+  (*let (p,t) = parse_tree_trs_ 0 "U(a,b)" in
+  print_endline (format_tree t);*)
+  let _ =  parse_tree_TRS_rule_ " U(implies(x, y), -(y)) -> F(-(y))" in
   try
     let qs = Sys.getenv "QUERY_STRING" in
       Me.max_size := 10000;
