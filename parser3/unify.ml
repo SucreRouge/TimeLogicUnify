@@ -451,14 +451,31 @@ let simpler_than t1 t2 =
     )
   )
 
-(* Version of simpler than that just picks shortest formula *)
 
+ let formula_length t = String.length (format_tree_prefix t)
+ (*let rule_length (x,y) = (formula_length x) + (formula_length y)*)
+ 
+ let compare_rule r1 r2 = 
+ 	let rule2formula (x,y) = {l="="; c=[x;y]} in
+	let (t1,t2) = (rule2formula r1, rule2formula r2) in
+  	let (ft1, ft2) = (format_tree_prefix t1, format_tree_prefix t2) in
+  	let (lt1, lt2) = (String.length ft1, String.length ft2) in
+	if (lt1 = lt2) then 
+  		let (ft1, ft2) = (format_tree t1, format_tree t2) in
+  		let (lt1, lt2) = (String.length ft1, String.length ft2) in
+  		compare lt1 lt2 
+	else compare lt1 lt2
+
+ (* Version of simpler than that just picks shortest formula
+	Could simplify in terms of above function *)
  let shorter_than t1 t2 =
   let (ft1, ft2) = (format_tree_prefix t1, format_tree_prefix t2) in
   let (lt1, lt2) = (String.length ft1, String.length ft2) in
   if (lt1 < lt2) then true else (
     false
   )
+  
+  
 
 let simplify_root rules t_in =
   let t = ref t_in in
@@ -631,7 +648,7 @@ let l = match t.l with
     | _ -> failwith "Unexpected Error: invalid formula tree"
 
 let rec parse_tree_TRS_ ptr s =
-	Printf.printf "%s %d\n" s ptr;
+	(*Printf.printf "%s %d\n" s ptr;*)
 	let junk = ptr + 1 in
 	let p = ref ptr in
 	let sym () = String.make 1 s.[!p] in
@@ -666,26 +683,26 @@ let rec parse_tree_TRS_ ptr s =
 	) else (););
 	let t = {l=label; c=(List.rev (!children))} in
 	(*Printf.printf "%s, degree %d" (format_tree_mark t) *)
-	print_endline (format_tree t);
+	(*print_endline (format_tree t);*)
 (!p,t) 
 
 let rec parse_tree_TRS_rule_ s =
 	let s = replace "implies" ">" (s^") ") in
 	let (p1,t1) = parse_tree_TRS_ 0 s in
-	print_endline ("T1: "^(format_tree t1));
+	(*print_endline ("T1: "^(format_tree t1));*)
 	(* Now skip over " -> ", of length 4 *)
 	let (p2,t2) = parse_tree_TRS_ (p1+4) s in
-	print_endline ("T2: "^(format_tree t2));
+	(*print_endline ("T2: "^(format_tree t2));*)
 	(t1,t2)
 	
 let rule_descriptions_TRS = ref (List.filter (contains "->") (read_all_lines rule_fname_TRS))
 let rule_list_TRS = ref (List.map parse_tree_TRS_rule_ (!rule_descriptions_TRS))
                         
-
-
-	
-
-	
+let print_rules_tex =
+	List.iter ( fun (x,y) -> Printf.printf "%s \\rewrite %s\n" 
+		(format_tree_tex x)
+		(format_tree_tex y)
+	)
 	
 
 let format_tree_TRS t = format_tree_TRS_ t
@@ -715,13 +732,10 @@ let simplify_root_TRS rules t_in =
   done;
   (!t)
 
-(*let simplify_root rules t_in =
-  let t = simplify_root_ rules t_in *) 
-
 let rec simplify_TRS rules t = 
   if t.c = [] 
   then t
-  else (simplify_root_TRS rules {l=t.l; c= List.map (simplify rules) t.c})
+  else (simplify_root_TRS rules {l=t.l; c= List.map (simplify_TRS rules) t.c})
 
 (*  Simplify will use e.g
  *  (Xa|Xa) -> X(a|a)
@@ -732,7 +746,7 @@ let rec simplify_star_TRS t_in =
   printf "Num TRS rules %d\n" (List.length rules);
 
   let t = ref t_in in
-  let t_new = ref (simplify rules t_in) in
+  let t_new = ref (simplify_TRS rules t_in) in
   while (not ((!t) = (!t_new))) do
 	printf "  .%s\n  .%s\n" (format_tree (!t)) (format_tree (!t_new));
 	t := !t_new;
@@ -741,6 +755,8 @@ let rec simplify_star_TRS t_in =
   done;
   (!t)
 
+let simplify_star_both t =
+	simplify_star (simplify_star_TRS t)
 
 (*let do_mlsolver t = ignore (Do_parallel.do_commands
  [|
@@ -1135,17 +1151,21 @@ let main () =
         print_string "\n# ";
         let line = try read_line() with End_of_file -> (print_string "End of input\n" ; flush stdout; exit 0)  in
           print_string (line ^ "\n"); flush stdout;
-          match (line^"#").[0] with 
-              'R' -> cat rule_fname
-            | '<' -> settings_simplify := false
-            | '>' -> settings_simplify := true 
-            | 'S' -> do_simplify simplify_star  (split_at_n_r line 1)
-            | 'L' -> do_simplify simplify_learn (split_at_n_r line 1)
-            | 'B' -> do_benchmark (split_at_n_r line 1)
-            | 'T' -> print_string (dump_TRS())
-            | '#' -> ()
-            | '*' -> settings_solvers := ["*"]
-            | _ -> do_string (line)
+	  match line with
+	    "PRINT_TRS_TEX" -> print_rules_tex (List.sort compare_rule (!rule_list_TRS))
+            | _ -> match (line^"#").[0] with 
+                'R' -> cat rule_fname
+              | '<' -> settings_simplify := false
+              | '>' -> settings_simplify := true 
+              | 'S' -> do_simplify simplify_star  (split_at_n_r line 1)
+              | ',' -> do_simplify simplify_star_TRS  (split_at_n_r line 1)
+              | '.' -> do_simplify simplify_star_both  (split_at_n_r line 1)
+              | 'L' -> do_simplify simplify_learn (split_at_n_r line 1)
+              | 'B' -> do_benchmark (split_at_n_r line 1)
+              | 'T' -> print_string (dump_TRS())
+              | '#' -> ()
+              | '*' -> settings_solvers := ["*"]
+              | _ -> do_string (line)
       with
           Parsing.Parse_error -> Printf.printf "Parse Error!\n"
         | Not_found -> print_string "Not_Found Error XYZ" 
