@@ -1,6 +1,10 @@
-This package contains two programs, mechecker (and model checker) and unify, a rewrite tool and unified satisfiability checker for CTL*.
+This package contains two programs, (1) mechecker (and model checker) and (2) unify, a rewrite tool and unified satisfiability checker for CTL*.
 
-[THE MECHECKER MODEL CHECKER]
+This was originally because they both had to parse Temporal Logic formulas, so merging them meant we could reuse a few files.
+This may have been a mistake, but de-merging these projects probably isn't worthwhile.
+
+
+[1. THE MECHECKER MODEL CHECKER]
 
 -- INSTALLING mechecker -- 
 Here are some quick install instructions for Linux (& CygWin)
@@ -26,16 +30,23 @@ To install the Web Version:
 	benchmarkset.sh: Run this to regenerate the benchmarks
 	make_graphs.sh: Run this to remake graphs
 
-[THE UNIFY REWRITE TOOL]
+
+[2. THE UNIFY REWRITE TOOL]
 
 One can compile and run this tool with:
 	make unify && ./unify
 Again, you probably want to run it via command editor, e.g
 	rlwrap ./unify
+
+As a convienience you can just run
+	make runu
+to both make unify and run it under rlwrap.
+
 It can farm out the rewritten formulas to external tableau. To do this they must be installed. To do this run
 	install_tableaux.sh
 
-
+To regenerate the benchmarks, run:
+	make report
 
 
 USING unify rewrite tool:
