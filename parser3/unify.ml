@@ -1071,7 +1071,7 @@ let do_benchmark s = (
         let ft = rename_variables ft_ in
        List.iter (fun (out_fname, tasks) ->
         let results = List.map ( fun (solver_name, t) ->
-                let fname = "mark/out/" ^ (canonical_file t) ^ "." ^ solver_name ^ "3600" in
+                let fname = "out/" ^ (canonical_file t) ^ "." ^ solver_name ^ "3600" in
                 (process_file_stats solver_name fname t)) tasks in
         appendc_s_to_fname (String.concat " & " (("$"^format_tree_tex ft_^"$")::(squeeze results)) ^ "\\\\ \n") out_fname 
        ) [

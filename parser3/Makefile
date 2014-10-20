@@ -149,7 +149,7 @@ clean:
 	ocamlyacc -v $<
 
 
-result: results/unify_len.tex unify_misc/triv_60_100_simp.log
+result: results/unify_len.tex unify_misc/triv_60_100_simp.log TableHue.pdf
 
 results/unify_len.out: ./unify_formula_len.sh
 	#./unify_formula_len.sh
@@ -162,6 +162,9 @@ results/unify_len_TRS.tex: results/unify_len.out ./unify_formula_len2.sh
 
 unify_misc/triv_60_100_simp.log: ./unify_triv_solv.sh
 	./unify_triv_solv.sh
+
+TableHue.pdf:
+	bash ./benchpath.sh
 
 
 include .depend
