@@ -22,7 +22,9 @@ mkdir -p $D/null
 #rm $D/urules_trs_good.txt
 #rm $D/urules_trs_bad.txt
 #rm $D/urules_trs_redundant.txt
-#touch $D/urules_trs_good.txt
+touch $D/urules_trs_good.txt
+touch $D/urules_trs_bad.txt
+touch $D/urules_trs_redundant.txt
 
 echo "$D"/urules_trs.txt
 #cat "$D"/urules_trs.txt | grep -F -x -f $D/urules_trs_good.txt -f $D/urules_trs_bad.txt $D/urules_trs_redundant.txt |  while read -r L
@@ -35,7 +37,7 @@ do
 	(
 	#echo undo
 	#echo '(VAR x y z)'
-	echo '(VAR x y z d)'
+	echo '(VAR x y z a b c d)'
 	echo '(RULES'
  	cat $D/urules_trs_good.txt $D/urules_trs_new.txt | sed 's/^/  /
 s/=/ -> /
