@@ -1,6 +1,7 @@
 OCAMLC = $(shell which ocamlopt.opt ocamlopt | head -n1)
 #REMOTE = "http://gmatht.homelinux.net"
-REMOTE = "http://gmatht.mooo.com"
+#REMOTE = "http://gmatht.mooo.com"
+REMOTE = "https://matt.ucc.asn.au/~mccabedj"
 
 main: precheck me.ml mainlib.ml phi_lexer.ml phi_parser.ml  me_parser.ml me_parser.mli me_lexer.ml main.ml phi_parser.cmi me_parser.cmi me_parser.cmo me_parser.cmo
 	$(OCAMLC) -o main str.cmxa me.ml phi_parser.ml phi_lexer.ml  me_lexer.ml me_parser.ml mainlib.ml main.ml  
@@ -12,6 +13,11 @@ unify: me.ml do_parallel.ml mainlib.ml unify_.ml phi_lexer.ml phi_parser.ml  me_
 	$(OCAMLC) -o unify     me.ml str.cmxa unix.cmxa do_parallel.ml phi_parser.ml phi_lexer.ml  me_lexer.ml me_parser.ml mainlib.ml unify_.ml  
 unify_dbg:  me.ml do_parallel.ml mainlib.ml unify_.ml phi_lexer.ml phi_parser.ml  me_parser.ml me_parser.mli me_lexer.ml main.ml phi_parser.cmi me_parser.cmi me_parser.cmo me_parser.cmo
 	ocamlc -g -o unify_dbg me.ml str.cma unix.cma do_parallel.ml phi_parser.ml phi_lexer.ml  me_lexer.ml me_parser.ml mainlib.ml str.cma unify_.ml
+	mkdir -p ../.data/unify
+	mkdir ../.data/unify/mark
+	mkdir ../.data/unify/mark/out
+	touch ../urules.txt
+	
 www_: 
 	mkdir -p www
 	#bash -c "(echo '<html>' ; cat mechecker2.html) > www/mechecker_plain.html"
@@ -26,6 +32,7 @@ unify_www_:
 	./makehtml.sh unify unify_www/unified
 	mkdir -p www
 	(git archive --prefix=mechecker/ HEAD -o www/mechecker_src.tar && gzip -f -9 www/mechecker_src.tar) || cp ../mechecker_src.tar.gz www
+	cp ../../../Waldmeister_Output_Rewrite.html unify_www
 
 userdir: www_ unify_www_ unify mechecker.cgi
 	mkdir -p ~/public-html
@@ -47,10 +54,6 @@ userdir: www_ unify_www_ unify mechecker.cgi
 	touch  ~/public-html/.data/unify_good.log 
 	chmod a+w ~/public-html/.data/unify_*.log
 	chmod a+w  ~/public-html/.data/*_stats.txt
-
-
-	
-
 
 precheck:
 	which $(OCAMLC) || (echo "The $(OCAMLC) compiler was not found.\nUsing 'make OCAMLC=ocamlc' in place of 'make' may help (but will cause slower bytecode to be used)" && false) 
@@ -94,6 +97,14 @@ install_home: www_
 install_homeu: unify_www_
 	cp unify_www/* ~/WWW/papers/
 	sed  -i "s,cgi-bin\|urules,$(REMOTE)/&,g"  ~/WWW/papers/unified_plain.html ~/WWW/papers/unified.html
+	#bash -c "cd ~/WWW/ && ln -s papers/unified*.html papers/urules.txt mechecker_src.tar. ."
+	chmod a+r ../../../Waldmeister_Output_Rewrite.html
+	cp redirect_unified.html ~/WWW/unified.html
+
+#results/unify_len.out: unify_benchmarks/len.sh
+#	unify_benchmarks/len.sh
+
+#benchmarku: results/unify_len.out
 
 
 mechecker.cgi_: me.cmo me.cmx mechecker.cgi
@@ -138,13 +149,22 @@ clean:
 	ocamlyacc -v $<
 
 
-result: results/unify_len.tex
+result: results/unify_len.tex unify_misc/triv_60_100_simp.log TableHue.pdf
 
-results/unify_len.out:
-	./unify_formula_len.sh
+results/unify_len.out: ./unify_formula_len.sh
+	#./unify_formula_len.sh
+	unify_benchmarks/len.sh
 
-results/unify_len.tex: results/unify_len.out
+results/unify_len.tex: results/unify_len.out ./unify_formula_len2.sh
 	./unify_formula_len2.sh
+results/unify_len_TRS.tex: results/unify_len.out ./unify_formula_len2.sh
+	./unify_formula_len2_TRS.sh
+
+unify_misc/triv_60_100_simp.log: ./unify_triv_solv.sh
+	./unify_triv_solv.sh
+
+TableHue.pdf:
+	bash ./benchpath.sh
 
 
 include .depend

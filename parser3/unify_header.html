@@ -1,8 +1,11 @@
 <h3>Unified Satisfiability Checker for CTL and Related Logics</h3>
 Formulas have syntax defined by the following BNF notation where p is any lowercase letter: <br/>
- &nbsp;&nbsp;&nbsp; &phi; := p <cal>|</cal> (&phi; &amp; &phi;) <cal>|</cal> -&phi; <cal>|</cal> (&phi; U &phi;) <cal>|</cal> (&phi; | &phi;) <cal>|</cal> (&phi; = &phi;) <cal>|</cal> (&phi; &gt; &phi;) <cal>|</cal> (&phi; &lt; &phi;) <br/>
+ &nbsp;&nbsp;&nbsp; &phi; := p <cal>|</cal> (&phi; &amp; &phi;) <cal>|</cal> -&phi; <cal>|</cal> (&phi; U &phi;) <cal>|</cal> X&phi; <cal>|</cal> F&phi; <cal>|</cal> G&phi; <cal>|</cal> A&phi; <cal>|</cal> E&phi; <cal>|</cal> (&phi; | &phi;) <cal>|</cal> (&phi; = &phi;) <cal>|</cal> (&phi; &gt; &phi;) <cal>|</cal> (&phi; &lt; &phi;) <br/>
 
-To add a new rewrite rule of the form &phi; &rarr; &psi;, just enter the formula "&phi; = &psi;" and the system will add it to the <a href="urules.txt">list of rewrite rules</a> used to simplify formulas once it verifies that the rule is valid (i.e. the negation is not satisfiable) in our BPATH path-variable variant of BCTL*, and that the rule has not already been added.  Queries are logged, and may be used for debugging and research purposes. 
+
+<p>These operators are to be read as: atomic (p)ropostion, and (&amp;), negation (-), (U)ntil, ne(X)t, (F)inally, (G)lobally/always, on (A)ll paths/futures, there (E)xists a path, or (|), equals (=), implies (&gt;) and implied by (&lt;).</p>
+
+<p>To add a new rewrite rule of the form &phi; &rarr; &psi;, just enter the formula "&phi; = &psi;" and the system will add it to the <a href="urules.txt">list of rewrite rules</a> used to simplify formulas once it verifies that the rule is valid (i.e. the negation is not satisfiable) in our BPATH path-variable variant of BCTL*, and that the rule has not already been added. These rules can be translated into a form readable by existing Term Rewrite Systems such as <a href="https://www.mpi-inf.mpg.de/~hillen/waldmeister/">Waldmeister</a>, see for example the following <a href="Waldmeister_Output_Rewrite.html">Waldmeister run</a>. Queries are logged, and may be used for debugging and research purposes.</p>
 
 See also: [<a href="mechecker_src.tar.gz">Source Code</a>, <a href="urules.txt">Rewrite Rules</a>]
 

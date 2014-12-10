@@ -1,19 +1,23 @@
 formulas=mark_formulas.txt
 
-grep 'eg\[' var/mark/formulas/Examples.java  | grep '"' | sed 's/";//' | sed 's/.*"//' > $formulas 
+#mkdir -p var/out
+
+grep 'eg\[' work/mark/src/formulas/Examples.java  | grep '"' | sed 's/";//' | sed 's/.*"//' > $formulas 
 
 
 if [ 1 -gt "0$1" ]
 then
-(echo '<'; cat  $formulas) | UNIFY_OFFLINE=y UNIFY_SOLVERS="BPATH BCTLNEW BCTLHUE BPATHf BPATHUE BPATHUEf" make runu
+(echo '<'; cat  $formulas) | UNIFY_OFFLINE=y UNIFY_SOLVERS="mlsolver BPATH BCTLNEW BCTLHUE BPATHf BPATHUE BPATHUEf" make runu
 #(echo '<'; cat  $formulas) | UNIFY_OFFLINE=y UNIFY_SOLVERS="BCTLNEW" make runu
 true && (echo '<'; cat  $formulas | sed 's/p/Ap/g
 s/q/Aq/g
 s/r/Ar/g' ) | UNIFY_OFFLINE=y UNIFY_SOLVERS="BPATH BPATHUE" make runu
 fi
 
-echo -n '' > var/out/benchmark.tex
-echo -n '' > var/out/benchmarkhue.tex
+#exit
+
+echo -n '' > work/out/benchmark.tex
+echo -n '' > work/out/benchmarkhue.tex
 (echo '<'; 
   while read -r L
   do
@@ -22,6 +26,10 @@ echo -n '' > var/out/benchmarkhue.tex
   done
   cat
 ) < $formulas | make runu
+
+#exit
+
+cp work/out/benchmark*.tex .
 
 (
 LOGICS='\mathcal{N} \mathcal{N}^{AE} \mathcal{N}^A \mathcal{L}'
@@ -56,15 +64,15 @@ for e in "" hue
 do
 sed 's/[.]/\&/g
 s/[$].neg\(................................*\)vee\(...................................*\)[$]/$\\neg ( \\ldots )$/
-s/[$]\(................................*\\vee\)\(...................................*\)[$]/\\pbox{10cm}{$\1 \\ldots $\\\\    $\\quad\2 $}/' <  var/out/benchmark$e.tex > benchpath_table$e.tex
+s/[$]\(................................*\\vee\)\(...................................*\)[$]/\\pbox{10cm}{$\1 \\ldots $\\\\    $\\quad\2 $}/' <  work/out/benchmark$e.tex > benchpath_table$e.tex
 #sed 's/[.]/\&/g' <  var/out/benchmarkhue.tex > benchpathhue_table.tex
   #| UNIFY_OFFLINE=y UNIFY_SOLVERS="BPATH BCTLNEW BCTLHUE BPATHf BPATHUE BPATHUEf" make runu
 done
 
 sed 's/table.tex/tablehue.tex/' < Table.tex > TableHue.tex
 
-pdflatex Table.tex
-pdflatex TableHue.tex
+pdflatex Table.tex    < /dev/null
+pdflatex TableHue.tex < /dev/null
 
 exit
 
