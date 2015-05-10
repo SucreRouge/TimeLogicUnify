@@ -8,7 +8,23 @@ module IntSet = struct
 	let rec of_list l = match l with [] -> empty | h::t -> add h (of_list t) 
 end
 
+let println_list_of_int li = Printf.printf "[%s]\n" (String.concat "; " (List.map string_of_int li))
+
 let subsets xs = List.fold_right (fun x rest -> rest @ List.map (fun ys -> x::ys) rest) xs [[]]
+
+let iter_small_subsets f n xs =
+	let rec r pl n xs =
+		if (n < 1)
+		then f pl
+		else match xs with 
+				| [] -> f pl
+				| head::tail -> 
+					r (head::pl) (n-1) tail;
+					r pl          n    tail in
+	r [] n xs;;
+
+
+
 let rec range i j = if i > j then [] else i :: (range (i+1) j)
 
 let ( ==> ) a b = ((not a) || b)
@@ -105,18 +121,10 @@ module Hue = struct
 					| NOT CAN(x,a) ->  ( (x=all_agents) ==> (not (has a)))
 					| _ -> true
 					) h;;
-					
-    let to_string x = "{" ^ (String.concat ", " (List.map Formula.to_string (elements x))) ^ "}";;
-    let println x = print_string ((to_string x) ^ "\n") ;; 
 
-	let _ = iter Formula.println closure;; 
 	
     let all_hues = List.filter valid (List.map of_list (subsets (elements closure)));;
-    
-    let _ = print_string (String.concat "\n" (List.map to_string all_hues));;
-    
-    Printf.printf "\nNumber of Hues: %d \n" (List.length all_hues);;
-    
+
     let rx h g = for_all (fun x -> match x with
 		| NEXT a       ->      mem a g
 		| NOT (NEXT a) -> not (mem a g)
@@ -130,7 +138,7 @@ module Hue = struct
 		| CAN _ -> true
 		| _     -> false
 		
-	let can_formulas h = filter h;;       
+	let can_formulas h = filter can_formula h;;       
  
    let ra h g = 
 		let r h g = for_all (fun x -> 
@@ -138,7 +146,22 @@ module Hue = struct
 			| UNTIL(a,b)   ->     (mem x g)
 			| _ -> true) h in
 		(r h g) &&  (r g h);;
-		
+
+
+(* The Hues are now implemented, we now do some Input/Output defintions *)
+					
+    let to_string x = "{" ^ (String.concat ", " (List.map Formula.to_string (elements x))) ^ "}";;
+    let println x = print_string ((to_string x) ^ "\n") ;; 
+
+	let _ = iter Formula.println closure;; 
+    
+    let _ = print_string (String.concat "\n" (List.map to_string all_hues));;
+    
+    Printf.printf "\nNumber of Hues: %d \n" (List.length all_hues);;
+
+(* Since we will have to implement pruning of Colours later, let us
+   practice pruning hues that are not even LTL-consistent *)
+ 		
 	let has_successor hues h = List.exists (rx h) hues;;
 	let filter_hues hues = List.filter (has_successor hues) hues
 	let all_hues = fixpoint filter_hues all_hues;; 
@@ -175,13 +198,44 @@ module Hue = struct
 		
     Printf.printf "Number of LTL-Consistent Hues: %d \n\n" (List.length all_hues);;
     
-    
 	let _ = List.iter println all_hues;;
-    
 end
-
-
+;;
+iter_small_subsets println_list_of_int 4 [1; 2; 3];
+;;
 
 module Colour = struct
 	include Set.Make(Hue)
+	
+	(* exists a formula satisfying fn
+	exists_f fn c = 
+		exists (fun h->
+			exists fn h
+		) c
+	*)
+	
+	let mem_f f c = 
+        exists (fun h->
+			Hue.mem f h
+		) c;;	
+		
+	let _ =assert (mem_f (ATOM 'p') (singleton(Hue.singleton(ATOM 'p'))));;
+
+
+	let valid c = 
+		let arbitrary_hue = min_elt c in
+		let can_f = Hue.can_formulas arbitrary_hue in
+		let sat_c1 = for_all (fun h->(Hue.can_formulas h)=can_f) c in 
+		sat_c1;;
+ 
+(*			
+		let sat_c2 =
+			for_all (fun f->
+				match f with
+				| CAN(_,alpha) -> mem_f alpha c
+				| _	-> assert(false)
+			) can_f in
+		(sat_c1 && sat_c2)
+		*)
+	
 end	
