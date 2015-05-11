@@ -8,6 +8,18 @@ module IntSet = struct
 	let rec of_list l = match l with [] -> empty | h::t -> add h (of_list t) 
 end
 
+module ISS = Set.Make(IntSet)
+
+let agents_disjoint al = 
+	let rec r prev l =
+		match l with
+		| [] -> true
+		| head::tail -> 
+			if (IntSet.inter prev head = IntSet.empty)
+			then r (IntSet.union prev head) tail 
+			else false in
+	r IntSet.empty (ISS.elements al)
+
 let println_list_of_int li = Printf.printf "[%s]\n" (String.concat "; " (List.map string_of_int li))
 
 let subsets xs = List.fold_right (fun x rest -> rest @ List.map (fun ys -> x::ys) rest) xs [[]]
@@ -71,6 +83,8 @@ module Formula = struct
 	let compare = compare
 end  
 
+	
+
 (* We now fix a formula that we wish to decide *)
 (*
 let phi = AND (CAN (IntSet.singleton(1), NOT (NEXT (ATOM 'p'))), CAN (IntSet.empty, ATOM 'p')) 
@@ -84,6 +98,9 @@ let num_agents = 1
 
 let all_agents = IntSet.of_list(range 1 num_agents)
 
+(* We define a Hue as a set of formulas, however a "Hue" is only a
+   hue as defined the the B-ATL* paper iff the Hue.valid function
+   returns true *) 
 module Hue = struct
 	include Set.Make(Formula)
 	let bigunion = List.fold_left union empty
@@ -101,6 +118,8 @@ module Hue = struct
 		| AND (x,y) | UNTIL (x,y) -> union3 p_notp (r x) (r y)
 		| CAN (a,y)   -> union3 p_notp (of_list [STRONG a; WEAK a]) (r y)  
 		| STRONG a | WEAK a -> singleton p
+
+		(* FIXME: should there ever be "WEAK empty" in the closure *)
 		
 	let closure = closure_of phi
 	
@@ -111,7 +130,18 @@ module Hue = struct
 					| _ -> true
 				) closure;;
 
-	let valid h = (mpc h) && 
+	let rec add_vetos prev_vetos h =
+		let rec r (w,s) h =
+			match h with
+			| [] -> prev_vetos
+			| (WEAK   ag)::tail -> r ((ISS.add ag w), s) tail
+			| (STRONG ag)::tail -> r (w, (ISS.add ag s)) tail
+			| _::tail -> r (w,s) tail in
+		r prev_vetos (elements h)
+	let get_vetos = add_vetos (ISS.empty, ISS.empty)
+	let vetos_valid (w,s) = ((ISS.cardinal w) <= 1) && (agents_disjoint (ISS.union w s));;
+
+	let valid h = (mpc h) && (vetos_valid (get_vetos h)) &&  
 				  for_all (fun p ->
 				    let has x = mem x h in
 					match p with 
@@ -139,14 +169,25 @@ module Hue = struct
 		| _     -> false
 		
 	let can_formulas h = filter can_formula h;;       
+
+	assert ((can_formulas (singleton(ATOM 'p')))=empty);
+	assert ((can_formulas (singleton(CAN (IntSet.empty, ATOM 'p'))))!=empty);
+	;;
  
-   let ra h g = 
+	let ra h g = 
 		let r h g = for_all (fun x -> 
 			match x with
 			| UNTIL(a,b)   ->     (mem x g)
 			| _ -> true) h in
 		(r h g) &&  (r g h);;
 
+	let vetoed = 
+		exists (fun psi->
+			match psi with
+			| STRONG _ | WEAK _ -> true;
+			| _ -> false;
+		) 
+	let not_vetoed h = not (vetoed h)			
 
 (* The Hues are now implemented, we now do some Input/Output defintions *)
 					
@@ -171,10 +212,8 @@ module Hue = struct
 	let directly_fulfilled b hues = List.filter (fun h->mem b h) hues;;
 	
     let _ = List.iter println  all_hues;;
- 	
 
     let _ = List.iter println (directly_fulfilled (ATOM 'a') all_hues);;
-
  	
 	(* returns a list of hues in "hues" that are fulfilled by arleady fulfilled hues in "fh" *)  
 	let fulfilled_step hues b fh = List.filter 
@@ -221,12 +260,19 @@ module Colour = struct
 		
 	let _ =assert (mem_f (ATOM 'p') (singleton(Hue.singleton(ATOM 'p'))));;
 
-
 	let valid c = 
 		let arbitrary_hue = min_elt c in
 		let can_f = Hue.can_formulas arbitrary_hue in
 		let sat_c1 = for_all (fun h->(Hue.can_formulas h)=can_f) c in 
-		sat_c1;;
+		let sat_c2 =
+			Hue.for_all (fun f->
+				match f with
+				| CAN(_,alpha) -> mem_f alpha c
+				| _	-> assert(false)
+			) can_f in
+		let sat_c3 = exists Hue.not_vetoed in
+		
+		(sat_c1 && sat_c2);;
  
 (*			
 		let sat_c2 =
