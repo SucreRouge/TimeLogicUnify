@@ -102,6 +102,7 @@ module Formula = struct
 
 	let of_string s =
 		let i = ref 0 in
+		let s = "("^s^")" in
 		let rec c() = (
 			let got=s.[(!i)] in
 			i:=(!i)+1;
@@ -116,26 +117,30 @@ module Formula = struct
 				then IntSet.add ( (int_of_char (x) - int_of_char('0')) ) (ag()) 
 				else (printf "Invalid Agent#  %c at position %d\n" x (!i); assert (false)) in
 		let rec r()=
+			let rec bimodal x = 
+				let op = c() in
+				if op = ')' then x
+				else bimodal (
+					match op with 
+					| '&' -> AND   (x,r())
+					| 'U' -> UNTIL (x,r())
+					| '|' -> NOT   (AND (NOT x, NOT (r())))
+					| x -> (printf "Unexpected op  %c at position %d" x (!i); assert (false))
+				) 
+			in
 			match (c()) with
 			| '~' | '-' -> NOT (r())  
 			| 'X' | 'N' -> NEXT (r())  
-			| '(' -> ( 
-				let x = r() in
-				let op = c() in
-				let y = r() in
-				assert (c() = ')');
-				match op with 
-				| '&' -> AND (x,y)
-				| 'U' -> UNTIL (x,y)
-				| '|' -> NOT (AND (NOT x, NOT y))
-				| x -> (printf "Unexpected op  %c at position %d" x (!i); assert (false))
-			)
+			| '(' ->  bimodal (r()) 
 			| '{' -> 
 				let agents = ag() in
 				let psi = r() in
 				CAN (agents, psi)
 			| x -> ATOM x in
-		r()
+		r();;
+		
+		
+			
 				
 	let  max_agent psi = let rec s psi = 
 		match psi with
@@ -350,8 +355,11 @@ module Hue = struct
 end
 
 
-let max_hues_in_colour = int_of_float (log (float_of_int colour_limit) /. log (float_of_int (List.length Hue.all_hues)));;
-let max_hues_in_colour = 2;;
+let max_hues_in_colour = 
+	if Array.length Sys.argv > 2
+	then int_of_string Sys.argv.(2)
+	else int_of_float (log (float_of_int colour_limit) /. log (float_of_int (List.length Hue.all_hues)));;
+(*let max_hues_in_colour = 2;;*)
 printf "Limiting ourselves to %d hues per colour\n" max_hues_in_colour;;
 
 flush stdout;
