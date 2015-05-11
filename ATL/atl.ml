@@ -58,6 +58,23 @@ let iter_small_subsets f n xs =
 					r pl          n    tail in
 	r [] n xs;;
 
+let iter_small_subsets_filt filt f n xs =
+	(*let recursions=ref 0;*)
+	let rec r pl n xs =
+		if (filt pl)
+		then ( 
+			if (n < 1)
+			then f pl
+			else 
+				match xs with 
+				| [] -> f pl
+				| head::tail -> 
+					r (head::pl) (n-1) tail;
+					r pl          n    tail 
+		) in
+	r [] n xs;;
+
+
 
 let rec range i j = if i > j then [] else i :: (range (i+1) j)
 
@@ -174,8 +191,10 @@ let phi = NEXT (AND (ATOM 'p', NOT (ATOM 'p')))
 let phi =
 	if Array.length Sys.argv > 1
 	then Formula.of_string Sys.argv.(1)
-	else Formula.of_string "({1}p&{1}~p)"
+	else Formula.of_string "({1}p&{1}~p)";;
 	(*else UNTIL (ATOM 'p', (AND (ATOM 'p', NOT (ATOM 'p')))) *)
+
+print_endline "Read formula";;
 
 let num_agents = Formula.max_agent(phi)  
 let colour_limit = 1000000
@@ -206,11 +225,15 @@ module Hue = struct
 		| NEXT x      -> union p_notp (r x)
 		| AND (x,y) | UNTIL (x,y) -> union3 p_notp (r x) (r y)
 		| CAN (a,y)   -> union3 p_notp (of_list [STRONG a; WEAK a]) (r y)  
-		| STRONG a | WEAK a -> singleton p
+		| STRONG a | WEAK a -> singleton p;;
+
+
+
 
 		(* FIXME: should there ever be "WEAK empty" in the closure *)
 		
-	let closure = closure_of phi
+	let closure = closure_of phi;;
+    	printf "\n Size of closure %d \n" (cardinal closure );;
 	
 	let mpc h = for_all (fun b -> let has x = mem x h in 
 					match b with
@@ -258,13 +281,37 @@ module Hue = struct
 					match p with 
 					| UNTIL(a,b) -> (has a) || (has b)
 					| NOT (UNTIL (a,b)) -> (not(has b))
-					| CAN(x,a) ->      ( (x=IntSet.empty) ==> (has a) )
-					| NOT CAN(x,a) ->  ( (x=all_agents) ==> (not (has a)))
+					| CAN(x,a) ->      ( (IntSet.equal x IntSet.empty) ==> (has a) )
+					| NOT CAN(x,a) ->  ( (IntSet.equal x all_agents) ==> (not (has a)))
 					| _ -> true
 					) h;;
 
-	
-    let all_hues = List.filter valid (List.map of_list (subsets (elements closure)));;
+
+	print_endline "Building Hues";;	
+(*    let all_hues = List.filter valid (List.map of_list (subsets (elements closure)));; *)
+	let all_hues = 
+		let out = ref [] in
+		 iter_small_subsets_filt
+			(fun  hl->not (List.exists (
+				fun f->
+					(List.mem (NOT f) hl) ||
+					(List.mem (NOT (CAN(IntSet.empty,f))) hl ) ||
+					(List.mem (CAN(IntSet.empty,neg f)) hl ) ||
+					match f with
+					| AND(a,b) -> (List.mem (neg a) hl) || (List.mem (neg b) hl)
+					| NOT (AND(a,b)) -> (List.mem a hl) && (List.mem b hl)
+					| NEXT x -> (List.mem (NEXT (neg x)) hl)
+					| NEXT (NEXT x) -> (List.mem (NEXT (NEXT ((neg x)))) hl)
+					| _ -> false
+
+			) hl)) 
+			 (fun  hl->let h = of_list hl in
+				if   (valid h)
+				then out := h::(!out) 
+			) max_int (elements closure);
+		(!out);;
+		
+	print_endline "Built Hues";;	
 
     let rx h g = for_all (fun x -> match x with
 		| NEXT a       ->      mem a g
