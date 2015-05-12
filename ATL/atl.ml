@@ -132,9 +132,7 @@ module Formula = struct
 			| '}' -> IntSet.empty
 			| x -> if (x > '0' && x <= '9') 
 				then IntSet.add ( (int_of_char (x) - int_of_char('0')) ) (ag()) 
-				else (printf "Invalid Agent#  %c at position %d\n" x (!i);
-				 assert (false);
-				) in
+				else (printf "Invalid Agent#  %c at position %d\n" x (!i); assert (false)) in
 		let rec r()=
 			let rec bimodal x = 
 				let op = c() in
@@ -686,16 +684,15 @@ let satisfied = List.exists (fun c ->
 		has_phi
 	) remaining_colours;;
 
+let result = sprintf "Finished Processing %s\n" (Formula.to_string phi) ^
 if satisfied
-then print_string "RESULT: SATISFIABLE\n"
+then "RESULT: SATISFIABLE\n"
 else 
 	if (max_hues_in_colour < List.length Hue.all_hues) 
-	then (printf "Not satisfied, but large colours with more than %d (of %d) hues have been excluded\n" max_hues_in_colour (List.length Hue.all_hues);
-	     print_string "RESULT: UNKNOWN\n";)
+	then Printf.sprintf "Not satisfied, but large colours with more than %d (of %d) hues have been excluded\nRESULT: UNKNOWN\n" max_hues_in_colour (List.length Hue.all_hues) 
 	else  
 		if use_weak 
-		then (print_string "RESULT: UNsatisfiable\n")
-		else (print_string "Not satisfied, but weak vetos have been exluded\nRESULT: UNKNOWN\n");;
-	
+		then "RESULT: UNsatisfiable\n"
+		else "Not satisfied, but weak vetos have been exluded\nRESULT: UNKNOWN\n";;
 
 printf "Finished Processing %s\n" (Formula.to_string phi);

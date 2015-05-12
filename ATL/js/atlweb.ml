@@ -50,7 +50,7 @@ let agents_disjoint al =
 			else false in
 	r IntSet.empty (ISS.elements al);;
 
-(*let println_list_of_int li = printf "[%s]\n" (String.concat "; " (List.map string_of_int li));;*)
+let println_list_of_int li = printf "[%s]\n" (String.concat "; " (List.map string_of_int li))
 
 let subsets xs = List.fold_right (fun x rest -> rest @ List.map (fun ys -> x::ys) rest) xs [[]]
 
@@ -237,8 +237,8 @@ module Hue = struct
 		
 	let closure = closure_of phi;;
 
-    	(*printf "\n Size of closure %d \n" (cardinal closure );;*)
-	printf "CLOSURE: %s\n" (to_string closure);;
+    	printf "\n Size of closure %d \n" (cardinal closure );;
+	printf "CLOSURE: %s\n" (to_string closure)
 	
 	let mpc h = for_all (fun b -> let has x = mem x h in 
 					match b with
@@ -687,7 +687,8 @@ let satisfied = List.exists (fun c ->
 		has_phi
 	) remaining_colours;;
 
-let result = if satisfied
+let result = sprintf "Finished Processing %s\n" (Formula.to_string phi) ^
+if satisfied
 then "RESULT: SATISFIABLE\n"
 else 
 	if (max_hues_in_colour < List.length Hue.all_hues) 
@@ -697,5 +698,4 @@ else
 		then "RESULT: UNsatisfiable\n"
 		else "Not satisfied, but weak vetos have been exluded\nRESULT: UNKNOWN\n";;
 
-(*Dom_html.window##alert (Js.string ("Alert window from ocaml" ^ (Js.to_string (Dom_html.window##location##search))));; *)
-Dom_html.window##alert (Js.string ( (Formula.to_string phi) ^ "\n" ^ result ));;
+Dom_html.window##alert (Js.string (  result ));;
