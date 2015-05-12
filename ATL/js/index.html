@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+
+<meta name="description" content="Xavier Deschuyteneer's Blog">
+<meta name="author" content="Xavier Deschuyteneer">
+
+<meta charset="utf8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+
+<head>
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+  <script src="lib.js"></script>
+  <script src="atlweb.js"></script>
+</head>
+
+<title>
+  NL-BATL* tableau (Prototype)
+</title>
+
+<body>
+  This is implementation in progress of a NL-BATL*/BATL* tableau. 
+  It presently decides the NL-BATL* semantics but that is trivial to change.</p>
+
+  Currently the only way to input a formula is to manually play with the URL.</p>
+
+  The tableau determines the number of agents based on the largest
+  agent# found in the formula. For example,
+	<a href="?f^-{2}f">f^-{2}f</a>
+  is satisfiable but 
+	<a href="?f^-{1}f">f^-{1}f</a> is not.</p>
+
+  NOTE: this is a mostly complete protoype. Do not trust the output yet.
+  Also this javascript version is even slower and less featureful than the native
+  version</p>
+</body>

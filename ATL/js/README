@@ -1,0 +1,17 @@
+Install:
+        opam install js_of_ocaml
+
+API:
+        http://ocsigen.org/js_of_ocaml/2.3/api/
+
+you need to compile your ml file to bytecode:
+    ocamlbuild -use-ocamlfind -pkgs js_of_ocaml,js_of_ocaml.syntax -syntax camlp4o index.byte
+
+then compile the bytecode into javascript:
+     js_of_ocaml index.byte
+
+this will produce a file: index.js
+you can include this file inside html code.
+
+To see this hello world in action, just compile into bytecode, then into javascript, then open index.html.
+You will see a popup message and a message inside the javascript console.

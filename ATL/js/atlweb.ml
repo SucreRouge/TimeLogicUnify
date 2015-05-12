@@ -15,9 +15,16 @@ module ISS = struct
 	let rec of_list l = match l with [] -> empty | h::t -> add h (of_list t)
 	let of_list2 ll = of_list (List.map IntSet.of_list ll)	
 end
+;;
+let print_string s = ()
+let print_endline s = ()
+let print_newline () = ()
+(*let caml_ml_output_char c = ()*)
+let print_char c = ();;
 
-let bool2str b = if b then "Y" else "n"
-let printf= Printf.printf
+let bool2str b = if b then "Y" else "n";;
+let output_buffer = Buffer.create 1000;;
+let printf fmt = Printf.bprintf output_buffer fmt;;
 
 (*let memoize f =
     let table = Hashtbl.Poly.create () in
@@ -43,7 +50,7 @@ let agents_disjoint al =
 			else false in
 	r IntSet.empty (ISS.elements al);;
 
-let println_list_of_int li = printf "[%s]\n" (String.concat "; " (List.map string_of_int li))
+(*let println_list_of_int li = printf "[%s]\n" (String.concat "; " (List.map string_of_int li));;*)
 
 let subsets xs = List.fold_right (fun x rest -> rest @ List.map (fun ys -> x::ys) rest) xs [[]]
 
@@ -132,9 +139,7 @@ module Formula = struct
 			| '}' -> IntSet.empty
 			| x -> if (x > '0' && x <= '9') 
 				then IntSet.add ( (int_of_char (x) - int_of_char('0')) ) (ag()) 
-				else (printf "Invalid Agent#  %c at position %d\n" x (!i);
-				 assert (false);
-				) in
+				else (printf "Invalid Agent#  %c at position %d\n" x (!i); assert (false)) in
 		let rec r()=
 			let rec bimodal x = 
 				let op = c() in
@@ -184,12 +189,8 @@ let phi = AND (CAN (IntSet.singleton(1), NOT (NEXT (ATOM 'p'))), CAN (IntSet.emp
 let phi = NEXT (AND (ATOM 'p', NOT (ATOM 'p'))) 
 *)
 
-let phi =
-	if Array.length Sys.argv > 1
-	then Formula.of_string Sys.argv.(1)
-	else Formula.of_string "({1}p&{1}~p)";;
-	(*else UNTIL (ATOM 'p', (AND (ATOM 'p', NOT (ATOM 'p')))) *)
-let use_weak = false;;
+let phi = Formula.of_string (Js.to_string (Dom_html.window##location##search))
+let use_weak = true;;
 
 print_endline "Read formula";;
 
@@ -236,8 +237,8 @@ module Hue = struct
 		
 	let closure = closure_of phi;;
 
-    	printf "\n Size of closure %d \n" (cardinal closure );;
-	printf "CLOSURE: %s\n" (to_string closure)
+    	(*printf "\n Size of closure %d \n" (cardinal closure );;*)
+	printf "CLOSURE: %s\n" (to_string closure);;
 	
 	let mpc h = for_all (fun b -> let has x = mem x h in 
 					match b with
@@ -686,16 +687,15 @@ let satisfied = List.exists (fun c ->
 		has_phi
 	) remaining_colours;;
 
-if satisfied
-then print_string "RESULT: SATISFIABLE\n"
+let result = if satisfied
+then "RESULT: SATISFIABLE\n"
 else 
 	if (max_hues_in_colour < List.length Hue.all_hues) 
-	then (printf "Not satisfied, but large colours with more than %d (of %d) hues have been excluded\n" max_hues_in_colour (List.length Hue.all_hues);
-	     print_string "RESULT: UNKNOWN\n";)
+	then Printf.sprintf "Not satisfied, but large colours with more than %d (of %d) hues have been excluded\nRESULT: UNKNOWN\n" max_hues_in_colour (List.length Hue.all_hues) 
 	else  
 		if use_weak 
-		then (print_string "RESULT: UNsatisfiable\n")
-		else (print_string "Not satisfied, but weak vetos have been exluded\nRESULT: UNKNOWN\n");;
-	
+		then "RESULT: UNsatisfiable\n"
+		else "Not satisfied, but weak vetos have been exluded\nRESULT: UNKNOWN\n";;
 
-printf "Finished Processing %s\n" (Formula.to_string phi);
+(*Dom_html.window##alert (Js.string ("Alert window from ocaml" ^ (Js.to_string (Dom_html.window##location##search))));; *)
+Dom_html.window##alert (Js.string ( (Formula.to_string phi) ^ "\n" ^ result ));;
