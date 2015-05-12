@@ -125,7 +125,7 @@ module Formula = struct
 			i:=(!i)+1;
 			print_char got;
 			flush stdout;
-			if got = ' ' then c() else got
+			if got = ' ' || got = '?' then c() else got
 		) in
 		let rec ag() =
 			match c() with 
