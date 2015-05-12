@@ -139,7 +139,7 @@ module Formula = struct
 				if op = ')' then x
 				else bimodal (
 					match op with 
-					| '&' -> AND   (x,r())
+					| '&' | '^' -> AND   (x,r())
 					| 'U' -> UNTIL (x,r())
 					| '|' -> NOT   (AND (NOT x, NOT (r())))
 					| x -> (printf "Unexpected op  %c at position %d" x (!i); assert (false))
@@ -156,9 +156,6 @@ module Formula = struct
 			| x -> ATOM x in
 		r();;
 		
-		
-			
-				
 	let  max_agent psi = let rec s psi = 
 		match psi with
 	    | ATOM c      ->  0
@@ -167,8 +164,6 @@ module Formula = struct
 		| CAN (a,y)   -> max (IntSet.max_elt (IntSet.add 0 a)) (s y)
 		| STRONG a | WEAK a -> (IntSet.max_elt a) in
 		s psi
-			
-					
 				
 	let print x = (print_string (to_string x))
 	let println x = print_string ((to_string x) ^ "\n") 
@@ -187,12 +182,12 @@ let phi = AND (CAN (IntSet.singleton(1), NOT (NEXT (ATOM 'p'))), CAN (IntSet.emp
 let phi = NEXT (AND (ATOM 'p', NOT (ATOM 'p'))) 
 *)
 
-
 let phi =
 	if Array.length Sys.argv > 1
 	then Formula.of_string Sys.argv.(1)
 	else Formula.of_string "({1}p&{1}~p)";;
 	(*else UNTIL (ATOM 'p', (AND (ATOM 'p', NOT (ATOM 'p')))) *)
+let use_weak = false;;
 
 print_endline "Read formula";;
 
@@ -205,12 +200,15 @@ let all_agents_list = range 1 num_agents
 let all_agents = IntSet.of_list(all_agents_list)
 let all_coalitions_list = subsets all_agents_list
 let all_coalitions = ISS.of_list2 all_coalitions_list
+let bar = IntSet.diff all_agents
 
 (* We define a Hue as a set of formulas, however a "Hue" is only a
    hue as defined the the B-ATL* paper iff the Hue.valid function
    returns true *) 
 module Hue = struct
 	include Set.Make(Formula)
+    let to_string x = "{" ^ (String.concat ", " (List.map Formula.to_string (elements x))) ^ "}";;
+    let println x = print_string ((to_string x) ^ "\n") ;; 
 	let bigunion = List.fold_left union empty
 	let union3 a b c= union a (union b c)
 	
@@ -224,16 +222,20 @@ module Hue = struct
 		| NOT x       -> add p (r x)
 		| NEXT x      -> union p_notp (r x)
 		| AND (x,y) | UNTIL (x,y) -> union3 p_notp (r x) (r y)
-		| CAN (a,y)   -> union3 p_notp (of_list [STRONG a; WEAK a]) (r y)  
-		| STRONG a | WEAK a -> singleton p;;
-
-
+		| CAN (a,y)   -> union3 p_notp ( of_list( List.concat ( [
+			(* NOTE: FIXME: exclude empty vetos in paper as well *)
+			(if (IntSet.equal a all_agents   || not use_weak) then [] else [WEAK (bar a)]);
+			(if (IntSet.equal a IntSet.empty) then [] else [STRONG a])
+		] ))) (r y)
+		| WEAK a | STRONG a -> singleton p
 
 
 		(* FIXME: should there ever be "WEAK empty" in the closure *)
 		
 	let closure = closure_of phi;;
+
     	printf "\n Size of closure %d \n" (cardinal closure );;
+	printf "CLOSURE: %s\n" (to_string closure)
 	
 	let mpc h = for_all (fun b -> let has x = mem x h in 
 					match b with
@@ -301,10 +303,10 @@ module Hue = struct
 					| AND(a,b) -> (List.mem (neg a) hl) || (List.mem (neg b) hl)
 					| NOT (AND(a,b)) -> (List.mem a hl) && (List.mem b hl)
 					| NEXT x -> (List.mem (NEXT (neg x)) hl)
-					| NEXT (NEXT x) -> (List.mem (NEXT (NEXT ((neg x)))) hl)
+					(*| NEXT (NEXT x) -> (List.mem (NEXT (NEXT ((neg x)))) hl)*)
 					| _ -> false
 
-			) hl)) 
+			) hl)) (* Not in paper, delete backwards to _filt to remove the quick elimination of bad hues *) 
 			 (fun  hl->let h = of_list hl in
 				if   (valid h)
 				then out := h::(!out) 
@@ -352,8 +354,6 @@ module Hue = struct
 
 (* The Hues are now implemented, we now do some Input/Output defintions *)
 					
-    let to_string x = "{" ^ (String.concat ", " (List.map Formula.to_string (elements x))) ^ "}";;
-    let println x = print_string ((to_string x) ^ "\n") ;; 
 
 	let _ = iter Formula.println closure;; 
     
@@ -690,6 +690,10 @@ else
 	if (max_hues_in_colour < List.length Hue.all_hues) 
 	then (printf "Not satisfied, but large colours with more than %d (of %d) hues have been excluded\n" max_hues_in_colour (List.length Hue.all_hues);
 	     print_string "RESULT: UNKNOWN\n";)
-	else print_string "RESULT: UNsatisfiable\n";
+	else  
+		if use_weak 
+		then (print_string "RESULT: UNsatisfiable\n")
+		else (print_string "Not satisfied, but weak vetos have been exluded\nRESULT: UNKNOWN\n");;
+	
 
 printf "Finished Processing %s\n" (Formula.to_string phi);
