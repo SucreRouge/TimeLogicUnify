@@ -8,12 +8,14 @@ module IntSet = struct
 	include Set.Make(Int)
 	let rec of_list l = match l with [] -> empty | h::t -> add h (of_list t) 
 	let disjoint x y = equal (inter x y) empty
+	let bigunion = List.fold_left union empty
 end
 
 module ISS = struct
 	include Set.Make(IntSet)
 	let rec of_list l = match l with [] -> empty | h::t -> add h (of_list t)
-	let of_list2 ll = of_list (List.map IntSet.of_list ll)	
+	let of_list2 ll = of_list (List.map IntSet.of_list ll)
+	let union_all iss = IntSet.bigunion (elements iss)
 end
 
 let bool2str b = if b then "Y" else "n"
@@ -185,8 +187,11 @@ let phi = NEXT (AND (ATOM 'p', NOT (ATOM 'p')))
 let phi =
 	if Array.length Sys.argv > 1
 	then Formula.of_string Sys.argv.(1)
+	else Formula.of_string "P&-{1}P"
+	(*
 	else Formula.of_string "({1}p&{1}~p)";;
-	(*else UNTIL (ATOM 'p', (AND (ATOM 'p', NOT (ATOM 'p')))) *)
+else UNTIL (ATOM 'p', (AND (ATOM 'p', NOT (ATOM 'p')))) *)
+let use_weak = true;;
 let use_weak = false;;
 
 print_endline "Read formula";;
@@ -255,9 +260,9 @@ module Hue = struct
 	let get_vetos = add_vetos (ISS.empty, ISS.empty)
 	let vetos_valid (w,s) = ((ISS.cardinal w) <= 1) && (agents_disjoint (ISS.union w s)) && ((ISS.inter w s) = ISS.empty);;
 
-	let _ =
+(*	let _ =
 		let (w,s) = get_vetos (of_list[STRONG (IntSet.singleton 1)] ) in
-		printf "STRONG: %s\n" (String.concat "" (List.map coalition_to_string (ISS.elements s)));;
+		printf "STRONG: %s\n" (String.concat "" (List.map coalition_to_string (ISS.elements s)));; *)
 
 	assert (get_vetos empty = (ISS.empty, ISS.empty));;
 	assert (get_vetos (of_list[STRONG (IntSet.singleton 1)] ) = (ISS.empty, ISS.of_list2 [[1]]));;
@@ -322,6 +327,12 @@ module Hue = struct
 		| WEAK(s) | STRONG (s) -> (mem x g)
 		| _ -> true
 	) h
+
+	let state_atom p = 
+		match p with
+		| ATOM c -> c >= 'a' && c <= 'z'
+		| _     -> false
+	let state_atoms h = filter state_atom h;;
 
 	let can_formula p = 
 		match p with
@@ -429,21 +440,24 @@ module Colour = struct
 		
 	assert (mem_f (ATOM 'p') (singleton(Hue.singleton(ATOM 'p'))));;
 
-	let can_formulas c = 
+(*	let can_formulas c = 
 		let arbitrary_hue = min_elt c in
 		Hue.can_formulas arbitrary_hue 
-
+*)
             let to_string x = "{" ^ (String.concat ", " (List.map Hue.to_string (elements x))) ^ "}";;
 
 	let valid c =
-		let can_f = can_formulas c in
-		let sat_c1 = for_all (fun h-> 
+		let arbitrary_hue = min_elt c in
+		let can_f   = Hue.can_formulas arbitrary_hue in
+		let state_a = Hue.state_atoms  arbitrary_hue in
+		let sat_c1  = for_all (fun h-> 
 (*			let cf_h=Hue.can_formulas h in
 			let yn = (cf_h=can_f) in
 			printf "i%d  U%d %s \n" (Hue.cardinal  (Hue.inter cf_h can_f)) (Hue.cardinal  (Hue.union cf_h can_f)) (bool2str yn);
 			printf "i%s  U%s %s \n" (Hue.to_string (Hue.inter cf_h can_f)) (Hue.to_string (Hue.union cf_h can_f)) (bool2str yn);
 			printf "%s ?? %s %s \n" (Hue.to_string cf_h) (Hue.to_string can_f) (bool2str yn); *)
-			Hue.equal (Hue.can_formulas h) can_f 
+			Hue.equal (Hue.can_formulas h) can_f &&
+			Hue.equal (Hue.state_atoms  h) state_a 
 		) c in
 		let sat_c2 =
 			Hue.for_all (fun f->
@@ -451,16 +465,23 @@ module Colour = struct
 				| CAN(_,alpha) -> mem_f alpha c
 				| _	-> assert(false)
 			) can_f in
-		let sat_c3 = exists Hue.not_vetoed c in
-		let sat_c4 = Hue.vetos_valid (
+		let num_non_vetoed = (cardinal (filter Hue.not_vetoed c)) in
+		let sat_c3 = num_non_vetoed > 0 in
+		let (weak,strong) = (
 			let rec r vetos hues = 
 				match hues with
 				| [] -> vetos
 				| head::tail -> r (Hue.add_vetos vetos head) tail in
 			r (ISS.empty, ISS.empty) (elements c)
-		) in 
-		let _ = if verbose then print_endline ((String.concat "" (List.map bool2str [sat_c1;sat_c2;sat_c3;sat_c4])) ^ (to_string c)) in
-		(sat_c1 && sat_c2 && sat_c3 && sat_c4);;
+		) in
+		let sat_c4 = Hue.vetos_valid (weak,strong) in
+		let sat_c5 = 
+			(IntSet.equal (IntSet.union (ISS.union_all strong) (ISS.union_all weak)) all_agents) 
+				==>
+			(num_non_vetoed = 1)
+		in
+		let _ = if verbose then print_endline ((String.concat "" (List.map bool2str [sat_c1;sat_c2;sat_c3;sat_c4;sat_c5])) ^ (to_string c)) in
+		(sat_c1 && sat_c2 && sat_c3 && sat_c4 && sat_c5);;
 
 	print_endline "building_all_colours";;
 
@@ -501,7 +522,11 @@ module Colour = struct
 		if Hashtbl.mem ra_r_hashtbl (ag,h,g) 
 		then Hashtbl.find  ra_r_hashtbl (ag,h,g) 
 		else ra_r ag h g
-		 
+	
+(* We will now define the relations on colours: R<<A>> (ra) and R NOT<<A>> (rna)
+Example of verbose output of rna:
+
+ *)
     let ra (ag: IntSet.t) (c: t) (d: t)= 
 		let r (h: Hue.t) (g: Hue.t) = 
 			(*memoised_ra_r ag h g in *)
@@ -529,6 +554,40 @@ module Colour = struct
 				) d
 			) c in
 		if verbose then printf "ra %s %s --> %s %s%s\n" (coalition_to_string ag) (to_string c) (to_string d) (bool2str sat_2) (bool2str sat_3) ;
+		(sat_2 && sat_3)
+
+(* NOTE: differences in (1c) and (1d) *)
+(* FIXME: are Instances 3-tuples? *)
+
+    let rna (b_ag: IntSet.t) (c: t) (d: t) = 
+		let ag = bar b_ag in (* b_ag = \bar{agents} *) 
+		let r (h: Hue.t) (g: Hue.t) = 
+			(*memoised_ra_r ag h g in *)
+			let sat_a = Hue.equal (Hue.without_vetos h) (Hue.without_vetos g) in
+			let sat_bcd =
+				ISS.for_all (fun (a2: IntSet.t) ->
+					(if IntSet.disjoint ag a2
+					then ( Hue.mem (STRONG a2) h = Hue.mem (STRONG a2) g ) (*sat_b*)
+					else ( not (Hue.mem (STRONG a2) g)) (*sat d*) (*NOTE: chunk of text missing from paper *)
+					) && ( (Hue.mem (WEAK a2) g) ==> (IntSet.equal ag a2)) (*sat_c*)
+				) all_coalitions in
+			 if verbose then printf "R~A %s %s --> %s %s%s\n" (coalition_to_string ag) (Hue.to_string h) (Hue.to_string g) (bool2str sat_a) (bool2str sat_bcd); 
+			(sat_a && sat_bcd) in 
+		(*assert (r Hue.empty Hue.empty);*)
+		let sat_2 =
+			for_all (fun h2 ->
+				exists (fun h->
+					r h h2
+				) c
+			) d in
+		let sat_3 =
+			for_all (fun h->
+				exists (fun h2->
+					r h h2
+				) d
+			) c in
+		if verbose then printf "ra %s %s --> %s %s%s\n" (coalition_to_string ag) (to_string c) (to_string d) (bool2str sat_2) (bool2str sat_3) ;
+
 		(sat_2 && sat_3)
 (*				
     let ra (ag: IntSet.t) (c: t) (d: t)= 
@@ -615,8 +674,20 @@ module InstanceSet = struct
 				
 end
 
+let satisfied_by = List.exists (fun c ->
+		let has_phi = Colour.mem_f phi c in
+		if has_phi then printf "phi in %s " (Colour.to_string c);
+		has_phi
+	);;
+
+
+let log_prune n ch col = (
+	let _ = satisfied_by col in
+	printf "Before rule %d%c:  Number of Colours: %d" n ch (List.length col);
+)
+
 let prune_rule_1 colours =
-    		printf "Before rule 1: Number of Colours: %d" (List.length colours);
+		log_prune 1 ' ' colours;
 		print_newline();
 		List.filter (fun (c: Colour.t) ->
 			not (
@@ -631,7 +702,7 @@ let prune_rule_1 colours =
 		) colours;;
 
 let prune_rule_2 in_colours =
-    		printf "Before rule 2: Number of Colours: %d" (List.length in_colours);
+		log_prune 2 ' ' in_colours;
 		print_newline();
 		let colours = ref in_colours in
 		Hue.iter (fun f -> match f with
@@ -648,29 +719,61 @@ let prune_rule_2 in_colours =
  			Hue.closure;
 		(!colours);;
 
-let prune_rule_3 colours =
-    		printf "Before rule 3: Number of Colours: %d" (List.length colours);
+let prune_rule_3 step colours =
+		log_prune 3 step colours;
 		print_newline();
 		List.filter (fun (c: Colour.t) -> 
 			let arbitrary_hue = Colour.min_elt c in
 			Hue.for_all (fun f->
 				match f with 
-				| CAN(ag, psi) ->
+				| CAN(ag, psi) -> (step <> 'a') ||
 (* (Hue.mem (CAN(ag, psi)) arbitrary_hue) ==> *)
 					List.exists (fun d-> Colour.ra ag c d && 
 						Colour.for_all (fun g->
 							(Hue.mem psi g) || (Hue.mem (STRONG ag) g)
 						) d
 					) colours
-				| NOT CAN (ag, psi) -> true (*NOTE: Must fix *)
+				| NOT CAN(b_ag, psi) -> (step <> 'b' ) || (*b_ag = \bar{agents}*)
+					let ag=bar(b_ag) in
+					(*printf "ag: %s b_ag: %s\n" (coalition_to_string ag) (coalition_to_string b_ag) *) 
+(* Example output of rna:
+R~A {1} {p, ~{2}p, (p&~{2}p)} --> {p, ~{2}p, (p&~{2}p), v{1}} YY
+ra {1} {{p, ~{2}p, (p&~{2}p)}, {~p, ~(p&~{2}p), ~{2}p, v{1}}} --> {{p, ~{2}p, (p&~{2}p), v{1}}, {~p, ~(p&~{2}p), ~{2}p}} YY
+R~A {1} {~p, ~(p&~{2}p), ~{2}p, v{1}} --> {~p, ~(p&~{2}p), ~{2}p} YY
+*)
+					let not_prune = List.exists (fun d-> Colour.rna b_ag c d &&   
+						Colour.for_all (fun g->
+							(Hue.mem (neg psi) g) || (Hue.mem (WEAK ag) g) (* FIXME: says NOT psi in paper. This is slightly wrong *)
+						) d
+					) colours in
+					(if (not not_prune && verbose) then printf "PRUNE 3b: %s" (Colour.to_string c));
+					not_prune
+					
 				| _ -> true
 			) arbitrary_hue
 		) colours;;
 
-(* The order of applying the pruning rules shouldn't matter
-   Lets use rule 2 last since it has the most overhead *)
-let prune_step colours = (prune_rule_2 (prune_rule_3 (prune_rule_1 colours)))
-let prune_step colours = (prune_rule_3 (prune_rule_2 (prune_rule_1 colours)))
+(*let prune_rule_3b colours =
+    		printf "Before rule 3: Number of Colours: %d" (List.length colours);
+		print_newline();
+		List.filter (fun (c: Colour.t) -> 
+			let arbitrary_hue = Colour.min_elt c in
+			Hue.for_all (fun f->
+				match f with 
+				| NOT CAN(b_ag, psi) -> (*b_ag = \bar{agents}*)
+					let ag=bar(b_ag) in
+					List.exists (fun d-> Colour.rna b_ag c d && 
+						Colour.for_all (fun g->
+							(Hue.mem (neg psi) g) || (Hue.mem (STRONG ag) g) (* FIXME: says NOT psi in paper. This is wrong *)
+						) d
+					) colours
+				| NOT CAN (ag, psi) -> true (*NOTE: Must fix *)
+				| _ -> true
+			) arbitrary_hue
+		) colours;;
+*)
+
+let prune_step colours = (prune_rule_3 'b' (prune_rule_3 'a' (prune_rule_2 (prune_rule_1 colours))))
 
 let prune = fixpoint prune_step;;
 
@@ -678,14 +781,8 @@ let remaining_colours = prune Colour.all_colours;;
 
 printf "Number of colours remaining %d\n" (List.length remaining_colours);
 ;;
-let satisfied = List.exists (fun c ->
-		let has_phi = Colour.mem_f phi c in
-		if has_phi then printf "Satisfied by %s\n" (Colour.to_string c);
-		has_phi
-	) remaining_colours;;
-
-let result = sprintf "Finished Processing %s\n" (Formula.to_string phi) ^
-if satisfied
+let result = Printf.sprintf "Finished Processing %s\n" (Formula.to_string phi) ^
+if satisfied_by remaining_colours
 then "RESULT: SATISFIABLE\n"
 else 
 	if (max_hues_in_colour < List.length Hue.all_hues) 
@@ -695,4 +792,4 @@ else
 		then "RESULT: UNsatisfiable\n"
 		else "Not satisfied, but weak vetos have been exluded\nRESULT: UNKNOWN\n";;
 
-printf "Finished Processing %s\n" (Formula.to_string phi);
+print_endline result;
