@@ -104,6 +104,7 @@ type formula =
     | CAN of coalition * formula (* a Strategy: Can A psi = <<A>>psi *)
     | STRONG of coalition (* Strong Veto *)
     | WEAK of coalition (* Weak Veto *)
+    | FALSE
 
 
 module Formula = struct
@@ -117,7 +118,8 @@ module Formula = struct
 		| UNTIL (x,y) -> "(" ^ (s x) ^ "U" ^ (s y) ^ ")"		
 		| CAN (a,y)   -> (coalition_to_string a) ^ (s y)
 		| STRONG a -> "V" ^ (coalition_to_string a)
-		| WEAK  a -> "v" ^ (coalition_to_string a);;
+		| WEAK  a -> "v" ^ (coalition_to_string a)
+		| FALSE -> "0" ;; (* The paper doesn't use FALSE, but it sure is convienient *)
 
 	let of_string s =
 		let i = ref 0 in
@@ -150,12 +152,17 @@ module Formula = struct
 			match (c()) with
 			| '~' | '-' -> NOT (r())  
 			| 'X' | 'N' -> NEXT (r())  
+			| 'F' ->  UNTIL (NOT FALSE, r())  
+			| 'G' ->  NOT (UNTIL (NOT FALSE, NOT(r())) )
+			| 'A' ->  CAN (IntSet.empty, r())  
+			| 'E' ->  NOT (CAN(IntSet.empty, NOT (r())))
 			| '(' ->  bimodal (r()) 
 			| '{' -> 
 				let agents = ag() in
 				let psi = r() in
 				CAN (agents, psi)
-			| x -> ATOM x in
+			| '0' -> FALSE
+			|  x  -> ATOM x in
 		r();;
 		
 	let  max_agent psi = let rec s psi = 
@@ -164,7 +171,10 @@ module Formula = struct
 		| NOT x | NEXT x -> (s x)
 		| AND (x,y) | UNTIL(x,y)  -> max (s x) (s y)
 		| CAN (a,y)   -> max (IntSet.max_elt (IntSet.add 0 a)) (s y)
-		| STRONG a | WEAK a -> (IntSet.max_elt a) in
+		| STRONG a | WEAK a -> (IntSet.max_elt a) 
+		| FALSE -> 0
+		in
+	
 		s psi
 				
 	let print x = (print_string (to_string x))
@@ -187,12 +197,12 @@ let phi = NEXT (AND (ATOM 'p', NOT (ATOM 'p')))
 let phi =
 	if Array.length Sys.argv > 1
 	then Formula.of_string Sys.argv.(1)
-	else Formula.of_string "P&-{1}P"
+	else Formula.of_string "0&p"
 	(*
 	else Formula.of_string "({1}p&{1}~p)";;
 else UNTIL (ATOM 'p', (AND (ATOM 'p', NOT (ATOM 'p')))) *)
-let use_weak = true;;
 let use_weak = false;;
+let use_weak = true;;
 
 print_endline "Read formula";;
 
@@ -233,7 +243,7 @@ module Hue = struct
 			(if (IntSet.equal a IntSet.empty) then [] else [STRONG a])
 		] ))) (r y)
 		| WEAK a | STRONG a -> singleton p
-
+		| FALSE -> empty 
 
 		(* FIXME: should there ever be "WEAK empty" in the closure *)
 		
@@ -324,11 +334,12 @@ module Hue = struct
 		| NEXT a       ->      mem a g
 		| NOT (NEXT a) -> not (mem a g)
 		| UNTIL(a,b)   ->     (mem b h) || (mem x g)
+		| NOT (UNTIL(a,b))  ->     (mem a h) ==> (mem x g)
 		| WEAK(s) | STRONG (s) -> (mem x g)
 		| _ -> true
 	) h
 
-	let state_atom p = 
+	let state_atom p =  (*NOTE: in the paper, all atoms are path atoms *)
 		match p with
 		| ATOM c -> c >= 'a' && c <= 'z'
 		| _     -> false
