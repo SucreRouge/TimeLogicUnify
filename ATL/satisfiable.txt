@@ -1,0 +1,6 @@
+(
+/usr/bin/time ./atl "-w&{}G({1}X-w)&{2}Fw"
+/usr/bin/time ./atl '{12}Xp&-{1}{2}Xp'
+/usr/bin/time ./atl /usr/bin/time ./a.out "-w&{}G({1}X-w)&{2}Fw"
+(BATL_USE_WEAK=N /usr/bin/time ./atl '{1}(XXp|XXq)&{}X({2}-Xp&{2}Xp)')
+) 2> sat.err > sat.out 

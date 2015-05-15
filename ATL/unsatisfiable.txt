@@ -1,1 +1,2 @@
-(p&-{1}p)  
+/usr/bin/time ./atl "(Xp&-{1}Xp)"  
+/usr/bin/time ./atl "()"  

@@ -133,7 +133,7 @@ module Formula = struct
 		) in
 		let rec ag() =
 			match c() with 
-			| '}' -> IntSet.empty
+                        | '}' | ']' -> IntSet.empty
 			| x -> if (x > '0' && x <= '9') 
 				then IntSet.add ( (int_of_char (x) - int_of_char('0')) ) (ag()) 
 				else (printf "Invalid Agent#  %c at position %d\n" x (!i); assert (false)) in
@@ -146,6 +146,7 @@ module Formula = struct
 					| '&' | '^' -> AND   (x,r())
 					| 'U' -> UNTIL (x,r())
 					| '|' -> NOT   (AND (NOT x, NOT (r())))
+					| '>' -> NOT   (AND (    x, NOT (r())))
 					| x -> (printf "Unexpected op  %c at position %d" x (!i); assert (false))
 				) 
 			in
@@ -161,6 +162,10 @@ module Formula = struct
 				let agents = ag() in
 				let psi = r() in
 				CAN (agents, psi)
+			| '[' -> 
+				let agents = ag() in
+				let psi = r() in
+				NOT (CAN (agents, NOT psi))
 			| '0' -> FALSE
 			|  x  -> ATOM x in
 		r();;
@@ -203,6 +208,9 @@ let phi =
 else UNTIL (ATOM 'p', (AND (ATOM 'p', NOT (ATOM 'p')))) *)
 let use_weak = false;;
 let use_weak = true;;
+let use_weak = try
+        not (Sys.getenv "BATL_USE_WEAK" = "N")
+        with Not_found -> true ;;
 
 print_endline "Read formula";;
 
@@ -506,7 +514,7 @@ module Colour = struct
 
     let println x = print_string ((to_string x) ^ "\n") ;; 
 
-	print_string (String.concat "\n" (List.map to_string all_colours));; 
+    if verbose then print_string (String.concat "\n" (List.map to_string all_colours));; 
     	printf "\nNumber of Colours: %d" (List.length all_colours);;
 	print_newline();;
  
@@ -719,7 +727,7 @@ let prune_rule_2 in_colours =
 		Hue.iter (fun f -> match f with
              | UNTIL(a,beta) -> 
 				let ful_b = InstanceSet.fulfilled beta (!colours) in
-				InstanceSet.println ful_b;
+                                if verbose then InstanceSet.println ful_b;
 				let new_colours = List.filter (fun c->
 					Colour.for_all ( 
 						fun h-> ((Hue.not_vetoed h) && (Hue.mem beta h)) ==>  InstanceSet.mem (c,h) ful_b (*NOTE: check "non-vetoed" in paper*)
