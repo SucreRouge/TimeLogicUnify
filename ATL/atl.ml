@@ -172,12 +172,12 @@ module Formula = struct
 		
 	let  max_agent psi = let rec s psi = 
 		match psi with
-	    | ATOM c      ->  0
+	    | ATOM c      ->  1
 		| NOT x | NEXT x -> (s x)
 		| AND (x,y) | UNTIL(x,y)  -> max (s x) (s y)
 		| CAN (a,y)   -> max (IntSet.max_elt (IntSet.add 0 a)) (s y)
 		| STRONG a | WEAK a -> (IntSet.max_elt a) 
-		| FALSE -> 0
+		| FALSE -> 1
 		in
 	
 		s psi
@@ -214,7 +214,8 @@ let use_weak = try
 
 print_endline "Read formula";;
 
-let num_agents = Formula.max_agent(phi)  
+let num_agents = Formula.max_agent(phi);;
+print_endline ("Number of Agents" ^ (string_of_int num_agents));;
 let colour_limit = 1000000
 let verbose = false 
 (*let max_hues_in_colour=3*)
@@ -239,7 +240,7 @@ module Hue = struct
 	
 	let rec closure_of p =
 		let r = closure_of in
-		let p_notp = of_list [p; NOT p] in
+		let p_notp = of_list [p; neg p] in
 		match p with
 	    | ATOM c      -> p_notp 
 		| NOT x       -> add p (r x)
@@ -316,7 +317,7 @@ module Hue = struct
 (*    let all_hues = List.filter valid (List.map of_list (subsets (elements closure)));; *)
 	let all_hues = 
 		let out = ref [] in
-		 iter_small_subsets_filt
+		 iter_small_subsets(*_filt
 			(fun  hl->not (List.exists (
 				fun f->
 					(List.mem (NOT f) hl) ||
@@ -329,7 +330,7 @@ module Hue = struct
 					(*| NEXT (NEXT x) -> (List.mem (NEXT (NEXT ((neg x)))) hl)*)
 					| _ -> false
 
-			) hl)) (* Not in paper, delete backwards to _filt to remove the quick elimination of bad hues *) 
+			) hl)) *) (* Not in paper, delete backwards to _filt to remove the quick elimination of bad hues *) 
 			 (fun  hl->let h = of_list hl in
 				if   (valid h)
 				then out := h::(!out) 
@@ -553,9 +554,11 @@ Example of verbose output of rna:
 			let sat_bcd =
 				ISS.for_all (fun (a2: IntSet.t) ->
 					(if IntSet.disjoint ag a2
-					then ( Hue.mem (STRONG a2) h = Hue.mem (STRONG a2) g ) (*sat_b*)
-					else ( ( Hue.mem (STRONG ag) h) && (Hue.mem (STRONG a2) g) ) ==> (IntSet.equal ag a2) (*sat d*) (*NOTE: chunk of text missing from paper *)
-					) && (not (Hue.mem (WEAK a2) g)) (*sat_c*)
+					then ( Hue.mem (STRONG a2) h = Hue.mem (STRONG a2) g ) && (*sat_b*)
+                                             ( Hue.mem (WEAK   a2) h = Hue.mem (WEAK   a2) g )    (*sat_c*)
+					else ( ( ( Hue.mem (STRONG ag) h) && (Hue.mem (STRONG a2) g) ) ==> (IntSet.equal ag a2) ) (*sat d*) (*NOTE: chunk of text missing from paper *)
+                                             && ( not ( Hue.mem (WEAK a2) g ) )        
+					) 
 				) all_coalitions in
 			 if verbose then printf "R %s %s --> %s %s%s\n" (coalition_to_string ag) (Hue.to_string h) (Hue.to_string g) (bool2str sat_a) (bool2str sat_bcd); 
 			(sat_a && sat_bcd) in 
