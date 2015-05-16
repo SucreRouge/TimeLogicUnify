@@ -805,13 +805,20 @@ print_string (Printf.sprintf "Number of colours remaining %d\n" (List.length rem
 ;;
 let result = Printf.sprintf "Finished Processing %s\n" (Formula.to_string phi) ^
 if satisfied_by remaining_colours
-then "RESULT: SATISFIABLE\n"
+then "RESULT: SATISFIABLE"
 else 
 	if (max_hues_in_colour < List.length Hue.all_hues) 
-	then Printf.sprintf "Not satisfied, but large colours with more than %d (of %d) hues have been excluded\nRESULT: UNKNOWN\n" max_hues_in_colour (List.length Hue.all_hues) 
+	then Printf.sprintf "Not satisfied, but large colours with more than %d (of %d) hues have been excluded\nRESULT: UNKNOWN" max_hues_in_colour (List.length Hue.all_hues) 
 	else  
 		if use_weak 
-		then "RESULT: UNsatisfiable\n"
-		else "Not satisfied, but weak vetos have been exluded\nRESULT: UNKNOWN\n";;
+		then "RESULT: UNsatisfiable"
+		else "Not satisfied, but weak vetos have been exluded\nRESULT: UNKNOWN";;
+
+let result = let num_hues = (List.length Hue.all_hues) in
+        result ^ Printf.sprintf " #Hues=%s%d #Colours=%d #Remaining=%d"
+                (if (max_hues_in_colour<num_hues) then (string_of_int max_hues_in_colour) ^"/" else "")
+		num_hues
+		(List.length Colour.all_colours)
+                (List.length remaining_colours);;
 
 print_endline result;;
