@@ -258,8 +258,8 @@ module Hue = struct
 		
 	let closure = closure_of phi;;
 
-    	printf "\n Size of closure %d \n" (cardinal closure );;
-	printf "CLOSURE: %s\n" (to_string closure)
+    	print_string (Printf.sprintf "\n Size of closure %d \n" (cardinal closure ));;
+	print_string (Printf.sprintf "CLOSURE: %s\n" (to_string closure))
 	
 	let mpc h = for_all (fun b -> let has x = mem x h in 
 					match b with
@@ -380,17 +380,17 @@ module Hue = struct
 			match psi with
 			| STRONG _ | WEAK _ -> true;
 			| _ -> false;
-		) 
-	let not_vetoed h = not (vetoed h)			
+                );;
+        let not_vetoed h = not (vetoed h);;
 
 (* The Hues are now implemented, we now do some Input/Output defintions *)
 					
 
-	let _ = iter Formula.println closure;; 
+(* 	let _ = iter Formula.println closure;; *)
     
  (*   let _ = print_string (String.concat "\n" (List.map to_string all_hues));; *)
     
-    printf "\nNumber of Hues: %d \n" (List.length all_hues);;
+    print_string(Printf.sprintf "\nNumber of Hues: %d \n" (List.length all_hues) );;
 
 (* Since we will have to implement pruning of Colours later, let us
    practice pruning hues that are not even LTL-consistent *)
@@ -399,7 +399,7 @@ module Hue = struct
 	let filter_hues hues = List.filter (has_successor hues) hues
 	let all_hues = fixpoint filter_hues all_hues;; 
 	
-    printf "\nNumber of Hues with successors: %d \n" (List.length all_hues);;
+    print_string(Printf.sprintf "\nNumber of Hues with successors: %d \n" (List.length all_hues) );;
 	
 	let directly_fulfilled b hues = List.filter (fun h->mem b h) hues;;
 	
@@ -427,7 +427,7 @@ module Hue = struct
  	
  	let all_hues = fixpoint all_fulfilled all_hues;;						  
 		
-    printf "Number of LTL-Consistent Hues: %d \n\n" (List.length all_hues);;
+    print_string (Printf.sprintf "Number of LTL-Consistent Hues: %d \n\n" (List.length all_hues));;
     
 	let _ = List.iter println all_hues;;
 end
@@ -438,7 +438,7 @@ let max_hues_in_colour =
 	then int_of_string Sys.argv.(2)
 	else int_of_float (log (float_of_int colour_limit) /. log (float_of_int (List.length Hue.all_hues)));;
 (*let max_hues_in_colour = 2;;*)
-printf "Limiting ourselves to %d hues per colour\n" max_hues_in_colour;;
+print_string (Printf.sprintf "Limiting ourselves to %d hues per colour\n" max_hues_in_colour);;
 
 flush stdout;
 
@@ -705,7 +705,7 @@ let satisfied_by = List.exists (fun c ->
 
 let log_prune n ch col = (
 	let _ = satisfied_by col in
-	printf "Before rule %d%c:  Number of Colours: %d" n ch (List.length col);
+	print_string (Printf.sprintf "Before rule %d%c:  Number of Colours: %d" n ch (List.length col));
 )
 
 let prune_rule_1 colours =
@@ -801,7 +801,7 @@ let prune = fixpoint prune_step;;
 
 let remaining_colours = prune Colour.all_colours;;
 
-printf "Number of colours remaining %d\n" (List.length remaining_colours);
+print_string (Printf.sprintf "Number of colours remaining %d\n" (List.length remaining_colours));
 ;;
 let result = Printf.sprintf "Finished Processing %s\n" (Formula.to_string phi) ^
 if satisfied_by remaining_colours
@@ -814,4 +814,4 @@ else
 		then "RESULT: UNsatisfiable\n"
 		else "Not satisfied, but weak vetos have been exluded\nRESULT: UNKNOWN\n";;
 
-print_endline result;
+print_endline result;;

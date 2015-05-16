@@ -210,14 +210,14 @@ let phi = AND (CAN (IntSet.singleton(1), NOT (NEXT (ATOM 'p'))), CAN (IntSet.emp
 let phi = NEXT (AND (ATOM 'p', NOT (ATOM 'p'))) 
 *)
 
-let phi = Formula.of_string (Url.decode (Js.to_string (Dom_html.window##location##search)))
+let phi = Formula.of_string (Url.urldecode (Js.to_string (Dom_html.window##location##search)))
 let use_weak = true;;
 
 print_endline ("Input formula: " ^ (Formula.to_string phi));;
 
 let num_agents = Formula.max_agent(phi);;
 print_endline ("Number of Agents " ^ (string_of_int num_agents));;
-let colour_limit = 1000000
+let colour_limit = 60000
 let verbose = false 
 (*let max_hues_in_colour=3*)
 
@@ -436,7 +436,7 @@ end
 
 let max_hues_in_colour = int_of_float (log (float_of_int colour_limit) /. log (float_of_int (List.length Hue.all_hues)));;
 (*let max_hues_in_colour = 2;;*)
-printf "Limiting ourselves to %d hues per colour\n" max_hues_in_colour;;
+print_string (Printf.sprintf "Limiting ourselves to %d hues per colour\n" max_hues_in_colour);;
 
 flush stdout;
 
@@ -812,6 +812,6 @@ else
 		then "RESULT: UNsatisfiable\n"
 		else "Not satisfied, but weak vetos have been exluded\nRESULT: UNKNOWN\n";;
 
-print_string ( result );;
+print_endline result;;
 print_string ( "</pre>" );;
 Dom_html.window##alert (Js.string (  result ));;
