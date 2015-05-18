@@ -1,5 +1,13 @@
 WAIT=600
 
+for F in `cat ../parser3/mark_formulas.txt`
+do
+	timeout $WAIT ./do.pl "$F"
+done
+exit
+
+
+
 timeout $WAIT ./do.pl "(Xp&-{1}Xp)" 99
 timeout $WAIT ./do.pl "({1}P&-P)"   4
 timeout $WAIT ./do.pl "({1}{2}P&-{2}P)"   4
