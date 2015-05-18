@@ -18,18 +18,35 @@ module ISS = struct
 	let union_all iss = IntSet.bigunion (elements iss)
 end
 ;;
+module Html = Dom_html
+let document = Dom_html.window##document
+let html_pre = Html.createPre document
+(*let html_pre = Html.createPre (document##getElementById(Js.string "stdout"))
+let html_pre = Html.createPre (Js.Opt.get (document##getElementById(Js.string "stdout")) (fun() -> document) ) *)
+(* let _ = Dom.appendChild (document##getElementById(Js.string "stdout")) html_pre *)
+let _ = Dom.appendChild (Js.Opt.get (document##getElementById(Js.string "stdout")) (fun()->assert false)) html_pre
+let js = Js.string
+let output_buffer = Buffer.create 1000
+let thread_yield()=(let _ = Lwt_js.yield() in ())
+let thread_yield()=(let _ = Thread.delay(0.1) in ())
 let print_string s = (
-		Dom_html.window##document##write(Js.string s);
-		let _ = Lwt_js.yield() in
-		());;
-let _ = print_string "<pre>";;
+	Dom.appendChild html_pre (document##createTextNode (js s));
+	(* Dom_html.window##document##write(Js.string s); 
+	Buffer.add_string output_buffer s; *)
+(*	let e = Dom_html.window##document##getElementById(Js.string "stdout") in
+	let n = document##createTextNode (js s) in
+	let _ = Dom.appendChild e (js s) in
+	let _ = Dom.appendChild e (document##createTextNode (js s)) in
+	let _ = so##createTextNode(Js.string(s)) in *)
+	let _ = Lwt_js.yield() in
+	());;
 let print_endline s = (print_string (s^"\n"));;
 let print_newline () = (print_string "\n");;
 let caml_ml_output_char c = ();;
 let print_char c = ();;
+let _ = Lwt_js.sleep(0.1)
 
 let bool2str b = if b then "Y" else "n";;
-let output_buffer = Buffer.create 1000;;
 let printf fmt = Printf.bprintf output_buffer fmt;;
 
 
@@ -48,6 +65,7 @@ let println_list_of_int li = printf "[%s]\n" (String.concat "; " (List.map strin
 let subsets xs = List.fold_right (fun x rest -> rest @ List.map (fun ys -> x::ys) rest) xs [[]]
 
 let iter_small_subsets f n xs =
+	thread_yield();
 	let rec r pl n xs =
 		if (n < 1)
 		then f pl
@@ -631,6 +649,7 @@ let prune_rule_1 colours =
 		log_prune 1 ' ' colours;
 		print_newline();
 		List.filter (fun (c: Colour.t) ->
+
 			not (
 				Colour.exists (fun h ->
 					(Hue.not_vetoed h) &&
@@ -646,12 +665,13 @@ let prune_rule_2 in_colours =
 		log_prune 2 ' ' in_colours;
 		print_newline();
 		let colours = ref in_colours in
-		Hue.iter (fun f -> match f with
-			 | UNTIL(a,beta) -> 
+		Hue.iter (fun f -> thread_yield();
+			match f with
+			| UNTIL(a,beta) -> 
 				let ful_b = InstanceSet.fulfilled beta (!colours) in
-								if verbose then InstanceSet.println ful_b;
+					if verbose then InstanceSet.println ful_b;
 				let new_colours = List.filter (fun c->
-					Colour.for_all ( 
+					Colour.for_all (
 						fun h-> ((Hue.not_vetoed h) && (Hue.mem beta h)) ==>  InstanceSet.mem (c,h) ful_b (*NOTE: check "non-vetoed" in paper*)
 					) c
 				) (!colours) in
@@ -663,7 +683,8 @@ let prune_rule_2 in_colours =
 let prune_rule_3 step colours =
 		log_prune 3 step colours;
 		print_newline();
-		List.filter (fun (c: Colour.t) -> 
+		List.filter (fun (c: Colour.t) ->
+			thread_yield();
 			let arbitrary_hue = Colour.min_elt c in
 			Hue.for_all (fun f->
 				match f with 
@@ -721,5 +742,4 @@ let result = let num_hues = (List.length Hue.all_hues) in
 				(List.length remaining_colours);;
 
 print_endline result;;
-print_string ( "</pre>" );;
 Dom_html.window##alert (Js.string (  result ));;

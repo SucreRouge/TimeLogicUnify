@@ -1,5 +1,7 @@
 all:
-	ocamlc atl.ml -o atl
+	ocamlopt atl.ml -o atl
+	#ocamlc atl.ml -o atl
 	#ocamlc -c atl.ml -o atl
-atl.ps:
-	sed 's/\t/    /' < ../atl.ml |fmt -s > atl.ml  ; yes '' | ocamlweb atl.ml --ps > atl.ps
+atl.pdf: atl.ml
+	sed 's/\t/    /' < atl.ml |fmt -s > tmp/atl.ml  ; yes '' | ocamlweb tmp/atl.ml --ps > tmp/atl.ps
+	ps2pdf tmp/atl.ps
