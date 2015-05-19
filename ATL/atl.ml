@@ -483,7 +483,8 @@ module Colour = struct
 		) in
 		let sat_c4 = Hue.vetos_valid (weak,strong) in
 		let sat_c5 = 
-			(IntSet.equal (IntSet.union (ISS.union_all strong) (ISS.union_all weak)) all_agents) 
+			(*i (IntSet.equal (IntSet.union (ISS.union_all strong) (ISS.union_all weak)) all_agents) i*)
+			(IntSet.equal (ISS.union_all strong) all_agents) 
 				==>
 			(num_non_vetoed = 1)
 		in

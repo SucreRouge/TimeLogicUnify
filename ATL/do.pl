@@ -16,7 +16,7 @@ for (split /^/, $cache){
 }
 
 #print "[$entry]\n";
-$result = `./atl '$ARGV[0]' $ARGV[1] $ARGV[2] | bash -c "tee >(cat 1>&2)" | grep RESULT`;
+$result = `./atl '$ARGV[0]' $ARGV[1] $ARGV[2] | bash -c "tee >(cat 1>&2)" | tail -n1`;
 
 open(my $fd, ">>cache.txt");
 print $fd "$entry ==> $result";
