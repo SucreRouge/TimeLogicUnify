@@ -1,0 +1,449 @@
+    1  cd .ssh
+    2  cat authorized_keys 
+    3  rm authorized_keys 
+    4  cd .ssh
+    5  cat authorized_keys 
+    6  lsb_release -a
+    7  ls
+    8  ls .*
+    9  cd .ssh
+   10  ls
+   11  ls -lh
+   12  ls /
+   13  ls /.ssh
+   14  arch -a
+   15  arch 
+   16  sudo apt-get install mosh
+   17  sudo apt-get install python-software-properties
+   18  sudo add-apt-repository ppa:keithw/mosh
+   19  sudo apt-get update
+   20  sudo apt-get install mosh
+   21  ls
+   22  ls .shs
+   23  chown root .ssh
+   24  chown root .ssh/authorized_keys 
+   25  chgrp root .ssh/authorized_keys 
+   26  chgrp root .ssh
+   27  ls -lh
+   28  ls -ld .ssh/
+   29  ls -ld .ssh/authorized_keys 
+   30  cd .ssh
+   31  ls -lh
+   32  ls -ld
+   33  cd ..
+   34  ls -ld
+   35  chmod 700 .ssh
+   36  ls .ssh
+   37  ls .ssh -lh
+   38  ls .ssh -lhd
+   39  chmod 700 .ssh
+   40  ls .ssh -lhd
+   41  cat .ssh/authorized_keys 
+   42  cd .ssh
+   43  ls
+   44  ls -lh
+   45  chown root authorized_keys 
+   46  chown root . 
+   47  ls -lh
+   48  ls
+   49  ls . -ld
+   50  chown root .
+   51  chgrp root .
+   52  ls
+   53  mosh --version
+   54  /usr/bin/mosh
+   55  /usr/bin/mosh-server 
+   56  vim /etc/locale.gen
+   57  vim /etc/bash.bashrc 
+   58  reboot
+   59  pwd
+   60  ls
+   61  ls
+   62  pwd
+   63  wget http://security.ubuntu.com/ubuntu/pool/universe/m/mosh/mosh_1.2.4a-1~ubuntu12.04.1_amd64.deb
+   64  sudo dpkg -i mosh_1.2.4a-1~ubuntu12.04.1_amd64.deb 
+   65  locale-gen en_US.UTF-8
+   66  history
+   67  vim /etc/ssh/ssh_config 
+   68  man ssh
+   69  echo hello world
+   70  vim /tmp/foo
+   71  :q
+   72  ]asdfdsfd]
+   73  ls
+   74  la
+   75  ls pwd
+   76  pwd
+   77  ls
+   78  echo hello world
+   79  echo hello world
+   80  kill 9237
+   81  cd .ssh
+   82  ;s
+   83  ls
+   84  cat >> authorized_keys 
+   85  cat authorized_keys 
+   86  locale-gen en_AU.UTF-8
+   87  ls
+   88  cd src/
+   89  ls
+   90  cd Slinko/
+   91  ls
+   92  ./install_deps.sh 
+   93  ls
+   94  cat install_deps.sh 
+   95  vim install_deps.sh 
+   96  ./install_deps.sh 
+   97  vim install_deps.sh 
+   98  cd ocaml-glpk/
+   99  make
+  100  cd ..
+  101  export LD_RUN_PATH=/usr/local/lib
+  102  export LD_LIBRARY_PATH=/usr/local/lib
+  103  cd ocaml-glpk/
+  104  make
+  105  cd ..
+  106  cd glpk
+  107  ls
+  108  cd glpk-4.47
+  109  make
+  110  ls
+  111  ./configure 
+  112  make
+  113  make -j4
+  114  make -j8
+  115  make install
+  116  cd ..
+  117  cd ocaml-glpk/
+  118  make
+  119  make install
+  120  cd ..
+  121  vim install_deps.sh 
+  122  cd glpk-4.47
+  123  ./configure --with-gmp
+  124  make -j8
+  125  make install
+  126  cd ..
+  127  cd ocaml-glpk/
+  128  make 
+  129  make install
+  130  cd .
+  131  cd ..
+  132  make
+  133  make check
+  134  ls
+  135  ./movevoters 
+  136  ls
+  137  make install
+  138  vim install_deps.sh 
+  139  ls
+  140  cd src/
+  141  cd Slinko/
+  142  cat install
+  143  ./install
+  144  cd uni
+  145  cd src/Slinko/
+  146  ls
+  147  ./movevoters 
+  148  /usr/lib/cgi-bin/movevoters.cgi 
+  149  cat /proc/cpuinfo 
+  150  kill 9237
+  151  top
+  152  cat /proc/cpuinfo 
+  153  echo hello world 
+  154  echo hello world
+  155  vim /tmp/test.txt
+  156  ls
+  157  adduser nick
+  158  sudo apt-get install mtr
+  159  sudo apt-get update
+  160  sudo apt-get install mtr
+  161  vim /etc/apt/sources.list
+  162  sudo apt-get update
+  163  sudo apt-get install mtr
+  164  sudo adduser nick sudo
+  165  sudo apt-get upgrade
+  166  mtr
+  167  /sbin/udevadm info --query=property --name=sda
+  168  mount'
+  169  mount
+  170  df -h
+  171  /sbin/udevadm info --query=property --name=simfs
+  172  /sbin/udevadm info --query=property --name=/dev/simfs
+  173  top
+  174  cd .ssh
+  175  ls 
+  176  cat authorized_keys 
+  177  ocamlopt
+  178  ocamllex
+  179  ls
+  180  cd src/
+  181  ls
+  182  tar -zxf ../mechecker_src.tar.gz 
+  183  ls
+  184  cd mechecker/
+  185  ls
+  186  make
+  187  make www
+  188  make www_
+  189  vim Makefile 
+  190  make install
+  191  mv ~/mechecker_src.tar.gz  ..
+  192  make install
+  193  make unify_install
+  194  vim Makefile 
+  195  make unify_install
+  196  ls /usr/lib/cgi-bin/unify.cgi 
+  197  ls work
+  198  cp ~/urules.txt.trs  /var/www/urules.txt.trs
+  199  ls /var/data/unify/
+  200  cd ..
+  201  git clone https://github.com/gmatht/CTLStarTab.git
+  202  cd CTLStarTab/
+  203  ls
+  204  cd src/
+  205  ls
+  206  javac *java formulas/*java
+  207  javac
+  208  sudo apt-get install jdk
+  209  sudo apt-get install openjdk-8-jdk
+  210  sudo apt-get install openjdk-7-jdk
+  211  javac *java formulas/*java
+  212  ls
+  213  ls /var/data/unify/
+  214  ls /var/data/unify/mark/
+  215  ls
+  216  /usr/lib/cgi-bin/unify.cgi 
+  217  ls
+  218  mkdir out
+  219  cd /var/lib/
+  220  ls
+  221  cd
+  222  cd src/
+  223  ls
+  224  cd mechecker
+  225  ls
+  226  vim Makefile 
+  227  make
+  228  cat /proc/cpuinfo 
+  229  ls
+  230  grep mlsolver *
+  231  grep mlsolver * | less
+  232  bash ./git_clone_mlsolver.sh 
+  233  mkdir work
+  234  bash ./git_clone_mlsolver.sh 
+  235  ls /var/lib/
+  236  ls /var/
+  237  ls /var/data/unify/
+  238  /usr/lib/cgi-bin/unify.cgi 
+  239  mv /var/data/unify/mark{,.bak}
+  240  ls -s ~/src/CTLStarTab/src/ /var/data/unify/mark
+  241  ln -s ~/src/CTLStarTab/src/ /var/data/unify/mark
+  242  ls *solver
+  243  lh
+  244  ls -lh
+  245  ls -lh | head
+  246  cat git_clone_mlsolver.sh 
+  247  /usr/lib/cgi-bin/unify.cgi 
+  248  cd mlsovler
+  249  cd mlsolver
+  250  cd work/
+  251  ls
+  252  ln -s mlsolver /var/data/unify/
+  253  ls /var/data/unify/mlsolver 
+  254  rm /var/data/unify/mlsolver 
+  255  ln -s `pwd`/mlsolver /var/data/unify/
+  256  ls
+  257  /usr/lib/cgi-bin/unify.cgi 
+  258  ls /var/data/unify/mlsolver/bin/
+  259  cd mlsolver/
+  260  make
+  261  cd bin
+  262  make
+  263  cd ..
+  264  git log
+  265  git checkout 7ac91f20bdcdb3ab7d1be878972292f2c28888eb
+  266  make
+  267  git log
+  268  git log | less
+  269  make
+  270  vim src/solvers/stratimpralgs/switch_zadeh.ml
+  271  ls src/
+  272  cd srk
+  273  make
+  274  cd pgsolver/
+  275  make
+  276  git log .
+  277  git checkout 9fcba71bfcd26236b239449145f1b10a216c15a6
+  278  make
+  279  make clean
+  280  make
+  281  git log .
+  282  git checkout ba10775e63576e7f2199aa5fae09bb7b2a89f879
+  283  make
+  284  git bisect start HEAD ba10775e63576e7f2199aa5fae09bb7b2a89f879
+  285  #git bisect run 
+  286  git checkout HEAD
+  287  git bisect start HEAD ba10775e63576e7f2199aa5fae09bb7b2a89f879
+  288  git bisect start Master ba10775e63576e7f2199aa5fae09bb7b2a89f879
+  289  git bisect run make
+  290  git checkout HEAD
+  291  git bisect start HEAD ba10775e63576e7f2199aa5fae09bb7b2a89f879
+  292  git checkout Master
+  293  git branch
+  294  git checkout master
+  295  git bisect start master ba10775e63576e7f2199aa5fae09bb7b2a89f879
+  296  git bisect run make
+  297  make
+  298  cd ..
+  299  make
+  300  /usr/lib/cgi-bin/unify.cgi 
+  301  vim /var/log/apache2/error.log
+  302  ls /var/www/urules.txt.trs
+  303  tail -f /var/log/apache2/error.log
+  304  tail -f /var/log/apache2/access.log
+  305  tail -f /var/log/apache2/error.log
+  306  /etc/init.d/apache2 restart
+  307  tail -f /var/log/apache2/error.log
+  308  tail -f /var/log/apache2/access.log
+  309  time
+  310  date
+  311  wget 'https://us.dansted.org/cgi-bin/unify.cgi?i=Gp|-q&solver=mlsolver&simplify=y'
+  312  ls /usr/lib/cgi-bin/
+  313  ls /usr/lib/cgi-bin/movevoters.cgi 
+  314  l/usr/lib/cgi-bin/movevoters.cgi 
+  315  /usr/lib/cgi-bin/movevoters.cgi 
+  316  /usr/lib/cgi-bin/unify.cgi 
+  317  cd
+  318  cd src/
+  319  cd mechecker
+  320  ls
+  321  vim unify.ml 
+  322  make unify
+  323  vim unify.ml 
+  324  make unify
+  325  vim unify.ml 
+  326  make unify
+  327  make unify_install
+  328  /usr/lib/cgi-bin/unify.cgi 
+  329  cd /usr/lib/cgi-bin/unify.cgi /usr/lib/cgi-bin/unify_.cgi
+  330  cp /usr/lib/cgi-bin/unify.cgi /usr/lib/cgi-bin/unify_.cgi
+  331  vim unify
+  332  vim unify.ml 
+  333  make 
+  334  make unify_install
+  335  ls /usr/lib/cgi-bin/ -lh
+  336  vim /var/log/apache2/error.log
+  337  sudo a2enmod cgi
+  338  sudo service apache2 restart
+  339  /usr/lib/cgi-bin/unify.cgi 
+  340  touch ../.data/unify_good.log
+  341  mkdir ../.data
+  342  touch ../.data/unify_good.log
+  343  /usr/lib/cgi-bin/unify.cgi 
+  344  mkdir ../CTLStarTab/out
+  345  /usr/lib/cgi-bin/unify.cgi 
+  346  ls
+  347  ls ../
+  348  ls ../CTLStarTab/
+  349  ls ../CTLStarTab/ -lh
+  350  chmod a+w ../CTLStarTab/out
+  351  ls ../CTLStarTab/ -lh
+  352  /usr/lib/cgi-bin/unify.cgi 
+  353  (UNIFY_SOLVERS=* /usr/lib/cgi-bin/unify.cgi)
+  354  echo p | (UNIFY_SOLVERS=* /usr/lib/cgi-bin/unify.cgi) | less
+  355  ls /var/data/unify
+  356  ls /var/data/unify/out/
+  357  ls /var/data/unify/out/ -lh
+  358  echo p | (UNIFY_SOLVERS=* /usr/lib/cgi-bin/unify.cgi; echo $?) | less
+  359  echo p | (UNIFY_SOLVERS=* /usr/lib/cgi-bin/unify.cgi; echo $?) 
+  360  cd /var/data/
+  361  cd unify/
+  362  ls
+  363  cd mark
+  364  ls -lh
+  365  java JApplet.java 
+  366  java JApplet
+  367  java JApplet p BCTLNEW
+  368  lh
+  369  ls 
+  370  vim default.out e
+  371  cd ..
+  372  ls
+  373  /usr/lib/cgi-bin/unify.cgi 
+  374  mkdir ../.data
+  375  touch ../.data/unify_good.log
+  376  /usr/lib/cgi-bin/unify.cgi 
+  377  ls mark
+  378  cd
+  379  cd src/
+  380  ls
+  381  cd mechecker
+  382  ls
+  383  vim unify.ml 
+  384  cd /var/data/unify/
+  385  ls
+  386  mkdir src
+  387  rmdir src
+  388  ln -s . src
+  389  /usr/lib/cgi-bin/unify.cgi 
+  390  ls mark/src
+  391  ls
+  392  ls mark
+  393  ls mark/src
+  394  cd mark
+  395  ls
+  396  ln -s . src
+  397  ls src
+  398  cd ..
+  399  ln -s . src
+  400  ls mark/src
+  401  /usr/lib/cgi-bin/unify.cgi 
+  402  tail -f /var/log/apache2/access.log
+  403  tail -f /var/log/apache2/error.log
+  404  ls
+  405  ls ../.data -lh
+  406  chmod a+rwx ../.data 
+  407  chmod a+rw ../.data/* 
+  408  sudo -u nobody /usr/lib/cgi-bin/unify.cgi 
+  409  tail -f /var/log/apache2/error.log
+  410  cd
+  411  ls
+  412  cd src/
+  413  ls
+  414  cd CTLStarTab/
+  415  ls
+  416  cd ..
+  417  cd mechecker
+  418  ls
+  419  mkdir junk
+  420  cd junk/
+  421  cat ../git_clone_mlsolver.sh 
+  422  mkdir work
+  423  bash ../git_clone_mlsolver.sh 
+  424  make
+  425  ls
+  426  cd work/
+  427  ls
+  428  cd mlsolver/
+  429  ls
+  430  cd pgsolver/
+  431  make
+  432  make clean all
+  433  whoami
+  434  top
+  435  make clean all
+  436  cat ../../mlsolver/
+  437  cat ../../../../git_clone_mlsolver.sh 
+  438  arch -a
+  439  arch 
+  440  arch --all
+  441  lsb_release -a
+  442  touch /usr/lib/cgi-bin/../.data/unify_good.log
+  443  mkdir /usr/lib/cgi-bin/../.data
+  444  chmod a+rwx /usr/lib/cgi-bin/../.data
+  445  cd ../../..
+  446  ls
+  447  cd ..
+  448  ls
+  449  history > ~/try_to_get_unified_working.log
