@@ -667,7 +667,7 @@ let prune_rule_2 in_colours =
 								if verbose then InstanceSet.println ful_b;
 				let new_colours = List.filter (fun c->
 					Colour.for_all ( 
-						fun h-> ((Hue.not_vetoed h) && (Hue.mem beta h)) ==>  InstanceSet.mem (c,h) ful_b (*NOTE: check "non-vetoed" in paper*)
+						fun h-> ((Hue.not_vetoed h) && (Hue.mem f h)) ==>  InstanceSet.mem (c,h) ful_b (*NOTE: check "non-vetoed" in paper*)
 					) c
 				) (!colours) in
 				colours := new_colours 
