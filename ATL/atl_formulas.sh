@@ -1,3 +1,4 @@
+echo --- ATL formulas --- >> cache.txt
 echo 'p	p ∧ q	p ∨ q	《1》◯p	《1》◊p	 《1》☐p
 《1》p Մ q	¬《1》p Մ q	p ∧ ¬p	¬¬《1》p Մ q	p → q	 ¬《1》◊p
 《1,2》(p Մ q) ∧ 《1,2》◯r	《1,2》(p Մ q) ∧ 《3,4》◯r
