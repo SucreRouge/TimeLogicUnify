@@ -1,4 +1,4 @@
-for WAIT in 600 3600
+for WAIT in 60 600 3600
 do
 
 for F in `cat ../parser3/mark_formulas.txt`
