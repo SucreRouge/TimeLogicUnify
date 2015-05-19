@@ -1,11 +1,11 @@
-WAIT=600
+for WAIT in 600 3600
+do
 
 for F in `cat ../parser3/mark_formulas.txt`
 do
 	timeout $WAIT ./do.pl "$F"
+	timeout $WAIT ./do.pl "~($F)"
 done
-exit
-
 
 
 timeout $WAIT ./do.pl "(Xp&-{1}Xp)" 99
@@ -45,6 +45,7 @@ timeout $WAIT ./do.pl '(-w&{}G({1}-Xw)&{2}Fw)' 2 ==> RESULT: SATISFIABLE #Hues=2
 timeout $WAIT ./do.pl '(-w&{}G({1}-Xw)&{2}XXw)' 2 ==> RESULT: UNKNOWN #Hues=2/576 #Colours=2276 #Remaining=780
 timeout $WAIT ./do.pl '(-w&{}G({1}-Xw)&{2}XXXw)' 2 ==> RESULT: UNKNOWN #Hues=2/1152 #Colours=9074 #Remaining=2688
 
+done
 exit 
 
 ./atl '-{2}XXp&{}X{2}Xp' 3

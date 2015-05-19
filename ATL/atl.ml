@@ -219,15 +219,17 @@ let phi =
 let use_weak = false;;
 let use_weak = true;;
 let use_weak = try
-		not (Sys.getenv "BATL_USE_WEAK" = "N")
-		with Not_found -> true ;;
+	not (Sys.getenv "BATL_USE_WEAK" = "N")
+	with Not_found -> true ;;
+let verbose  = 
+	try (Sys.getenv "BATL_VERBOSE" = "Y")
+	with Not_found -> false ;;
 
 print_endline "Read formula";;
 
 let num_agents = Formula.max_agent(phi);;
 print_endline ("Number of Agents" ^ (string_of_int num_agents));;
 let colour_limit = 1000000
-let verbose = false 
 
 let all_agents_list = range 1 num_agents
 let all_agents = IntSet.of_list(all_agents_list)
@@ -466,8 +468,8 @@ module Colour = struct
 			Hue.for_all (fun f->
 				match f with
 				| CAN(_,alpha) -> mem_f alpha c
-(*i NOTE/FIXME: Adding the following line would also make sense, but not needed, and not in paper, so ...
- *				| NOT CAN(_, alpha) -> (not (mem_f alpha c)) i*) 
+(*i NOTE/FIXME: Adding the following line would also make sense, but not needed, and not in paper, so ... 
+				| NOT CAN(_, alpha) -> (mem_f (neg alpha) c) i*)
 				| _	-> assert(false)
 			) can_f in
 		let num_non_vetoed = (cardinal (filter Hue.not_vetoed c)) in
@@ -630,11 +632,15 @@ module InstanceSet = struct
 	let println= iter (fun inst -> print_string ((Instance.to_string inst) ^ "\n") )
 end
 
-let satisfied_by = List.exists (fun c ->
+let satisfied_by colours = List.exists (fun c ->
 		let has_phi = Colour.notvetoed_mem_f phi c in
-		if has_phi then printf "phi in %s " (Colour.to_string c);
+		if has_phi then (
+			printf "\nphi in %s \n" (Colour.to_string c);
+			if verbose 
+			then List.iter (fun d -> if Colour.rx c d then printf " RX -> %s " (Colour.to_string d)) colours
+		);
 		has_phi
-	);;
+	) colours;;
 
 
 let log_prune n ch col = (
@@ -714,8 +720,8 @@ let prune = fixpoint prune_step;;
 
 let remaining_colours = prune Colour.all_colours;;
 
-print_string (Printf.sprintf "Number of colours remaining %d\n" (List.length remaining_colours));
-;;
+print_string (Printf.sprintf "Number of colours remaining %d\n" (List.length remaining_colours));;
+if verbose then print_string (String.concat "\n" (List.map Colour.to_string remaining_colours));; 
 
 (* \subsection{Result} 
 	We now return the result as to whether the input formula was satisfiable or not.
