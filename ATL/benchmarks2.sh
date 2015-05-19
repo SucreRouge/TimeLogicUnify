@@ -1,12 +1,19 @@
+bash ./atl_formulas.sh
+
 for WAIT in 600 3600
 do
 
+echo >> cache.txt
+echo "--- CTL* formulas: $WAIT ---" >> cache.txt
 for F in `cat ../parser3/mark_formulas.txt`
 do
 	timeout $WAIT ./do.pl "$F"
 	timeout $WAIT ./do.pl "~($F)"
+	timeout $WAIT ./do.pl "~($F)" 9999
 done
 
+echo >> cache.txt
+echo "--- NEW formulas: $WAIT ---" >> cache.txt
 
 timeout $WAIT ./do.pl "(Xp&-{1}Xp)" 99
 timeout $WAIT ./do.pl "({1}P&-P)"   4
@@ -41,9 +48,9 @@ timeout $WAIT ./do.pl 'Xp&-{2}Xp' # RESULT: SATISFIABLE #Hues=3/32 #Colours=182 
 timeout $WAIT ./do.pl 'Xp&-{1}Xp' 12 # RESULT: UNsatisfiable #Hues=12 #Colours=18 #Remaining=18
 timeout $WAIT ./do.pl 'Xp&-{1}Xp&-{2}q' # RESULT: SATISFIABLE #Hues=2/256 #Colours=324 #Remaining=152
 timeout $WAIT ./do.pl 'P&-{}P' # RESULT: SATISFIABLE #Hues=6 #Colours=11 #Remaining=9
-timeout $WAIT ./do.pl '(-w&{}G({1}-Xw)&{2}Fw)' 2 ==> RESULT: SATISFIABLE #Hues=2/360 #Colours=1117 #Remaining=422
-timeout $WAIT ./do.pl '(-w&{}G({1}-Xw)&{2}XXw)' 2 ==> RESULT: UNKNOWN #Hues=2/576 #Colours=2276 #Remaining=780
-timeout $WAIT ./do.pl '(-w&{}G({1}-Xw)&{2}XXXw)' 2 ==> RESULT: UNKNOWN #Hues=2/1152 #Colours=9074 #Remaining=2688
+timeout $WAIT ./do.pl '(-w&{}G({1}-Xw)&{2}Fw)' 2 # ==> RESULT: SATISFIABLE #Hues=2/360 #Colours=1117 #Remaining=422
+timeout $WAIT ./do.pl '(-w&{}G({1}-Xw)&{2}XXw)' 2 # ==> RESULT: UNKNOWN #Hues=2/576 #Colours=2276 #Remaining=780
+timeout $WAIT ./do.pl '(-w&{}G({1}-Xw)&{2}XXXw)' 2 # ==> RESULT: UNKNOWN #Hues=2/1152 #Colours=9074 #Remaining=2688
 
 done
 exit 
