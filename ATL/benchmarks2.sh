@@ -1,6 +1,6 @@
-bash ./atl_formulas.sh
+#bash ./atl_formulas.sh
 
-for WAIT in 60 600 3600
+for WAIT in 1 5 60 600 3600
 do
 
 echo >> cache.txt
