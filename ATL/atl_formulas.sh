@@ -31,8 +31,8 @@ s/¬/~/g
 s/,//g
 s/☐/G/g' | while read F
 do
-	timeout 600 ./do.pl "$F"
-	timeout 600 ./do.pl "-($F)"
-	timeout 600 ./do.pl "$F" 999
-	timeout 600 ./do.pl "-($F)" 999
+	timeout 600 ../do.pl "$F"
+	timeout 600 ../do.pl "-($F)"
+	timeout 600 ../do.pl "$F" 999
+	timeout 600 ../do.pl "-($F)" 999
 done

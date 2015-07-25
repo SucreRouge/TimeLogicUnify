@@ -158,6 +158,10 @@ module Formula = struct
 					| 'U' -> UNTIL (x,r())
 					| '|' -> NOT   (AND (NOT x, NOT (r())))
 					| '>' -> NOT   (AND (    x, NOT (r())))
+					| '=' -> let y = r() in 
+						let tt =  AND (x,y) in
+						let ff =  AND (NOT x, NOT y) in
+						NOT (AND (NOT tt, NOT ff)) (* This may be a lot more efficient to reason about directly ... *)
 					| x -> (let _ = printf "Unexpected op  %c at position %d" x (!i) in assert (false))
 				) 
 			in
