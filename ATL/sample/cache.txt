@@ -1,0 +1,180 @@
+--- ATL formulas ---
+
+--- CTL* formulas: 600 ---
+
+--- NEW formulas: 600 ---
+
+--- CTL* formulas: 3600 ---
+
+--- NEW formulas: 3600 ---
+--- ATL formulas ---
+
+--- CTL* formulas: 600 ---
+
+--- NEW formulas: 600 ---
+
+--- CTL* formulas: 3600 ---
+
+--- NEW formulas: 3600 ---
+'(p=p)' ==> Fatal error: exception Assert_failure("atl.ml", 161, 73)	Command exited with non-zero status 2	0.00user 0.00system 0:00.00elapsed 0%CPU (0avgtext+0avgdata 2136maxresident)k	0inputs+0outputs (0major+115minor)pagefaults 0swaps	((p=Unexpected op  = at position 4
+--- ATL formulas ---
+'p' ==> 0.00user 0.00system 0:00.00elapsed ?%CPU (0avgtext+0avgdata 2284maxresident)k	0inputs+0outputs (0major+128minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=2 #Colours=2 #Remaining=2
+'-(p)' ==> 0.00user 0.00system 0:00.00elapsed 0%CPU (0avgtext+0avgdata 2252maxresident)k	0inputs+0outputs (0major+127minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=2 #Colours=2 #Remaining=2
+'p' 999 ==> 0.00user 0.00system 0:00.00elapsed ?%CPU (0avgtext+0avgdata 2116maxresident)k	0inputs+0outputs (0major+126minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=2 #Colours=2 #Remaining=2
+'-(p)' 999 ==> 0.00user 0.00system 0:00.00elapsed ?%CPU (0avgtext+0avgdata 2080maxresident)k	0inputs+0outputs (0major+126minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=2 #Colours=2 #Remaining=2
+'p ^ q' ==> 0.00user 0.00system 0:00.00elapsed ?%CPU (0avgtext+0avgdata 2264maxresident)k	0inputs+0outputs (0major+140minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=4 #Colours=4 #Remaining=4
+'-(p ^ q)' ==> 0.00user 0.00system 0:00.00elapsed 0%CPU (0avgtext+0avgdata 2196maxresident)k	0inputs+0outputs (0major+137minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=4 #Colours=4 #Remaining=4
+'p ^ q' 999 ==> 0.00user 0.00system 0:00.00elapsed ?%CPU (0avgtext+0avgdata 2148maxresident)k	0inputs+0outputs (0major+137minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=4 #Colours=4 #Remaining=4
+'-(p ^ q)' 999 ==> 0.00user 0.00system 0:00.00elapsed ?%CPU (0avgtext+0avgdata 2228maxresident)k	0inputs+0outputs (0major+140minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=4 #Colours=4 #Remaining=4
+'p | q' ==> 0.00user 0.00system 0:00.00elapsed ?%CPU (0avgtext+0avgdata 2220maxresident)k	0inputs+0outputs (0major+136minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=4 #Colours=4 #Remaining=4
+'-(p | q)' ==> 0.00user 0.00system 0:00.00elapsed ?%CPU (0avgtext+0avgdata 2272maxresident)k	0inputs+0outputs (0major+148minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=4 #Colours=4 #Remaining=4
+'p | q' 999 ==> 0.00user 0.00system 0:00.00elapsed ?%CPU (0avgtext+0avgdata 2120maxresident)k	0inputs+0outputs (0major+135minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=4 #Colours=4 #Remaining=4
+'-(p | q)' 999 ==> 0.00user 0.00system 0:00.00elapsed ?%CPU (0avgtext+0avgdata 2156maxresident)k	0inputs+0outputs (0major+147minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=4 #Colours=4 #Remaining=4
+'{1}Xp' ==> 0.00user 0.00system 0:00.00elapsed 100%CPU (0avgtext+0avgdata 4232maxresident)k	0inputs+0outputs (0major+637minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=5/12 #Colours=18 #Remaining=18
+'-({1}Xp)' ==> 0.00user 0.00system 0:00.00elapsed 66%CPU (0avgtext+0avgdata 4324maxresident)k	0inputs+0outputs (0major+639minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=5/12 #Colours=18 #Remaining=18
+'{1}Xp' 999 ==> 0.00user 0.00system 0:00.01elapsed 72%CPU (0avgtext+0avgdata 4132maxresident)k	0inputs+0outputs (0major+638minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=12 #Colours=18 #Remaining=18
+'-({1}Xp)' 999 ==> 0.00user 0.00system 0:00.01elapsed 72%CPU (0avgtext+0avgdata 4136maxresident)k	0inputs+0outputs (0major+635minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=12 #Colours=18 #Remaining=18
+'{1}Fp' ==> 0.00user 0.00system 0:00.00elapsed 100%CPU (0avgtext+0avgdata 3484maxresident)k	0inputs+0outputs (0major+441minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=6/8 #Colours=11 #Remaining=11
+'-({1}Fp)' ==> 0.00user 0.00system 0:00.00elapsed 50%CPU (0avgtext+0avgdata 3396maxresident)k	0inputs+0outputs (0major+440minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=6/8 #Colours=11 #Remaining=11
+'{1}Fp' 999 ==> 0.00user 0.00system 0:00.00elapsed 100%CPU (0avgtext+0avgdata 3480maxresident)k	0inputs+0outputs (0major+452minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=8 #Colours=11 #Remaining=11
+'-({1}Fp)' 999 ==> 0.00user 0.00system 0:00.00elapsed 100%CPU (0avgtext+0avgdata 3384maxresident)k	0inputs+0outputs (0major+450minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=8 #Colours=11 #Remaining=11
+'{1}Gp' ==> 0.00user 0.00system 0:00.00elapsed 100%CPU (0avgtext+0avgdata 4324maxresident)k	0inputs+0outputs (0major+639minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=5/10 #Colours=11 #Remaining=11
+'-({1}Gp)' ==> 0.00user 0.00system 0:00.00elapsed 100%CPU (0avgtext+0avgdata 4268maxresident)k	0inputs+0outputs (0major+636minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=5/10 #Colours=11 #Remaining=11
+'{1}Gp' 999 ==> 0.00user 0.00system 0:00.00elapsed 75%CPU (0avgtext+0avgdata 4172maxresident)k	0inputs+0outputs (0major+634minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=10 #Colours=11 #Remaining=11
+'-({1}Gp)' 999 ==> 0.00user 0.00system 0:00.01elapsed 40%CPU (0avgtext+0avgdata 4156maxresident)k	0inputs+0outputs (0major+633minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=10 #Colours=11 #Remaining=11
+'{1}p U q' ==> 0.00user 0.00system 0:00.01elapsed 46%CPU (0avgtext+0avgdata 4180maxresident)k	0inputs+0outputs (0major+635minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=4/16 #Colours=15 #Remaining=15
+'-({1}p U q)' ==> 0.00user 0.00system 0:00.01elapsed 41%CPU (0avgtext+0avgdata 4260maxresident)k	0inputs+0outputs (0major+635minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=4/16 #Colours=15 #Remaining=15
+'{1}p U q' 999 ==> 0.15user 0.00system 0:00.16elapsed 93%CPU (0avgtext+0avgdata 4168maxresident)k	0inputs+0outputs (0major+639minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=16 #Colours=15 #Remaining=15
+'-({1}p U q)' 999 ==> 0.15user 0.00system 0:00.17elapsed 92%CPU (0avgtext+0avgdata 4180maxresident)k	0inputs+0outputs (0major+641minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=16 #Colours=15 #Remaining=15
+'~{1}p U q' ==> 0.00user 0.00system 0:00.00elapsed 85%CPU (0avgtext+0avgdata 4236maxresident)k	0inputs+0outputs (0major+637minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=5/14 #Colours=15 #Remaining=15
+'-(~{1}p U q)' ==> 0.00user 0.00system 0:00.00elapsed 100%CPU (0avgtext+0avgdata 4284maxresident)k	0inputs+0outputs (0major+637minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=5/14 #Colours=15 #Remaining=15
+'~{1}p U q' 999 ==> 0.02user 0.00system 0:00.05elapsed 68%CPU (0avgtext+0avgdata 4236maxresident)k	0inputs+0outputs (0major+643minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=14 #Colours=15 #Remaining=15
+'-(~{1}p U q)' 999 ==> 0.03user 0.00system 0:00.04elapsed 75%CPU (0avgtext+0avgdata 4252maxresident)k	0inputs+0outputs (0major+641minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=14 #Colours=15 #Remaining=15
+'p ^ ~p' ==> 0.00user 0.00system 0:00.00elapsed ?%CPU (0avgtext+0avgdata 2224maxresident)k	0inputs+0outputs (0major+127minor)pagefaults 0swaps	RESULT: UNsatisfiable #Hues=2 #Colours=2 #Remaining=2
+'-(p ^ ~p)' ==> 0.00user 0.00system 0:00.00elapsed ?%CPU (0avgtext+0avgdata 2228maxresident)k	0inputs+0outputs (0major+127minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=2 #Colours=2 #Remaining=2
+'p ^ ~p' 999 ==> 0.00user 0.00system 0:00.00elapsed ?%CPU (0avgtext+0avgdata 2188maxresident)k	0inputs+0outputs (0major+126minor)pagefaults 0swaps	RESULT: UNsatisfiable #Hues=2 #Colours=2 #Remaining=2
+'-(p ^ ~p)' 999 ==> 0.00user 0.00system 0:00.00elapsed ?%CPU (0avgtext+0avgdata 2192maxresident)k	0inputs+0outputs (0major+127minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=2 #Colours=2 #Remaining=2
+'~~{1}p U q' ==> 0.00user 0.00system 0:00.00elapsed 62%CPU (0avgtext+0avgdata 4220maxresident)k	0inputs+0outputs (0major+636minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=4/16 #Colours=15 #Remaining=15
+'-(~~{1}p U q)' ==> 0.00user 0.00system 0:00.00elapsed 100%CPU (0avgtext+0avgdata 4240maxresident)k	0inputs+0outputs (0major+636minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=4/16 #Colours=15 #Remaining=15
+'~~{1}p U q' 999 ==> 0.16user 0.00system 0:00.17elapsed 95%CPU (0avgtext+0avgdata 4152maxresident)k	0inputs+0outputs (0major+643minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=16 #Colours=15 #Remaining=15
+'-(~~{1}p U q)' 999 ==> 0.17user 0.00system 0:00.18elapsed 93%CPU (0avgtext+0avgdata 4256maxresident)k	0inputs+0outputs (0major+646minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=16 #Colours=15 #Remaining=15
+'p > q' ==> 0.00user 0.00system 0:00.00elapsed ?%CPU (0avgtext+0avgdata 2260maxresident)k	0inputs+0outputs (0major+137minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=4 #Colours=4 #Remaining=4
+'-(p > q)' ==> 0.00user 0.00system 0:00.00elapsed ?%CPU (0avgtext+0avgdata 2380maxresident)k	0inputs+0outputs (0major+153minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=4 #Colours=4 #Remaining=4
+'p > q' 999 ==> 0.00user 0.00system 0:00.00elapsed ?%CPU (0avgtext+0avgdata 2224maxresident)k	0inputs+0outputs (0major+137minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=4 #Colours=4 #Remaining=4
+'-(p > q)' 999 ==> 0.00user 0.00system 0:00.00elapsed ?%CPU (0avgtext+0avgdata 2256maxresident)k	0inputs+0outputs (0major+147minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=4 #Colours=4 #Remaining=4
+'~{1}Fp' ==> 0.00user 0.00system 0:00.00elapsed 100%CPU (0avgtext+0avgdata 3436maxresident)k	0inputs+0outputs (0major+439minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=6/8 #Colours=11 #Remaining=11
+'-(~{1}Fp)' ==> 0.00user 0.00system 0:00.00elapsed 66%CPU (0avgtext+0avgdata 3724maxresident)k	0inputs+0outputs (0major+511minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=6/8 #Colours=11 #Remaining=11
+'~{1}Fp' 999 ==> 0.00user 0.00system 0:00.00elapsed 50%CPU (0avgtext+0avgdata 3412maxresident)k	0inputs+0outputs (0major+454minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=8 #Colours=11 #Remaining=11
+'-(~{1}Fp)' 999 ==> 0.00user 0.00system 0:00.00elapsed 100%CPU (0avgtext+0avgdata 3776maxresident)k	0inputs+0outputs (0major+526minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=8 #Colours=11 #Remaining=11
+'{12}(p U q) ^ {12}Xr' ==> 0.55user 0.00system 0:00.56elapsed 97%CPU (0avgtext+0avgdata 4376maxresident)k	0inputs+0outputs (0major+662minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=3/84 #Colours=162 #Remaining=162
+'-({12}(p U q) ^ {12}Xr)' ==> 0.52user 0.00system 0:00.54elapsed 97%CPU (0avgtext+0avgdata 4344maxresident)k	0inputs+0outputs (0major+663minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=3/84 #Colours=162 #Remaining=162
+'(Xp&-{1}Xp)' 99 ==> 0.00user 0.00system 0:00.03elapsed 26%CPU (0avgtext+0avgdata 4168maxresident)k	0inputs+0outputs (0major+638minor)pagefaults 0swaps	RESULT: UNsatisfiable #Hues=12 #Colours=18 #Remaining=18
+'(Xp&-{2}Xp)' ==> 0.21user 0.00system 0:00.44elapsed 48%CPU (0avgtext+0avgdata 4340maxresident)k	0inputs+0outputs (0major+665minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=3/32 #Colours=190 #Remaining=140
+'(Xp&-{1}Xp)&{2}p' ==> 0.25user 0.00system 0:00.53elapsed 48%CPU (0avgtext+0avgdata 4360maxresident)k	0inputs+0outputs (0major+662minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=2/128 #Colours=162 #Remaining=76
+--- ATL formulas ---
+'-w&{}G({1}X-w)&{2}Xw' 2 ==> 32.16user 0.00system 1:04.95elapsed 49%CPU (0avgtext+0avgdata 5148maxresident)k	0inputs+0outputs (0major+889minor)pagefaults 0swaps	RESULT: UNKNOWN #Hues=2/288 #Colours=550 #Remaining=230
+--- ATL formulas ---
+'{12}(p U q) ^ {34}Xr' ==> 43.88user 0.00system 0:43.94elapsed 99%CPU (0avgtext+0avgdata 5260maxresident)k	0inputs+0outputs (0major+896minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=2/640 #Colours=1284 #Remaining=590
+'-({12}(p U q) ^ {34}Xr)' ==> 43.73user 0.00system 0:43.79elapsed 99%CPU (0avgtext+0avgdata 5636maxresident)k	0inputs+0outputs (0major+1141minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=2/640 #Colours=1284 #Remaining=590
+'{12}(p U q) ^ {23}Xr' ==> 20.40user 0.00system 0:20.44elapsed 99%CPU (0avgtext+0avgdata 5340maxresident)k	0inputs+0outputs (0major+893minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=2/560 #Colours=1116 #Remaining=592
+'-({12}(p U q) ^ {23}Xr)' ==> 19.32user 0.00system 0:19.35elapsed 99%CPU (0avgtext+0avgdata 5312maxresident)k	0inputs+0outputs (0major+891minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=2/560 #Colours=1116 #Remaining=592
+'{21}(p U q) ^ {32}Xr' ==> 21.72user 0.00system 0:21.75elapsed 99%CPU (0avgtext+0avgdata 5196maxresident)k	0inputs+0outputs (0major+890minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=2/560 #Colours=1116 #Remaining=652
+'-({21}(p U q) ^ {32}Xr)' ==> 23.25user 0.00system 0:23.29elapsed 99%CPU (0avgtext+0avgdata 5348maxresident)k	0inputs+0outputs (0major+894minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=2/560 #Colours=1116 #Remaining=652
+'~{12}X p ^ {1}Gq' ==> 1.36user 0.00system 0:01.37elapsed 98%CPU (0avgtext+0avgdata 4600maxresident)k	0inputs+0outputs (0major+705minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=2/180 #Colours=296 #Remaining=226
+'-(~{12}X p ^ {1}Gq)' ==> 1.36user 0.00system 0:01.38elapsed 98%CPU (0avgtext+0avgdata 4496maxresident)k	0inputs+0outputs (0major+702minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=2/180 #Colours=296 #Remaining=226
+'~{12}X p ^ {123}Gq' ==> 2.20user 0.00system 0:02.22elapsed 99%CPU (0avgtext+0avgdata 4568maxresident)k	0inputs+0outputs (0major+723minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=2/200 #Colours=324 #Remaining=236
+'-(~{12}X p ^ {123}Gq)' ==> 2.03user 0.00system 0:02.06elapsed 99%CPU (0avgtext+0avgdata 4580maxresident)k	0inputs+0outputs (0major+723minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=2/200 #Colours=324 #Remaining=236
+'{ } (p U q) ^ {12}Xr' ==> 0.82user 0.00system 0:00.83elapsed 97%CPU (0avgtext+0avgdata 4500maxresident)k	0inputs+0outputs (0major+702minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=2/144 #Colours=216 #Remaining=150
+'-({ } (p U q) ^ {12}Xr)' ==> 0.74user 0.00system 0:00.76elapsed 98%CPU (0avgtext+0avgdata 4420maxresident)k	0inputs+0outputs (0major+685minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=2/144 #Colours=216 #Remaining=150
+'~p | {1}F p' ==> 0.00user 0.00system 0:00.00elapsed 50%CPU (0avgtext+0avgdata 4320maxresident)k	0inputs+0outputs (0major+639minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=6/8 #Colours=11 #Remaining=11
+'-(~p | {1}F p)' ==> 0.00user 0.00system 0:00.00elapsed 66%CPU (0avgtext+0avgdata 4248maxresident)k	0inputs+0outputs (0major+635minor)pagefaults 0swaps	RESULT: UNKNOWN #Hues=6/8 #Colours=11 #Remaining=11
+'~p | {1}F p' 999 ==> 0.00user 0.00system 0:00.01elapsed 25%CPU (0avgtext+0avgdata 4212maxresident)k	0inputs+0outputs (0major+636minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=8 #Colours=11 #Remaining=11
+'-(~p | {1}F p)' 999 ==> 0.00user 0.00system 0:00.01elapsed 45%CPU (0avgtext+0avgdata 4224maxresident)k	0inputs+0outputs (0major+634minor)pagefaults 0swaps	RESULT: UNsatisfiable #Hues=8 #Colours=11 #Remaining=11
+'(p ^ q) ^ {1}G~(p ^ q)' ==> 0.06user 0.00system 0:00.07elapsed 77%CPU (0avgtext+0avgdata 4300maxresident)k	0inputs+0outputs (0major+647minor)pagefaults 0swaps	RESULT: UNKNOWN #Hues=4/22 #Colours=29 #Remaining=29
+'-((p ^ q) ^ {1}G~(p ^ q))' ==> 0.04user 0.00system 0:00.06elapsed 78%CPU (0avgtext+0avgdata 4332maxresident)k	0inputs+0outputs (0major+647minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=4/22 #Colours=29 #Remaining=29
+'(p ^ q) ^ {1}G~(p ^ q)' 999 ==> 18.82user 0.00system 0:18.84elapsed 99%CPU (0avgtext+0avgdata 4180maxresident)k	0inputs+0outputs (0major+644minor)pagefaults 0swaps	RESULT: UNsatisfiable #Hues=22 #Colours=29 #Remaining=29
+'-((p ^ q) ^ {1}G~(p ^ q))' 999 ==> 19.12user 0.00system 0:19.16elapsed 99%CPU (0avgtext+0avgdata 4196maxresident)k	0inputs+0outputs (0major+644minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=22 #Colours=29 #Remaining=29
+'{1}Gp ^ ~{2}F{1}Gp' ==> 1.16user 0.00system 0:01.18elapsed 98%CPU (0avgtext+0avgdata 4592maxresident)k	0inputs+0outputs (0major+711minor)pagefaults 0swaps	RESULT: UNKNOWN #Hues=2/144 #Colours=313 #Remaining=154
+'-({1}Gp ^ ~{2}F{1}Gp)' ==> 1.16user 0.00system 0:01.17elapsed 98%CPU (0avgtext+0avgdata 4548maxresident)k	0inputs+0outputs (0major+711minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=2/144 #Colours=313 #Remaining=154
+'{1}Xp ^ ~{1}Xp' ==> 0.00user 0.00system 0:00.00elapsed 50%CPU (0avgtext+0avgdata 4268maxresident)k	0inputs+0outputs (0major+638minor)pagefaults 0swaps	RESULT: UNKNOWN #Hues=5/12 #Colours=18 #Remaining=18
+'-({1}Xp ^ ~{1}Xp)' ==> 0.00user 0.00system 0:00.00elapsed 55%CPU (0avgtext+0avgdata 4268maxresident)k	0inputs+0outputs (0major+638minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=5/12 #Colours=18 #Remaining=18
+'{1}Xp ^ ~{1}Xp' 999 ==> 0.01user 0.00system 0:00.01elapsed 55%CPU (0avgtext+0avgdata 4124maxresident)k	0inputs+0outputs (0major+634minor)pagefaults 0swaps	RESULT: UNsatisfiable #Hues=12 #Colours=18 #Remaining=18
+'-({1}Xp ^ ~{1}Xp)' 999 ==> 0.01user 0.00system 0:00.02elapsed 57%CPU (0avgtext+0avgdata 4204maxresident)k	0inputs+0outputs (0major+635minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=12 #Colours=18 #Remaining=18
+'{1}(p U q) | ~{1}Gq' ==> 0.16user 0.00system 0:00.19elapsed 88%CPU (0avgtext+0avgdata 4328maxresident)k	0inputs+0outputs (0major+646minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=3/32 #Colours=29 #Remaining=29
+'-({1}(p U q) | ~{1}Gq)' ==> 0.36user 0.00system 0:00.37elapsed 96%CPU (0avgtext+0avgdata 4280maxresident)k	0inputs+0outputs (0major+642minor)pagefaults 0swaps	RESULT: UNKNOWN #Hues=3/32 #Colours=29 #Remaining=29
+'{12}p U (~{1}Gp)' ==> 2.49user 0.00system 0:02.52elapsed 99%CPU (0avgtext+0avgdata 4456maxresident)k	0inputs+0outputs (0major+696minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=3/55 #Colours=446 #Remaining=171
+'-({12}p U (~{1}Gp))' ==> 2.63user 0.00system 0:02.65elapsed 99%CPU (0avgtext+0avgdata 4492maxresident)k	0inputs+0outputs (0major+697minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=3/55 #Colours=446 #Remaining=171
+'{1}(~{12}Gp) U q' ==> 0.19user 0.00system 0:00.20elapsed 94%CPU (0avgtext+0avgdata 4328maxresident)k	0inputs+0outputs (0major+664minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=2/125 #Colours=96 #Remaining=76
+'-({1}(~{12}Gp) U q)' ==> 0.21user 0.00system 0:00.22elapsed 94%CPU (0avgtext+0avgdata 4292maxresident)k	0inputs+0outputs (0major+664minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=2/125 #Colours=96 #Remaining=76
+'{}G{}p U q' ==> 0.05user 0.00system 0:00.06elapsed 80%CPU (0avgtext+0avgdata 4340maxresident)k	0inputs+0outputs (0major+650minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=4/22 #Colours=46 #Remaining=38
+'-({}G{}p U q)' ==> 0.08user 0.00system 0:00.10elapsed 80%CPU (0avgtext+0avgdata 4312maxresident)k	0inputs+0outputs (0major+648minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=4/22 #Colours=46 #Remaining=38
+'{}G{}p U q' 999 ==> 20.11user 0.00system 0:20.14elapsed 99%CPU (0avgtext+0avgdata 4196maxresident)k	0inputs+0outputs (0major+646minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=22 #Colours=46 #Remaining=38
+'-({}G{}p U q)' 999 ==> 19.68user 0.00system 0:19.71elapsed 99%CPU (0avgtext+0avgdata 4256maxresident)k	0inputs+0outputs (0major+644minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=22 #Colours=46 #Remaining=38
+'{123}G{23}G(p ^ q) ^ {4}X~p' ==> 300.96user 0.01system 5:01.23elapsed 99%CPU (0avgtext+0avgdata 6380maxresident)k	0inputs+0outputs (0major+1149minor)pagefaults 0swaps	RESULT: UNKNOWN #Hues=1/1404 #Colours=16 #Remaining=9
+'-({123}G{23}G(p ^ q) ^ {4}X~p)' ==> 298.32user 0.01system 4:58.60elapsed 99%CPU (0avgtext+0avgdata 6340maxresident)k	0inputs+0outputs (0major+1148minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=1/1404 #Colours=16 #Remaining=9
+'~{1}Gp ^ {12}Xp ^ ~{2}X~p' ==> 33.65user 0.00system 0:33.70elapsed 99%CPU (0avgtext+0avgdata 5204maxresident)k	0inputs+0outputs (0major+888minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=2/252 #Colours=242 #Remaining=158
+'-(~{1}Gp ^ {12}Xp ^ ~{2}X~p)' ==> 33.54user 0.00system 0:33.59elapsed 99%CPU (0avgtext+0avgdata 5288maxresident)k	0inputs+0outputs (0major+889minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=2/252 #Colours=242 #Remaining=158
+'{123}G{234}G(p ^ q)' ==> 1.60user 0.00system 0:01.62elapsed 98%CPU (0avgtext+0avgdata 4520maxresident)k	0inputs+0outputs (0major+700minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=2/210 #Colours=186 #Remaining=76
+'-({123}G{234}G(p ^ q))' ==> 1.59user 0.00system 0:01.61elapsed 99%CPU (0avgtext+0avgdata 4452maxresident)k	0inputs+0outputs (0major+703minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=2/210 #Colours=186 #Remaining=76
+'~({1}Gp | {1}G~p)' ==> 0.11user 0.00system 0:00.13elapsed 90%CPU (0avgtext+0avgdata 4368maxresident)k	0inputs+0outputs (0major+644minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=4/24 #Colours=18 #Remaining=18
+'-(~({1}Gp | {1}G~p))' ==> 0.18user 0.00system 0:00.20elapsed 93%CPU (0avgtext+0avgdata 4260maxresident)k	0inputs+0outputs (0major+641minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=4/24 #Colours=18 #Remaining=18
+'~({1}Gp | {1}G~p)' 999 ==> 97.56user 0.00system 1:37.65elapsed 99%CPU (0avgtext+0avgdata 4132maxresident)k	0inputs+0outputs (0major+640minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=24 #Colours=18 #Remaining=18
+'-(~({1}Gp | {1}G~p))' 999 ==> 108.83user 0.00system 1:48.93elapsed 99%CPU (0avgtext+0avgdata 4244maxresident)k	0inputs+0outputs (0major+644minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=24 #Colours=18 #Remaining=18
+'~({1}Gp ^ {1}G~p)' ==> 0.05user 0.00system 0:00.07elapsed 79%CPU (0avgtext+0avgdata 4264maxresident)k	0inputs+0outputs (0major+643minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=4/24 #Colours=18 #Remaining=18
+'-(~({1}Gp ^ {1}G~p))' ==> 0.10user 0.00system 0:00.11elapsed 90%CPU (0avgtext+0avgdata 4252maxresident)k	0inputs+0outputs (0major+642minor)pagefaults 0swaps	RESULT: UNKNOWN #Hues=4/24 #Colours=18 #Remaining=18
+'~({1}Gp ^ {1}G~p)' 999 ==> 100.81user 0.00system 1:40.90elapsed 99%CPU (0avgtext+0avgdata 4176maxresident)k	0inputs+0outputs (0major+642minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=24 #Colours=18 #Remaining=18
+'-(~({1}Gp ^ {1}G~p))' 999 ==> 114.75user 0.00system 1:54.85elapsed 99%CPU (0avgtext+0avgdata 4268maxresident)k	0inputs+0outputs (0major+644minor)pagefaults 0swaps	RESULT: UNsatisfiable #Hues=24 #Colours=18 #Remaining=18
+'~{1}p U ~{2}(q U r)' ==> 3.06user 0.00system 0:03.08elapsed 99%CPU (0avgtext+0avgdata 5032maxresident)k	0inputs+0outputs (0major+828minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=2/400 #Colours=510 #Remaining=223
+'-(~{1}p U ~{2}(q U r))' ==> 3.22user 0.00system 0:03.24elapsed 99%CPU (0avgtext+0avgdata 4992maxresident)k	0inputs+0outputs (0major+830minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=2/400 #Colours=510 #Remaining=223
+'{1}G~q ^ {2}(p U q)' ==> 2.56user 0.00system 0:02.57elapsed 99%CPU (0avgtext+0avgdata 4696maxresident)k	0inputs+0outputs (0major+736minor)pagefaults 0swaps	RESULT: UNKNOWN #Hues=2/224 #Colours=246 #Remaining=151
+'-({1}G~q ^ {2}(p U q))' ==> 2.57user 0.00system 0:02.59elapsed 99%CPU (0avgtext+0avgdata 4916maxresident)k	0inputs+0outputs (0major+783minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=2/224 #Colours=246 #Remaining=151
+'{1}Gp ^ ~{12}Gp' ==> 0.25user 0.00system 0:00.27elapsed 95%CPU (0avgtext+0avgdata 4348maxresident)k	0inputs+0outputs (0major+658minor)pagefaults 0swaps	RESULT: UNKNOWN #Hues=3/50 #Colours=114 #Remaining=88
+'-({1}Gp ^ ~{12}Gp)' ==> 0.25user 0.00system 0:00.26elapsed 94%CPU (0avgtext+0avgdata 4280maxresident)k	0inputs+0outputs (0major+659minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=3/50 #Colours=114 #Remaining=88
+'~{1}Xp ^ {2}X~p' ==> 0.36user 0.00system 0:00.37elapsed 96%CPU (0avgtext+0avgdata 4420maxresident)k	0inputs+0outputs (0major+687minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=2/128 #Colours=184 #Remaining=90
+'-(~{1}Xp ^ {2}X~p)' ==> 0.35user 0.00system 0:00.36elapsed 95%CPU (0avgtext+0avgdata 4400maxresident)k	0inputs+0outputs (0major+687minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=2/128 #Colours=184 #Remaining=90
+'{1}Xp ^ {2}X~p' ==> 0.36user 0.00system 0:00.38elapsed 96%CPU (0avgtext+0avgdata 4388maxresident)k	0inputs+0outputs (0major+688minor)pagefaults 0swaps	RESULT: UNKNOWN #Hues=2/128 #Colours=184 #Remaining=90
+'-({1}Xp ^ {2}X~p)' ==> 0.35user 0.00system 0:00.37elapsed 96%CPU (0avgtext+0avgdata 4420maxresident)k	0inputs+0outputs (0major+686minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=2/128 #Colours=184 #Remaining=90
+'{1}(p U q) ^ {2}(q U r) ^ {2}G~r' ==> 574.75user 0.00system 9:35.23elapsed 99%CPU (0avgtext+0avgdata 6300maxresident)k	0inputs+0outputs (0major+1150minor)pagefaults 0swaps	RESULT: UNKNOWN #Hues=1/1088 #Colours=48 #Remaining=17
+'{1}(p U q) ^ {2}(q U r) ^ {1}G~r' ==> 574.66user 0.03system 9:35.17elapsed 99%CPU (0avgtext+0avgdata 6256maxresident)k	0inputs+0outputs (0major+1147minor)pagefaults 0swaps	RESULT: UNKNOWN #Hues=1/1088 #Colours=48 #Remaining=17
+
+--- CTL* formulas: 600 ---
+'G(p>q)>(Gp>Gq)' ==> 1.56user 0.00system 0:01.57elapsed 99%CPU (0avgtext+0avgdata 4296maxresident)k	0inputs+0outputs (0major+647minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=5/12 #Colours=44 #Remaining=44
+'~(G(p>q)>(Gp>Gq))' ==> 3.81user 0.00system 0:03.83elapsed 99%CPU (0avgtext+0avgdata 4224maxresident)k	0inputs+0outputs (0major+647minor)pagefaults 0swaps	RESULT: UNKNOWN #Hues=5/12 #Colours=44 #Remaining=44
+'~(G(p>q)>(Gp>Gq))' 9999 ==> 3.82user 0.00system 0:03.83elapsed 99%CPU (0avgtext+0avgdata 4244maxresident)k	0inputs+0outputs (0major+643minor)pagefaults 0swaps	RESULT: UNsatisfiable #Hues=12 #Colours=44 #Remaining=44
+'Gp>(p&Xp&XGp)' ==> 0.03user 0.00system 0:00.04elapsed 70%CPU (0avgtext+0avgdata 4224maxresident)k	0inputs+0outputs (0major+637minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=6 #Colours=14 #Remaining=14
+'~(Gp>(p&Xp&XGp))' ==> 0.07user 0.00system 0:00.09elapsed 82%CPU (0avgtext+0avgdata 4264maxresident)k	0inputs+0outputs (0major+640minor)pagefaults 0swaps	RESULT: UNsatisfiable #Hues=6 #Colours=14 #Remaining=14
+'~(Gp>(p&Xp&XGp))' 9999 ==> 0.07user 0.00system 0:00.08elapsed 88%CPU (0avgtext+0avgdata 4148maxresident)k	0inputs+0outputs (0major+638minor)pagefaults 0swaps	RESULT: UNsatisfiable #Hues=6 #Colours=14 #Remaining=14
+'(pUq)=(q|(p&X(pUq)))' ==> 0.71user 0.00system 0:00.73elapsed 97%CPU (0avgtext+0avgdata 4312maxresident)k	0inputs+0outputs (0major+643minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=6/8 #Colours=12 #Remaining=12
+'~((pUq)=(q|(p&X(pUq))))' ==> 1.77user 0.00system 0:01.78elapsed 99%CPU (0avgtext+0avgdata 4236maxresident)k	0inputs+0outputs (0major+638minor)pagefaults 0swaps	RESULT: UNKNOWN #Hues=6/8 #Colours=12 #Remaining=12
+'~((pUq)=(q|(p&X(pUq))))' 9999 ==> 1.56user 0.00system 0:01.58elapsed 99%CPU (0avgtext+0avgdata 4132maxresident)k	0inputs+0outputs (0major+639minor)pagefaults 0swaps	RESULT: UNsatisfiable #Hues=8 #Colours=12 #Remaining=12
+'(pUq)>Fq' ==> 0.00user 0.00system 0:00.00elapsed 100%CPU (0avgtext+0avgdata 4256maxresident)k	0inputs+0outputs (0major+638minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=7 #Colours=12 #Remaining=12
+'~((pUq)>Fq)' ==> 0.00user 0.00system 0:00.00elapsed 80%CPU (0avgtext+0avgdata 4256maxresident)k	0inputs+0outputs (0major+635minor)pagefaults 0swaps	RESULT: UNsatisfiable #Hues=7 #Colours=12 #Remaining=12
+'~((pUq)>Fq)' 9999 ==> 0.00user 0.00system 0:00.01elapsed 60%CPU (0avgtext+0avgdata 4128maxresident)k	0inputs+0outputs (0major+634minor)pagefaults 0swaps	RESULT: UNsatisfiable #Hues=7 #Colours=12 #Remaining=12
+'p>AEp' ==> 0.00user 0.00system 0:00.00elapsed 66%CPU (0avgtext+0avgdata 4236maxresident)k	0inputs+0outputs (0major+638minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=5/10 #Colours=10 #Remaining=4
+'~(p>AEp)' ==> 0.00user 0.00system 0:00.00elapsed 60%CPU (0avgtext+0avgdata 4244maxresident)k	0inputs+0outputs (0major+638minor)pagefaults 0swaps	RESULT: UNKNOWN #Hues=5/10 #Colours=10 #Remaining=4
+'~(p>AEp)' 9999 ==> 0.00user 0.00system 0:00.00elapsed 100%CPU (0avgtext+0avgdata 4156maxresident)k	0inputs+0outputs (0major+634minor)pagefaults 0swaps	RESULT: UNsatisfiable #Hues=10 #Colours=10 #Remaining=4
+'Ap>AAp' ==> 0.00user 0.00system 0:00.00elapsed 100%CPU (0avgtext+0avgdata 3564maxresident)k	0inputs+0outputs (0major+468minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=6/8 #Colours=8 #Remaining=4
+'~(Ap>AAp)' ==> 0.00user 0.00system 0:00.00elapsed 100%CPU (0avgtext+0avgdata 4012maxresident)k	0inputs+0outputs (0major+585minor)pagefaults 0swaps	RESULT: UNKNOWN #Hues=6/8 #Colours=8 #Remaining=4
+'~(Ap>AAp)' 9999 ==> 0.00user 0.00system 0:00.00elapsed 100%CPU (0avgtext+0avgdata 4068maxresident)k	0inputs+0outputs (0major+600minor)pagefaults 0swaps	RESULT: UNsatisfiable #Hues=8 #Colours=8 #Remaining=4
+'AXp>XAp' ==> 0.27user 0.00system 0:00.28elapsed 96%CPU (0avgtext+0avgdata 4316maxresident)k	0inputs+0outputs (0major+658minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=4/30 #Colours=183 #Remaining=46
+'~(AXp>XAp)' ==> 0.28user 0.00system 0:00.29elapsed 96%CPU (0avgtext+0avgdata 4368maxresident)k	0inputs+0outputs (0major+655minor)pagefaults 0swaps	RESULT: UNKNOWN #Hues=4/30 #Colours=183 #Remaining=46
+'p>Ap' ==> 0.00user 0.00system 0:00.00elapsed ?%CPU (0avgtext+0avgdata 2608maxresident)k	0inputs+0outputs (0major+206minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=6 #Colours=6 #Remaining=4
+'~(p>Ap)' ==> 0.00user 0.00system 0:00.00elapsed 100%CPU (0avgtext+0avgdata 2628maxresident)k	0inputs+0outputs (0major+226minor)pagefaults 0swaps	RESULT: UNsatisfiable #Hues=6 #Colours=6 #Remaining=4
+'~(p>Ap)' 9999 ==> 0.00user 0.00system 0:00.00elapsed 0%CPU (0avgtext+0avgdata 2468maxresident)k	0inputs+0outputs (0major+223minor)pagefaults 0swaps	RESULT: UNsatisfiable #Hues=6 #Colours=6 #Remaining=4
+'E(pU(E(pUq)))>E(pUq)' ==> 0.10user 0.00system 0:00.12elapsed 82%CPU (0avgtext+0avgdata 4288maxresident)k	0inputs+0outputs (0major+643minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=4/20 #Colours=36 #Remaining=18
+'~(E(pU(E(pUq)))>E(pUq))' ==> 0.17user 0.00system 0:00.19elapsed 93%CPU (0avgtext+0avgdata 4280maxresident)k	0inputs+0outputs (0major+643minor)pagefaults 0swaps	RESULT: UNKNOWN #Hues=4/20 #Colours=36 #Remaining=18
+'~(E(pU(E(pUq)))>E(pUq))' 9999 ==> 4.52user 0.00system 0:04.54elapsed 99%CPU (0avgtext+0avgdata 4292maxresident)k	0inputs+0outputs (0major+647minor)pagefaults 0swaps	RESULT: UNsatisfiable #Hues=20 #Colours=36 #Remaining=18
+'(AG(p>(qUr))&(qUp))>(qUr)' ==> 27.34user 0.00system 0:27.38elapsed 99%CPU (0avgtext+0avgdata 5244maxresident)k	0inputs+0outputs (0major+877minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=3/66 #Colours=619 #Remaining=564
+'~((AG(p>(qUr))&(qUp))>(qUr))' ==> 44.51user 0.01system 0:44.57elapsed 99%CPU (0avgtext+0avgdata 5136maxresident)k	0inputs+0outputs (0major+849minor)pagefaults 0swaps	RESULT: UNKNOWN #Hues=3/66 #Colours=619 #Remaining=564
+'G(EFp>XFEFp)>(EFp>GFEFp)' ==> 89.25user 0.00system 1:29.34elapsed 99%CPU (0avgtext+0avgdata 4984maxresident)k	0inputs+0outputs (0major+822minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=4/22 #Colours=453 #Remaining=363
+'~(G(EFp>XFEFp)>(EFp>GFEFp))' ==> 189.39user 0.01system 3:09.58elapsed 99%CPU (0avgtext+0avgdata 5108maxresident)k	0inputs+0outputs (0major+829minor)pagefaults 0swaps	RESULT: UNKNOWN #Hues=4/22 #Colours=453 #Remaining=363
+'AG(p>EXp)>(p>EGp)' ==> 295.41user 0.01system 4:55.71elapsed 99%CPU (0avgtext+0avgdata 5076maxresident)k	0inputs+0outputs (0major+851minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=3/68 #Colours=481 #Remaining=219
+'~(p)' ==> 0.00user 0.00system 0:00.00elapsed ?%CPU (0avgtext+0avgdata 2180maxresident)k	0inputs+0outputs (0major+128minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=2 #Colours=2 #Remaining=2
+'~(p)' 9999 ==> 0.00user 0.00system 0:00.00elapsed ?%CPU (0avgtext+0avgdata 2108maxresident)k	0inputs+0outputs (0major+125minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=2 #Colours=2 #Remaining=2
+'p&Xp&F-p' ==> 0.00user 0.00system 0:00.00elapsed 100%CPU (0avgtext+0avgdata 4076maxresident)k	0inputs+0outputs (0major+600minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=5 #Colours=10 #Remaining=10
+'~(p&Xp&F-p)' ==> 0.00user 0.00system 0:00.01elapsed 36%CPU (0avgtext+0avgdata 4072maxresident)k	0inputs+0outputs (0major+598minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=5 #Colours=10 #Remaining=10
+'~(p&Xp&F-p)' 9999 ==> 0.00user 0.00system 0:00.00elapsed 100%CPU (0avgtext+0avgdata 3992maxresident)k	0inputs+0outputs (0major+599minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=5 #Colours=10 #Remaining=10
+--- ATL formulas ---
+'-({1}(p U q) ^ {2}(q U r) ^ {1}G~r)' ==> 564.67user 0.00system 9:24.91elapsed 99%CPU (0avgtext+0avgdata 6208maxresident)k	0inputs+0outputs (0major+1146minor)pagefaults 0swaps	RESULT: SATISFIABLE #Hues=1/1088 #Colours=48 #Remaining=17
+
+--- CTL* formulas: 600 ---
