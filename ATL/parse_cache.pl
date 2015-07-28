@@ -6,10 +6,10 @@ my %res1 = ();
 #'(Xp&-{1}Xp)' 99 ==> 0.00user 0.01system 0:00.03elapsed 25%CPU (0avgtext+0avgdata 4232maxresident)k	0inputs+0outputs (0major+635minor)pagefaults 0swaps	RESULT: UNsatisfiable #Hues=12 #Colours=18 #Remaining=18
 while(<$fd>) {
 	#print $_;
-	if (/('[^']*')( [0-9]+)?.*(\d+[.]\d\d)user .* (\d+)maxresident.*RESULT: (\w+) #Hues=([0-9\/]+) #Colours=(\d+)/) {
+	if (/('[^']*').*(\d+[.]\d\d)user .* (\d+)maxresident.*RESULT: (\w+) #Hues=([0-9\/]+) #Colours=(\d+)/) {
 		$key = $1;
-		$sat = $5; {$sat =~ s/unsatisfiable/N/i; $sat =~ s/satisfiable/Y/i; $sat =~ s/unknown/?/i;}
-		$res= "$3 &	$4 &	$sat	&	$7 &	$6";
+		$sat = $4; {$sat =~ s/unsatisfiable/N/i; $sat =~ s/satisfiable/Y/i; $sat =~ s/unknown/?/i;}
+		$res= "$2 &	$3 &	$sat	&	$6 &	$5";
 		#print "$1, $2, $3, $4, $sat, $6, $7\n";
 		if ($res1{$key} =~ /sat/i) {
 			#print "match\n";
@@ -34,11 +34,11 @@ open(my $fd, "<", "cache2.txt");
 
 while(<$fd>) {
 	#print $_;
-	if (/('[^']*')( [0-9]+)?.*(\d+[.]\d\d)user .*(\d+)maxresident.*nb_state.?initial.?tableau:(\d+).*[Tt]he formula is (\w+)/) {
+	if (/('[^']*').*(\d+[.]\d\d)user .*(\d+)maxresident.*nb_state.?initial.?tableau:(\d+).*[Tt]he formula is (\w+)/) {
 	#if (/('[^']*')( [0-9]+)?.*(\d+[.]\d\d)user .*(\d+)maxresident.*[Tt]he formula is (\w+)/) {
 		$key = $1;
-		$sat = "$6"; {$sat =~ s/unsatisfiable/N/i; $sat =~ s/satisfiable/Y/i; $sat =~ s/unknown/?/i;}
-		$res= "$3 &	$4 &	$sat	&	$5";
+		$sat = $5; {$sat =~ s/unsatisfiable/N/i; $sat =~ s/satisfiable/Y/i; $sat =~ s/unknown/?/i;}
+		$res= "$2 &	$3 &	$sat	&	$4";
 		#print "$1, $2, $3, $4, $sat, $6, $7\n";
 		if ($res2{$key} =~ /sat/i) {
 			#print "match\n";
