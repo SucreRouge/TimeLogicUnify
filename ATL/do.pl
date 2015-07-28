@@ -1,4 +1,6 @@
 #!/usr/bin/perl
+system("perl ../do_tatl.pl '$ARGV[0]'");
+
 `if [ atl.ml -nt atl ]; then ocamlopt atl.ml -o atl; fi`;
 my $entry="'$ARGV[0]' $ARGV[1] $ARGV[2]";
 $entry=~s/ *$//;
@@ -15,7 +17,6 @@ for (split /^/, $cache){
 	}
 }
 
-system("perl ../do_tatl.pl '$ARGV[0]'");
 
 #print "[$entry]\n";
 #$result = `(/usr/bin/time nice -19 ./atl '$ARGV[0]' $ARGV[1] $ARGV[2] | bash -c "tee >(cat 1>&2)" | tail -n1) 2>&1 | tr '\n' '\t'`;
