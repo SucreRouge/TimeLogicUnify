@@ -845,8 +845,8 @@ let required_tasks t =
 
 let equivalent_solvers = [["CTL"; "mlsolver"]; ["BCTL";"BCTLNEW"; "BCTLOLD"; "BCTLHUE"; "BPATHf"]; ["BPATH"; "BPATHUE"]]
 
-let sat_implies = Hashtbl.create 40
-let _ =  print_string "test\n"; let stronger = ref [] in List.iter (
+let sat_implies = Hashtbl.create 40;;
+let stronger = ref [] in List.iter (
   fun x -> stronger := List.concat [!stronger;x]; List.iter (
     fun y -> List.iter (
       fun z-> if (y <> z) then (
@@ -1175,7 +1175,7 @@ let main () =
        | x -> print_string (Printexc.get_backtrace ()) ; print_string (Printexc.to_string x); failwith "Unexpected exception 1"
 
 let _ =
-  Printf.printf "Content-type: text/plain\n\n";
+  Printf.printf "Content-Type: text/plain\n\n";
   (*let (p,t) = parse_tree_trs_ 0 "U(a,b)" in
   print_endline (format_tree t);*)
   let _ =  parse_tree_TRS_rule_ " U(implies(x, y), -(y)) -> F(-(y))" in
