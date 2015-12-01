@@ -1,0 +1,11 @@
+let F_CTL = signature "
+0,1 : constant;
+~,X,N,F,G,A,E : unary;
+&,| : AC;
+U,I : infix binary;
+";
+let X = variables "a,b,c,x,y,z,x0";
+let A_CTL = algebra F_CTL;
+let t = term A_CTL "F(1)";
+let R_CTL = trs A_CTL  "
+x & 0 -> 0;
