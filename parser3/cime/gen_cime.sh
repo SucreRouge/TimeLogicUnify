@@ -1,5 +1,5 @@
 #< ../sample_rewrite_rules.txt sed 's/[+]/|/g
-grep -v '>' < ../sample_rewrite_rules.txt | sed '
+grep -v '>' < sample_rewrite_rules.in | sed '
 s/^[(]//g
 s/[)]$//g
 s/[*]/&/g
