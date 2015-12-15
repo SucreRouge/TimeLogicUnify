@@ -737,11 +737,27 @@ let rec simplify_TRS rules t =
   then t
   else (simplify_root_TRS rules {l=t.l; c= List.map (simplify_TRS rules) t.c})
 
+
+(* Here I redirect the simplify_TRS to use CIME rather than internal TRS code
+   This is because cime supports Associative-Commutative rules *)
+
+let cimeplify t =
+	let str_orig = format_tree t in
+	let str_cime = (input_line (Unix.open_process_in ("cime/simplify.sh '"^str_orig^"'"))) in
+	print_string ("Cime: "^str_cime^"!\n");
+	print_string ("Cime: "^str_cime^"!\n");
+	let t2 = parse_ctls_formula (str_cime) in
+	print_string ("Cime: "^str_cime^"!\n");
+	t2
+;;
+
+let simplify_star_TRS = cimeplify
+
 (*  Simplify will use e.g
  *  (Xa|Xa) -> X(a|a)
  *  but then not be able to use a|a -> a
  *  This reruns the loop over again *)
-let rec simplify_star_TRS t_in =
+let rec simplify_star_TRS_nocime t_in =
   let rules = (!rule_list_TRS) in
   printf "Num TRS rules %d\n" (List.length rules);
 

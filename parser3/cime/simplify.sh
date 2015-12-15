@@ -1,4 +1,5 @@
 cd `dirname "$0"`
+echo "DODODODO $1" 1>&2
 
 FORMULA=$(echo "$1" | 
 	sed 's/(\([^()]*\)>\([^()]*\))/(~\1|\2)/g' | grep -v '[<>]' | sed '
@@ -17,7 +18,8 @@ cat <<EOF
 normalize R_CTL (term A_CTL "$FORMULA");
 EOF
 #) | less # ./c3_2605_stat2.opt 
-) | ./c3_2605_stat2.opt | grep "\- : F_CTL term =" | sed 's/- : F_CTL term = //'
+) | ./c3_2605_stat2.opt | grep "\- : F_CTL term =" | sed 's/- : F_CTL term = //
+s/^CiME> //' 
 
 ##################################
 exit
