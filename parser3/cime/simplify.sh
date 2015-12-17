@@ -1,5 +1,5 @@
 cd `dirname "$0"`
-echo "DODODODO $1" 1>&2
+#echo "DODODODO $1" 1>&2
 
 FORMULA=$(echo "$1" | 
 	sed 's/(\([^()]*\)>\([^()]*\))/(~\1|\2)/g' | grep -v '[<>]' | sed '
