@@ -515,6 +515,7 @@ let rec simplify_star t_in =
   List.iter ( fun e -> 
 	used_rules:=((!used_rules)@[e]);
 	let rules =(!used_rules) in
+	t_new := simplify rules (!t);
   	while (not ((!t) = (!t_new))) do
 		printf "  .%s\n  .%s\n" (format_tree (!t)) (format_tree (!t_new));
 		t := !t_new;
@@ -743,9 +744,9 @@ let rec simplify_TRS rules t =
 
 let cimeplify t =
 	let str_orig = format_tree t in
-	let str_cime = (input_line (Unix.open_process_in ("cime/simplify.sh '"^str_orig^"'"))) in
-	print_string ("Cime: "^str_cime^"!\n");
-	print_string ("Cime: "^str_cime^"!\n");
+	let process = (Unix.open_process_in ("cime/simplify.sh '"^str_orig^"'")) in
+	let str_cime = input_line process in
+	Unix.close_process_in process;
 	let t2 = parse_ctls_formula (str_cime) in
 	print_string ("Cime: "^str_cime^"!\n");
 	t2
