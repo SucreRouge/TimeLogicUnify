@@ -162,6 +162,7 @@ results/unify_len_TRS.tex: results/unify_len.out ./unify_formula_len2.sh
 
 unify_misc/triv_60_100_simp.log: ./unify_triv_solv.sh
 	./unify_triv_solv.sh
+	./unify_triv_solv2.sh
 
 TableHue.pdf:
 	bash ./benchpath.sh

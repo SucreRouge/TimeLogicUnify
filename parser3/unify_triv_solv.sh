@@ -1,7 +1,7 @@
 cp urules_manual_then_auto.txt work/urules.txt
 [ -s unify_misc/orig_formulas.txt ] || ocaml ./make_random_ctls_formulas.ml 50 1 1000 2999 > unify_misc/orig_formulas.txt
 [ -s unify_misc/simp_formulas.txt ] || ( < unify_misc/orig_formulas.txt sed s/^/S/ | make runu | grep Simplified.to: | sed 's/^Simplified to: //' > unify_misc/simp_formulas.txt )
-[ -s unify_misc/trs_formulas.txt ] || ( < unify_misc/orig_formulas.txt sed s/^/,/ | make runu | grep Simplified.to: | sed 's/^Simplified to: //' > unify_misc/trs_formulas.txt )
+[ -s unify_misc/trs_formulas.txt  ] || ( < unify_misc/orig_formulas.txt sed s/^/,/ | make runu | grep Simplified.to: | sed 's/^Simplified to: //' > unify_misc/trs_formulas.txt )
 [ -s unify_misc/both_formulas.txt ] || ( < unify_misc/orig_formulas.txt sed s/^/./ | make runu | grep Simplified.to: | sed 's/^Simplified to: //' > unify_misc/both_formulas.txt )
 
 mkdir -p work/out
@@ -14,7 +14,7 @@ do
 	#for some reason I am sometimes getting EACCESS when attempting to kill a process, causing a abort in unify
 	# So just rerun unify multiple time and hope we get a bit further each time, manually cleaning up each time.
 	#for type in simp 
-	for type in simp orig
+	for type in simp orig both
         #for type in orig
 do
 	echo -- $type $i
@@ -32,5 +32,6 @@ done
 done
 }
 
-triv_solv 60 100
 triv_solv 3 1000
+triv_solv 60 100
+triv_solv 60 1000

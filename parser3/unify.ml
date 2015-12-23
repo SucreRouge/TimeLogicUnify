@@ -382,7 +382,7 @@ let process_file_stats name fname t =
   if verbose then Printf.printf "**** Begin %s\n" name;
   if (Sys.file_exists fname) then (
     let chan = open_in fname in
-    let size = 40 * 1024 in
+    let size = 440 * 1024 in
     let buffer = String.create size in
     let len = input chan buffer 0 size in
     close_in_noerr chan;

@@ -10,5 +10,6 @@ cat <<EOF
 \hline
 \end{tabular}
 EOF
-) | tee results/unify_len.tex
+) | sed 's/S/	/
+s/[.] / (CiME)/' |tee results/unify_len.tex
 cp results/unify_len.tex ~/uni/PhD || true
