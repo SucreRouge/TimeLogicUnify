@@ -17,4 +17,7 @@ mkdir -p work/out
 		javac *java formulas/*java
 	fi
 )
-
+(
+	cd cime &&
+	[ -e c3_2605_stat2.opt ] || wget http://a3pat.ensiie.fr/pub/c3_2605_stat2.opt
+)

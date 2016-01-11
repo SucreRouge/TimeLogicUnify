@@ -148,11 +148,16 @@ clean:
 .mly.mli:
 	ocamlyacc -v $<
 
+rclean:
+	tar -zcf rclean_save.tgz work/mark/out/ work/out/ results/ && rm work/mark/out/* work/out/* results/*
+	
 
 result: results/unify_len.tex unify_misc/triv_60_100_simp.log TableHue.pdf
 
 results/unify_len.out: ./unify_formula_len.sh
 	#./unify_formula_len.sh
+	mkdir -p cime/out
+	(cd work && [ -e cime ] || ln -s ../cime .)
 	unify_benchmarks/len.sh
 
 results/unify_len.tex: results/unify_len.out ./unify_formula_len2.sh
