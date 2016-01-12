@@ -13,8 +13,14 @@ mkdir -p work/out
 	else
 		git clone git@github.com:gmatht/CTLStarTab.git
 		mv CTLStarTab mark
-		cd mark
-		javac *java formulas/*java
+		cp -ra mark mark1
+		for d in mark mark1
+		do (
+			cd $d
+			javac *java formulas/*java
+		)
+		done
+		mv mark1 mark/src/v1.0
 	fi
 )
 (

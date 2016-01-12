@@ -799,12 +799,13 @@ let redirect_output fname =
   let _ = Unix.dup2 outfile Unix.stdout in
   let _ = Unix.dup2 outfile Unix.stderr in ()
 
+(* TODO: implement the unified BCTL+BCTL* unified solver from v2 rather than just use v1.0 *)
 (* this is creates an entry for a java solver *)                                             
 let java_entry name = ( name, "",  fun t fname ->
                           (*Unix.chdir "mark/";*)
                           print_string (name^"->"^fname^"\n");
                           let args =
-                            [| "java"; "-classpath"; "mark/src"; "-Djava.awt.headless=true"; "JApplet";
+                            [| "java"; "-classpath"; "mark/src/v1.0/src"; "-Djava.awt.headless=true"; "JApplet";
                                format_tree_mark t; name ; fname |] in
                             (*Unix.execvp "echo" args;*)
 			    Array.iter print_string args;
