@@ -14,13 +14,14 @@ mkdir -p work/out
 		git clone git@github.com:gmatht/CTLStarTab.git
 		mv CTLStarTab mark
 		cp -ra mark mark1
+		(cd mark1 && git checkout v1.x)
 		for d in mark mark1
 		do (
 			cd $d
 			javac *java formulas/*java
 		)
 		done
-		mv mark1 mark/src/v1.0
+		mv mark1 mark/src/v1.0 # really v1.x., should fix, but not now
 	fi
 )
 (
