@@ -14,11 +14,11 @@ for SEC in 3
 do
 	export SOLVER
 	export SEC
-	paste <(cat results/bak/triv_3_1000_simp.log  | grep ID | sed s/ID:.//) <(cat results/bak/triv_3_1000_orig.log  | grep ID | sed s/ID:.//) <(cat results/bak/triv_3_1000_both.log  | grep ID | sed s/ID:.//) | while read f; do f $f; done
+	paste <(cat results/triv_3_1000_simp.log  | grep ID | sed s/ID:.//) <(cat results/triv_3_1000_orig.log  | grep ID | sed s/ID:.//) <(cat results/triv_3_1000_both.log  | grep ID | sed s/ID:.//) | while read f; do f $f; done
 done
 done | tee results/simp_correct.log
 
 echo --- BEGIN PROBLEMS ---
 grep PROBLEM results/simp_correct.log
-grep RULE.Fail results/bak/*.log
+grep RULE.Fail results/*.log
 echo --- END PROBLEMS ---
