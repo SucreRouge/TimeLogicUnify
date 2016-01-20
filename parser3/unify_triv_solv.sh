@@ -17,6 +17,10 @@ do
 	for type in simp orig both
         #for type in orig
 do
+	if [ -e results/triv_${UNIFY_TIMEOUT}_${NUM_FORMULAS}_${type}.log ]
+	then
+		continue
+	fi
 	echo -- $type $i
 	(killall java
 	killall mlsolver

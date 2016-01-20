@@ -1157,7 +1157,7 @@ let expect_file fname =
 
 let main () =
   print_endline ("Data/current dir: "^(Sys.getcwd()));
-  expect_file "mark/JApplet.class";
+  expect_file "mark/src/JApplet.class";
   expect_file "mlsolver/bin/mlsolver";
   print_string "main loop";
 

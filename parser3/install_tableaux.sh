@@ -27,4 +27,5 @@ mkdir -p work/out
 (
 	cd cime &&
 	[ -e c3_2605_stat2.opt ] || wget http://a3pat.ensiie.fr/pub/c3_2605_stat2.opt
+	chmod +x c3_2605_stat2.opt
 )
