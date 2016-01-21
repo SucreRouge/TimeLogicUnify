@@ -26,7 +26,7 @@ EOF
 ./c3_2605_stat2.opt -v 99 -icime $CIME_FILE 2> /dev/null | tr '\n' ' ' | sed 's/.*- : F_CTL term = //
 s/Cime worked for.*//
 s/let F_CTL =.*//' | tr -d ' '
-rm $CIME_FILE
+#rm $CIME_FILE
 
 #| ./c3_2605_stat2.opt -v 9 #| grep "\- : F_CTL term =" | sed 's/- : F_CTL term = //
 #s/^CiME> //' 

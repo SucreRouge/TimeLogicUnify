@@ -150,9 +150,15 @@ clean:
 
 rclean:
 	tar -zcf rclean_save-`date +%F`.tgz work/mark/out/ work/out/ results/ && rm work/mark/out/* work/out/* results/*
+
+cimeclean:
+	mkdir -p bak
+	mv unify_misc/trs_formulas.txt unify_misc/both_formulas.txt bak
+	mv results/*both* bak
+	
 	
 
-result: results/unify_len.tex unify_misc/triv_60_100_simp.log TableHue.pdf
+result: TeX/unify_len.tex unify_misc/triv_60_100_both.log TableHue.pdf
 
 results/unify_len.out: ./unify_formula_len.sh
 	#./unify_formula_len.sh
@@ -160,12 +166,12 @@ results/unify_len.out: ./unify_formula_len.sh
 	(cd work && [ -e cime ] || ln -s ../cime .)
 	unify_benchmarks/len.sh
 
-results/unify_len.tex: results/unify_len.out ./unify_formula_len2.sh
+TeX/unify_len.tex: results/unify_len.out ./unify_formula_len2.sh
 	./unify_formula_len2.sh
-results/unify_len_TRS.tex: results/unify_len.out ./unify_formula_len2.sh
+TeX/unify_len_TRS.tex: results/unify_len.out ./unify_formula_len2.sh
 	./unify_formula_len2_TRS.sh
 
-unify_misc/triv_60_100_simp.log: ./unify_triv_solv.sh
+unify_misc/triv_60_100_both.log: ./unify_triv_solv.sh
 	./unify_triv_solv.sh
 	./unify_triv_solv2.sh
 

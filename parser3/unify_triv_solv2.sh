@@ -38,7 +38,7 @@ cat <<EOF
 \end{tabular}
 EOF
 ) | tee results/unify_triv$run.tex
-cp results/unify_triv$run.tex ~/uni/PhD || true
+#cp results/unify_triv$run.tex ~/uni/PhD || true
 }
 
 main "" 3  1000
