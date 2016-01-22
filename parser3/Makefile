@@ -153,8 +153,8 @@ rclean:
 
 cimeclean:
 	mkdir -p bak
-	mv unify_misc/trs_formulas.txt unify_misc/both_formulas.txt bak
-	mv results/*both* bak
+	mv unify_misc/trs_formulas.txt unify_misc/both_formulas.txt bak || true
+	mv results/*both* bak || true
 	
 	
 
