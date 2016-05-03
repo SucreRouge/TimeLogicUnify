@@ -15,8 +15,9 @@ let memo f =
           Hashtbl.add m x y; y
 
 module DroidMemoized = struct
+	(* Boilerplate *)
 	let to_id_h   : (Droid.t, int) Hashtbl.t = Hashtbl.create 9
-	let from_id_h : (int, Droid.t) Hashtbl.t = Hashtbl.create 9 (* This could be an array *)
+	let from_id_h : (int, Droid.t) Hashtbl.t = Hashtbl.create 9 (*or array*)
 	let size = ref 0
 	let from_id i = (Hashtbl.find from_id_h i)
 	let to_id (x :Droid.t) : int = 
@@ -26,15 +27,11 @@ module DroidMemoized = struct
 			Hashtbl.add  to_id_h   x (!size);
 			Hashtbl.add  from_id_h (!size) x;
 			!size)
-
+	(* Function wrappers *)
 	let empty = to_id Droid.empty
-	let beep_ x = to_id (Droid.beep (from_id x))
-	let boop_ x = to_id (Droid.boop (from_id x))
-	let len_ x = Droid.len (from_id x)
-
-	let beep = memo beep_
-	let boop = memo boop_
-	let len  = memo len_
+	let beep = memo ( fun x -> to_id (Droid.beep (from_id x)) )
+	let boop = memo ( fun x -> to_id (Droid.boop (from_id x)) )
+	let len  = memo ( fun x ->       (Droid.len  (from_id x)) )
 end
 
 (*
