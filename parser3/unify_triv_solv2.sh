@@ -41,6 +41,6 @@ EOF
 #cp results/unify_triv$run.tex ~/uni/PhD || true
 }
 
+main 2  60 1000
 main "" 3  1000
-main 2  60 100
 
