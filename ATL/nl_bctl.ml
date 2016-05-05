@@ -7,36 +7,6 @@
  * *)
 
 (*i*)
-module Int = struct
-  type t = int
-  let compare = compare
-end
-
-module IntSet = struct
-	include Set.Make(Int)
-	let rec of_list l = match l with [] -> empty | h::t -> add h (of_list t) 
-	let disjoint x y = equal (inter x y) empty
-	let bigunion = List.fold_left union empty
-end
-
-module ISS = struct
-	include Set.Make(IntSet)
-	let rec of_list l = match l with [] -> empty | h::t -> add h (of_list t)
-	let of_list2 ll = of_list (List.map IntSet.of_list ll)
-	let union_all iss = IntSet.bigunion (elements iss)
-	(* Agents are sets of integers. We now define what it means for a list of sets of agents to be disjoint *)
-	let all_disjoint al = 
-		let rec r prev l =
-			match l with
-			| [] -> true
-			| head::tail -> 
-				if IntSet.disjoint prev head
-				then r (IntSet.union prev head) tail 
-				else false in
-		r IntSet.empty (elements al);;
-	
-end
-
 let printf = Printf.printf;;
 let sprintf = Printf.sprintf;;
 
@@ -104,13 +74,6 @@ assert ( (fixpoint (fun x -> x/2) 9) = 0);;
 	{1,2} = {2,1} is FALSE, you want
 	Set.equals {1,2} (2,1}, which is TRUE
 *)
-
-(* === Coalition === *)
-(* A coalition is a set of agents, represented by integers *)
-type coalition = IntSet.t
-
-let coalition_to_string c = "{" ^ (String.concat "" (List.map string_of_int (IntSet.elements c))) ^ "}"
-
 
 (* === Formula === *)
 type formula =
