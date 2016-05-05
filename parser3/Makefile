@@ -155,8 +155,6 @@ cimeclean:
 	mkdir -p bak
 	mv unify_misc/trs_formulas.txt unify_misc/both_formulas.txt bak || true
 	mv results/*both* bak || true
-	
-	
 
 result: TeX/unify_len.tex unify_misc/triv_60_100_both.log TableHue.pdf
 
