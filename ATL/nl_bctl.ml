@@ -344,7 +344,7 @@ module Colour = struct
 		let sat_c2 =
 			Hue.for_all (fun f->
 				match f with
-				| NOT ALLPATH alpha -> mem_f (NOT alpha) c
+				| NOT ALLPATH alpha -> mem_f (neg alpha) c
 				| ALLPATH alpha -> true
 				| _	-> assert(false)
 			) can_f in
