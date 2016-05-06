@@ -12,9 +12,6 @@ let sprintf = Printf.sprintf;;
 
 let bool2str b = if b then "Y" else "n"
 
-let println_list_of_int li = printf "[%s]\n" (String.concat "; " (List.map string_of_int li))
-
-let rec range i j = if i > j then [] else i :: (range (i+1) j)
 (*i*)
 
 
@@ -27,7 +24,7 @@ let rec range i j = if i > j then [] else i :: (range (i+1) j)
 let subsets xs = List.fold_right (fun x rest -> rest @ List.map (fun ys -> x::ys) rest) xs [[]]
 
 let iter_small_subsets f n xs =
-	let rec r pl n xs =
+	let rec r pl n xs = (* over 90% of time spent here *)
 		if (n < 1)
 		then f pl
 		else match xs with 
@@ -36,23 +33,6 @@ let iter_small_subsets f n xs =
 				r (head::pl) (n-1) tail;
 				r pl          n    tail in
 	r [] n xs;;
-
-(*i*)
-let iter_small_subsets_filt filt f n xs =
-	let rec r pl n xs =
-		if (filt pl)
-		then ( 
-			if (n < 1)
-			then f pl
-			else 
-				match xs with 
-				| [] -> f pl
-				| head::tail -> 
-					r (head::pl) (n-1) tail;
-					r pl          n    tail 
-		) in
-	r [] n xs;;
-(*i*)
 
 (* === Standard-Maths === *)
 (* We define $\Longrightarrow$ as one would expect. Note that this is not a formula. *)
@@ -137,7 +117,6 @@ module Formula = struct
 			|  x  -> ATOM x in
 		r();;
 
-	let print x = (print_string (to_string x))
 	let println x = print_string ((to_string x) ^ "\n") 
 	let compare = compare
 end  
@@ -174,7 +153,6 @@ module Hue = struct
 	include Set.Make(Formula)
 	let to_string x = "{" ^ (String.concat ", " (List.map Formula.to_string (elements x))) ^ "}";;
 	let println x = print_string ((to_string x) ^ "\n") ;; 
-	let bigunion = List.fold_left union empty
 	let union3 a b c= union a (union b c)
 	
 	let rec of_list l = match l with [] -> empty | h::t -> add h (of_list t) 
@@ -243,10 +221,12 @@ module Hue = struct
 
 	(* in ra iff state_atoms and can_formulas the same *)
 
-	let state_atom p =  (*NOTE: in the paper, all atoms are path atoms *)
+	(*NOTE: in the paper, all atoms are path atoms *)
+	(* let state_atom p =  
 		match p with
 		| ATOM c -> c >= 'a' && c <= 'z'
-		| _     -> false
+		| _     -> false *)
+	let state_atom p = false
 	let state_atoms h = filter state_atom h;;
 
 	let can_formula p = 
