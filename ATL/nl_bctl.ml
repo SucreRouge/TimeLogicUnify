@@ -117,7 +117,7 @@ module Formula = struct
 			| 'F' ->  UNTIL (NOT FALSE, r())  
 			| 'G' ->  NOT (UNTIL (NOT FALSE, NOT(r())) )
 			| 'A' ->  ALLPATH (r())  
-			| 'E' ->  NOT (ALLPATH (r()))
+			| 'E' ->  NOT (ALLPATH (NOT (r())))
 			| '(' ->  bimodal (r()) 
 			| '0' -> FALSE
 			|  x  -> ATOM x in
