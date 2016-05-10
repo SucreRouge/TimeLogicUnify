@@ -191,9 +191,9 @@ module Hue = struct
 		| ALLPATH x -> union p_notp (r x)
 		| FALSE -> empty 
 	
-	let closure = closure_of phi;;
+	let closure = closure_of phi
 	
-	print_string (Printf.sprintf "\n Size of closure %d \n" (cardinal closure))
+	let () = print_string (Printf.sprintf "\n Size of closure %d \n" (cardinal closure))
 
 (* === MPC === *)	
 	let mpc h = for_all (fun b -> let has x = mem x h in 
@@ -257,8 +257,7 @@ module Hue = struct
 		
 	let can_formulas h = filter can_formula h;;
 
-	assert ((can_formulas (singleton(ATOM 'p')))=empty);
-	;;
+	assert ((can_formulas (singleton(ATOM 'p')))=empty);;
 
 (* The Hues are now implemented, we now do some Input/Output defintions *)
 	
@@ -344,7 +343,7 @@ module Colour = struct
 		let sat_c2 =
 			Hue.for_all (fun f->
 				match f with
-				| NOT ALLPATH alpha -> mem_f (neg alpha) c
+				| NOT ALLPATH alpha ->  mem_f (neg alpha) c
 				| ALLPATH alpha -> true
 				| _	-> assert(false)
 			) can_f in
@@ -353,16 +352,19 @@ module Colour = struct
 
 	print_endline "building_all_colours";;
 
+	let println x = print_string ((to_string x) ^ "\n") ;; 
+
 	let all_colours = 
 		let out = ref [] in
 		iter_small_subsets 
-			(fun hl->let c=of_list hl in if ((cardinal c) > 0 && valid c) then out:=c::(!out))
+			(fun hl->let c=of_list hl in 
+			(* println c; *)
+			if ((cardinal c) > 0 && valid c) then out:=c::(!out))
 			 max_hues_in_colour
 			 Hue.all_hues;
 		(!out);;
 
-	let println x = print_string ((to_string x) ^ "\n") ;; 
-
+	let _ = println (List.hd all_colours);
 	if verbose then print_string (String.concat "\n" (List.map to_string all_colours));; 
 		printf "\nNumber of Colours: %d" (List.length all_colours);;
 	print_newline();;
