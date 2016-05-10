@@ -12,9 +12,6 @@ let sprintf = Printf.sprintf;;
 
 let bool2str b = if b then "Y" else "n"
 
-let println_list_of_int li = printf "[%s]\n" (String.concat "; " (List.map string_of_int li))
-
-let rec range i j = if i > j then [] else i :: (range (i+1) j)
 (*i*)
 
 
@@ -26,33 +23,19 @@ let rec range i j = if i > j then [] else i :: (range (i+1) j)
 
 let subsets xs = List.fold_right (fun x rest -> rest @ List.map (fun ys -> x::ys) rest) xs [[]]
 
-let iter_small_subsets f n xs =
-	let rec r pl n xs =
+(* Call f on subsets of size at most n, but only if new elements are accepted by filt *)
+let iter_small_subsets f filt n xs =
+	let rec r pl n xs = (* over 90% of time spent here *)
 		if (n < 1)
 		then f pl
 		else match xs with 
 			| [] -> f pl
 			| head::tail -> 
-				r (head::pl) (n-1) tail;
-				r pl          n    tail in
+			        if (filt (head::pl) head) 
+				 then  r (head::pl) (n-1) tail;
+				if (filt        pl  head) 
+				 then  r        pl   n    tail in
 	r [] n xs;;
-
-(*i*)
-let iter_small_subsets_filt filt f n xs =
-	let rec r pl n xs =
-		if (filt pl)
-		then ( 
-			if (n < 1)
-			then f pl
-			else 
-				match xs with 
-				| [] -> f pl
-				| head::tail -> 
-					r (head::pl) (n-1) tail;
-					r pl          n    tail 
-		) in
-	r [] n xs;;
-(*i*)
 
 (* === Standard-Maths === *)
 (* We define $\Longrightarrow$ as one would expect. Note that this is not a formula. *)
@@ -97,6 +80,9 @@ module Formula = struct
 		| UNTIL (x,y) -> "(" ^ (s x) ^ "U" ^ (s y) ^ ")"		
 		| ALLPATH x   -> "A" ^ (s x)
 		| FALSE -> "0" ;; (* The paper doesn't use FALSE, but it sure is convienient *)
+
+	let len x = String.length ( to_string x )
+	let compare_len x y = compare (len x) (len y) 
 	
 	let of_string s =
 		let i = ref 0 in
@@ -131,13 +117,12 @@ module Formula = struct
 			| 'F' ->  UNTIL (NOT FALSE, r())  
 			| 'G' ->  NOT (UNTIL (NOT FALSE, NOT(r())) )
 			| 'A' ->  ALLPATH (r())  
-			| 'E' ->  NOT (ALLPATH (r()))
+			| 'E' ->  NOT (ALLPATH (NOT (r())))
 			| '(' ->  bimodal (r()) 
 			| '0' -> FALSE
 			|  x  -> ATOM x in
 		r();;
 
-	let print x = (print_string (to_string x))
 	let println x = print_string ((to_string x) ^ "\n") 
 	let compare = compare
 end  
@@ -174,7 +159,6 @@ module Hue = struct
 	include Set.Make(Formula)
 	let to_string x = "{" ^ (String.concat ", " (List.map Formula.to_string (elements x))) ^ "}";;
 	let println x = print_string ((to_string x) ^ "\n") ;; 
-	let bigunion = List.fold_left union empty
 	let union3 a b c= union a (union b c)
 	
 	let rec of_list l = match l with [] -> empty | h::t -> add h (of_list t) 
@@ -191,30 +175,27 @@ module Hue = struct
 		| ALLPATH x -> union p_notp (r x)
 		| FALSE -> empty 
 	
-	let closure = closure_of phi
+	let closure = List.sort Formula.compare_len (elements (closure_of phi));;
+	let _ = List.iter Formula.println closure
 	
-	let () = print_string (Printf.sprintf "\n Size of closure %d \n" (cardinal closure))
+	let () = print_string (Printf.sprintf "\n Size of closure %d \n" (List.length closure))
 
 (* === MPC === *)	
-	let mpc h = for_all (fun b -> let has x = mem x h in 
+	let mpc h b = let has x = mem x h in 
 					match b with
 					| NOT  a    -> ( (has b) != (has a) )
 					| AND (x,y) -> ( (has b)  = ((has x) && (has y)) )
 					| _ -> true
-				) closure;;
 
 (* === Hue === *)
 	(* NOTE: the paper currently only has the `vetos\_valid` test on colours. either is correct, but this ways if faster. Maybe change paper?*)
-	let valid h = (mpc h) &&  
-		for_all (fun p ->
+	let valid h p = (mpc h p) && 
 			let has x = mem x h in
-			match p with 
+			(not (has p)) || match p with 
 			| UNTIL(a,b) -> (has a) || (has b)
 			| NOT (UNTIL (a,b)) -> (not(has b))
 			| ALLPATH a ->     ( has a )
-			| _ -> true
-			) h;;
-
+			| _ -> true;;
 
 	print_endline "Building Hues";;	
 (*i    let all_hues = List.filter valid (List.map of_list (subsets (elements closure)));; i*)
@@ -222,9 +203,11 @@ module Hue = struct
 		let out = ref [] in
 		 iter_small_subsets
 			 (fun  hl->let h = of_list hl in
-				if   (valid h)
-				then out := h::(!out) 
-			) max_int (elements closure);
+				out := h::(!out) 
+			) 
+			(fun h p -> if not (valid (of_list h) p) then println (of_list h); Formula.println p;
+valid (of_list h) p) 
+			max_int closure;
 		(!out);;
 		
 	print_endline "Built Hues";;	
@@ -243,10 +226,12 @@ module Hue = struct
 
 	(* in ra iff state_atoms and can_formulas the same *)
 
-	let state_atom p =  (*NOTE: in the paper, all atoms are path atoms *)
+	(*NOTE: in the paper, all atoms are path atoms *)
+	(* let state_atom p =  
 		match p with
 		| ATOM c -> c >= 'a' && c <= 'z'
-		| _     -> false
+		| _     -> false *)
+	let state_atom p = false
 	let state_atoms h = filter state_atom h;;
 
 	let can_formula p = 
@@ -262,6 +247,7 @@ module Hue = struct
 (* The Hues are now implemented, we now do some Input/Output defintions *)
 	
 	print_string(Printf.sprintf "\nNumber of Hues: %d \n" (List.length all_hues) );;
+	List.iter println all_hues;;
 
 (* Since we will have to implement pruning of Colours later, let us
    practice pruning hues that are not even LTL-consistent *)
@@ -284,7 +270,7 @@ module Hue = struct
 	
 	let all_fulfilled start_hues =
 		let hues = ref (filter_hues start_hues) in
-		iter (fun f -> match f with
+		List.iter (fun f -> match f with
 			 | UNTIL(a,b) -> let ful_b = fulfilled (!hues) b in
 							let new_hues = List.filter (fun h->
 								mem (UNTIL(a,b)) h ==> List.mem h ful_b
@@ -357,9 +343,8 @@ module Colour = struct
 	let all_colours = 
 		let out = ref [] in
 		iter_small_subsets 
-			(fun hl->let c=of_list hl in 
-			(* println c; *)
-			if ((cardinal c) > 0 && valid c) then out:=c::(!out))
+			(fun hl->let c=of_list hl in if ((cardinal c) > 0 && valid c) then out:=c::(!out))
+			(fun x x->true)
 			 max_hues_in_colour
 			 Hue.all_hues;
 		(!out);;
@@ -379,6 +364,8 @@ module Colour = struct
 		) d
 
 end	
+
+let _ = flush stdout
 
 (* \subsection{Pruning Rules} 
    We now define the pruning rules of the tableau. We begin by defining instances.
@@ -430,6 +417,7 @@ let satisfied_by colours = List.exists (fun c ->
 let log_prune n ch col = (
 	let _ = satisfied_by col in
 	print_string (Printf.sprintf "Before rule %d%c:  Number of Colours: %d" n ch (List.length col));
+	flush stdout;
 )
 
 (* === Prune1 === *)
@@ -452,7 +440,7 @@ let prune_rule_2 in_colours =
 		log_prune 2 ' ' in_colours;
 		print_newline();
 		let colours = ref in_colours in
-		Hue.iter (fun f -> match f with
+		List.iter (fun f -> match f with
 			| UNTIL(a,beta) -> 
 				let ful_b = InstanceSet.fulfilled beta (!colours) in
 								if verbose then InstanceSet.println ful_b;
