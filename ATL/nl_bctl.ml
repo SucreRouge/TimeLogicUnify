@@ -7,8 +7,8 @@
  * *)
 
 (*i*)
-let printf = Printf.printf;;
-let sprintf = Printf.sprintf;;
+let printf = Printf.printf
+let sprintf = Printf.sprintf
 
 let bool2str b = if b then "Y" else "n"
 
@@ -35,7 +35,7 @@ let iter_small_subsets f filt n xs =
 				 then  r (head::pl) (n-1) tail;
 				if (filt        pl  head) 
 				 then  r        pl   n    tail in
-	r [] n xs;;
+	r [] n xs
 
 (* === Standard-Maths === *)
 (* We define $\Longrightarrow$ as one would expect. Note that this is not a formula. *)
@@ -48,9 +48,9 @@ let ( ==> ) a b = ((not a) || b)
 let rec fixpoint f x = let fx = f x in
 	if (x = fx) 
 	then x
-	else fixpoint f fx;;
+	else fixpoint f fx
 	
-assert ( (fixpoint (fun x -> x/2) 9) = 0);;
+let () = assert ( (fixpoint (fun x -> x/2) 9) = 0)
 
 (* WARNING!!! The above function uses OCaml '='
          OCaml '=' is surprising to mathematicians. E.g. 
@@ -79,7 +79,7 @@ module Formula = struct
 		| AND (x,y)   -> "(" ^ (s x) ^ "&" ^ (s y) ^ ")"
 		| UNTIL (x,y) -> "(" ^ (s x) ^ "U" ^ (s y) ^ ")"		
 		| ALLPATH x   -> "A" ^ (s x)
-		| FALSE -> "0" ;; (* The paper doesn't use FALSE, but it sure is convienient *)
+		| FALSE -> "0"  (* The paper doesn't use FALSE, but it sure is convienient *)
 
 	let len x = String.length ( to_string x )
 	let compare_len x y = compare (len x) (len y) 
@@ -121,7 +121,7 @@ module Formula = struct
 			| '(' ->  bimodal (r()) 
 			| '0' -> FALSE
 			|  x  -> ATOM x in
-		r();;
+		r()
 
 	let println x = print_string ((to_string x) ^ "\n") 
 	let compare = compare
@@ -145,9 +145,9 @@ let phi =
 (* Weak vetos are needed in general so default to YES *)
 let verbose  = 
 	try (Sys.getenv "BATL_VERBOSE" = "Y")
-	with Not_found -> false ;;
+	with Not_found -> false 
 
-print_endline "Read formula";;
+let () = print_endline "Read formula"
 
 let colour_limit = 1000000
 
@@ -157,8 +157,8 @@ let colour_limit = 1000000
    returns true *) 
 module Hue = struct
 	include Set.Make(Formula)
-	let to_string x = "{" ^ (String.concat ", " (List.map Formula.to_string (elements x))) ^ "}";;
-	let println x = print_string ((to_string x) ^ "\n") ;; 
+	let to_string x = "{" ^ (String.concat ", " (List.map Formula.to_string (elements x))) ^ "}"
+	let println x = print_string ((to_string x) ^ "\n")  
 	let union3 a b c= union a (union b c)
 	
 	let rec of_list l = match l with [] -> empty | h::t -> add h (of_list t) 
@@ -175,7 +175,7 @@ module Hue = struct
 		| ALLPATH x -> union p_notp (r x)
 		| FALSE -> empty 
 	
-	let closure = List.sort Formula.compare_len (elements (closure_of phi));;
+	let closure = List.sort Formula.compare_len (elements (closure_of phi))
 	let _ = List.iter Formula.println closure
 	
 	let () = print_string (Printf.sprintf "\n Size of closure %d \n" (List.length closure))
@@ -195,10 +195,10 @@ module Hue = struct
 			| UNTIL(a,b) -> (has a) || (has b)
 			| NOT (UNTIL (a,b)) -> (not(has b))
 			| ALLPATH a ->     ( has a )
-			| _ -> true;;
+			| _ -> true
 
-	print_endline "Building Hues";;	
-(*i    let all_hues = List.filter valid (List.map of_list (subsets (elements closure)));; i*)
+	let () = print_endline "Building Hues"
+(*i    let all_hues = List.filter valid (List.map of_list (subsets (elements closure))) i*)
 	let all_hues = 
 		let out = ref [] in
 		 iter_small_subsets
@@ -208,9 +208,9 @@ module Hue = struct
 			(fun h p -> if not (valid (of_list h) p) then println (of_list h); Formula.println p;
 valid (of_list h) p) 
 			max_int closure;
-		(!out);;
+		(!out)
 		
-	print_endline "Built Hues";;	
+	let () = print_endline "Built Hues"
 
 (* === Hue-rx === *)
 
@@ -232,7 +232,7 @@ valid (of_list h) p)
 		| ATOM c -> c >= 'a' && c <= 'z'
 		| _     -> false *)
 	let state_atom p = false
-	let state_atoms h = filter state_atom h;;
+	let state_atoms h = filter state_atom h
 
 	let can_formula p = 
 		match p with
@@ -240,32 +240,32 @@ valid (of_list h) p)
 		| NOT ALLPATH _ -> true
 		| _     -> false
 		
-	let can_formulas h = filter can_formula h;;
+	let can_formulas h = filter can_formula h
 
-	assert ((can_formulas (singleton(ATOM 'p')))=empty);;
+	let () = assert ((can_formulas (singleton(ATOM 'p')))=empty)
 
 (* The Hues are now implemented, we now do some Input/Output defintions *)
 	
-	print_string(Printf.sprintf "\nNumber of Hues: %d \n" (List.length all_hues) );;
-	(*List.iter println all_hues;;*)
+	let () = print_string(Printf.sprintf "\nNumber of Hues: %d \n" (List.length all_hues) )
+	(*List.iter println all_hues*)
 
 (* Since we will have to implement pruning of Colours later, let us
    practice pruning hues that are not even LTL-consistent *)
 		
-	let has_successor hues h = List.exists (rx h) hues;;
+	let has_successor hues h = List.exists (rx h) hues
 	let filter_hues hues = List.filter (has_successor hues) hues
-	let all_hues = fixpoint filter_hues all_hues;; 
+	let all_hues = fixpoint filter_hues all_hues 
 	
-	print_string(Printf.sprintf "\nNumber of Hues with successors: %d \n" (List.length all_hues) );;
+	let () = print_string(Printf.sprintf "\nNumber of Hues with successors: %d \n" (List.length all_hues) )
 	
-	let directly_fulfilled b hues = List.filter (fun h->mem b h) hues;;
+	let directly_fulfilled b hues = List.filter (fun h->mem b h) hues
 	
-	let _ = List.iter println (directly_fulfilled (ATOM 'a') all_hues);;
+	let _ = List.iter println (directly_fulfilled (ATOM 'a') all_hues)
 	
 	(* returns a list of hues in "hues" that are fulfilled by arleady fulfilled hues in "fh" *)  
 	let fulfilled_step hues b fh = List.filter 
 		(fun h-> List.exists (fun g-> (equal g h) || (rx h g)) fh)
-		hues ;;
+		hues 
 	let fulfilled hues b = fixpoint (fulfilled_step hues b) (directly_fulfilled b hues)
 	
 	let all_fulfilled start_hues =
@@ -280,23 +280,25 @@ valid (of_list h) p)
 			closure;
 		(!hues)
 	
-	let all_hues = fixpoint all_fulfilled all_hues;;
+	let all_hues = fixpoint all_fulfilled all_hues
 	
-	print_string (Printf.sprintf "Number of LTL-Consistent Hues: %d \n\n" (List.length all_hues));;
+	let () = print_string (Printf.sprintf "Number of LTL-Consistent Hues: %d \n\n" (List.length all_hues))
 	
-	let _ = List.iter println all_hues;;
-end
+	let _ = List.iter println all_hues
+
+	let hash x = (Hashtbl.hash (Array.of_list (elements x)))
+end;;
 
 (* MEMOIZE MODULE Hue *)
 
 let max_hues_in_colour = 
 	if Array.length Sys.argv > 2
 	then int_of_string Sys.argv.(2)
-	else int_of_float (log (float_of_int colour_limit) /. log (float_of_int (List.length Hue.all_hues)));;
-(*i let max_hues_in_colour = 2;; i*)
-print_string (Printf.sprintf "Limiting ourselves to %d hues per colour\n" max_hues_in_colour);;
+	else int_of_float (log (float_of_int colour_limit) /. log (float_of_int (List.length Hue.all_hues)))
+(*i let max_hues_in_colour = 2 i*)
+let () = print_string (Printf.sprintf "Limiting ourselves to %d hues per colour\n" max_hues_in_colour)
 
-flush stdout;
+let () = flush stdout;
 
 (* \subsection{Colours} *)
 
@@ -307,11 +309,11 @@ module Colour = struct
 	let mem_f f c = 
 		exists (fun h->
 			Hue.mem f h
-		) c;;
+		) c
 		
-	assert (mem_f (ATOM 'p') (singleton(Hue.singleton(ATOM 'p'))));;
+	let () = assert (mem_f (ATOM 'p') (singleton(Hue.singleton(ATOM 'p'))))
 
-	let to_string x = "{" ^ (String.concat ", " (List.map Hue.to_string (elements x))) ^ "}";;
+	let to_string x = "{" ^ (String.concat ", " (List.map Hue.to_string (elements x))) ^ "}"
 
 (* === Colour === *)
 	let valid c =
@@ -335,11 +337,11 @@ module Colour = struct
 				| _	-> assert(false)
 			) can_f in
 		let _ = if verbose then print_endline ((String.concat "" (List.map bool2str [sat_c1;sat_c2])) ^ (to_string c)) in
-		(sat_c1 && sat_c2);;
+		(sat_c1 && sat_c2)
 
-	print_endline "building_all_colours";;
+	let () = print_endline "building_all_colours"
 
-	let println x = print_string ((to_string x) ^ "\n") ;; 
+	let println x = print_string ((to_string x) ^ "\n")  
 
 	let all_colours = 
 		let out = ref [] in
@@ -348,12 +350,12 @@ module Colour = struct
 			(fun x x->true)
 			 max_hues_in_colour
 			 Hue.all_hues;
-		(!out);;
+		(!out)
 
 	let _ = println (List.hd all_colours);
-	if verbose then print_string (String.concat "\n" (List.map to_string all_colours));; 
-		printf "\nNumber of Colours: %d" (List.length all_colours);;
-	print_newline();;
+	if verbose then print_string (String.concat "\n" (List.map to_string all_colours)) 
+	let () = printf "\nNumber of Colours: %d" (List.length all_colours)
+	let () = print_newline()
 
 (* === Colour-rx === *)
 
@@ -364,7 +366,8 @@ module Colour = struct
 			exists (fun h -> Hue.rx h g) c
 		) d
 
-end	
+	let hash x = (Hashtbl.hash (Array.of_list (elements x)))
+end;;
 
 (* MEMOIZE MODULE Colour *)
 
@@ -380,7 +383,7 @@ module Instance = struct
   type t = Colour.t * Hue.t
   let compare = compare
   let to_string (c,h) = "Col: " ^ (Colour.to_string c) ^ "Hue: " ^ (Hue.to_string h)
-end
+end;;
 
 
 module InstanceSet = struct
@@ -404,7 +407,7 @@ module InstanceSet = struct
 	let fulfilled (beta: Formula.t) cl = fixpoint (fulfilled_step beta cl) empty
 
 	let println= iter (fun inst -> print_string ((Instance.to_string inst) ^ "\n") )
-end
+end;;
 
 let satisfied_by colours = List.exists (fun c ->
 		let has_phi = Colour.mem_f phi c in
@@ -414,7 +417,7 @@ let satisfied_by colours = List.exists (fun c ->
 			then List.iter (fun d -> if Colour.rx c d then printf " RX -> %s " (Colour.to_string d)) colours
 		);
 		has_phi
-	) colours;;
+	) colours
 
 
 let log_prune n ch col = (
@@ -436,7 +439,7 @@ let prune_rule_1 colours =
 					) colours
 				) c 
 			)
-		) colours;;
+		) colours
 
 (* === Prune2 === *)
 let prune_rule_2 in_colours =
@@ -455,16 +458,16 @@ let prune_rule_2 in_colours =
 				colours := new_colours 
 			| _ -> ())
 			Hue.closure;
-		(!colours);;
+		(!colours)
 
 let prune_step colours = (prune_rule_2 (prune_rule_1 colours))
 
-let prune = fixpoint prune_step;;
+let prune = fixpoint prune_step
+;;
+let remaining_colours = prune Colour.all_colours
 
-let remaining_colours = prune Colour.all_colours;;
-
-print_string (Printf.sprintf "Number of colours remaining %d\n" (List.length remaining_colours));;
-if verbose then print_string (String.concat "\n" (List.map Colour.to_string remaining_colours));; 
+let () = print_string (Printf.sprintf "Number of colours remaining %d\n" (List.length remaining_colours))
+let () = if verbose then print_string (String.concat "\n" (List.map Colour.to_string remaining_colours)) 
 
 (* \subsection{Result} 
 	We now return the result as to whether the input formula was satisfiable or not.
@@ -480,12 +483,11 @@ else
 	then Printf.sprintf "Not satisfied, but large colours with more than %d (of %d) hues have been excluded\nRESULT: UNKNOWN" max_hues_in_colour (List.length Hue.all_hues) 
 	else  
 		"RESULT: UNsatisfiable"
-
 let result = let num_hues = (List.length Hue.all_hues) in
 	result ^ Printf.sprintf " #Hues=%s%d #Colours=%d #Remaining=%d"
 		(if (max_hues_in_colour<num_hues) then (string_of_int max_hues_in_colour) ^"/" else "")
 	num_hues
 	(List.length Colour.all_colours)
-		(List.length remaining_colours);;
+		(List.length remaining_colours)
 
-print_endline result;;
+let () = print_endline result;;
