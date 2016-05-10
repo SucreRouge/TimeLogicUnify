@@ -289,6 +289,12 @@ valid (of_list h) p)
 	let hash x = (Hashtbl.hash (Array.of_list (elements x)))
 end;;
 
+(* The following comment asks memoize.pl to replace Hue with a memoized version.
+   This seems to improve performance by a factor of three without increasing memory use much in:
+   
+   perl bits/memoize.pl nl_bctl3.ml > nl_bctl3memo.ml ; ocamlopt.opt nl_bctl3memo.ml -o memo; /usr/bin/time ./memo 'EGX(AFbUa)'
+*)
+
 (* MEMOIZE MODULE Hue *)
 
 let max_hues_in_colour = 
@@ -369,7 +375,10 @@ module Colour = struct
 	let hash x = (Hashtbl.hash (Array.of_list (elements x)))
 end;;
 
-(* MEMOIZE MODULE Colour *)
+(* We could also memoize the Colour module, but that increased memory use from 
+   5MB to 80MB without really being faster *)
+
+(* Don't MEMOIZE MODULE Colour *)
 
 let _ = flush stdout
 
