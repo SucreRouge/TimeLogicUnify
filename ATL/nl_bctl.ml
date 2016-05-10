@@ -247,7 +247,7 @@ valid (of_list h) p)
 (* The Hues are now implemented, we now do some Input/Output defintions *)
 	
 	print_string(Printf.sprintf "\nNumber of Hues: %d \n" (List.length all_hues) );;
-	List.iter println all_hues;;
+	(*List.iter println all_hues;;*)
 
 (* Since we will have to implement pruning of Colours later, let us
    practice pruning hues that are not even LTL-consistent *)
@@ -287,6 +287,7 @@ valid (of_list h) p)
 	let _ = List.iter println all_hues;;
 end
 
+(* MEMOIZE MODULE Hue *)
 
 let max_hues_in_colour = 
 	if Array.length Sys.argv > 2
@@ -364,6 +365,8 @@ module Colour = struct
 		) d
 
 end	
+
+(* MEMOIZE MODULE Colour *)
 
 let _ = flush stdout
 
