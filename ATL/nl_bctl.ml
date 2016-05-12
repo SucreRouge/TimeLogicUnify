@@ -142,7 +142,6 @@ let phi =
 	if Array.length Sys.argv > 1
 	then Formula.of_string Sys.argv.(1)
 	else Formula.of_string "0&p"
-(* Weak vetos are needed in general so default to YES *)
 let verbose  = 
 	try (Sys.getenv "BATL_VERBOSE" = "Y")
 	with Not_found -> false 
@@ -188,7 +187,6 @@ module Hue = struct
 					| _ -> true
 
 (* === Hue === *)
-	(* NOTE: the paper currently only has the `vetos\_valid` test on colours. either is correct, but this ways if faster. Maybe change paper?*)
 	let valid h p = (mpc h p) && 
 			let has x = mem x h in
 			(not (has p)) || match p with 
@@ -438,37 +436,37 @@ let log_prune n ch col = (
 
 (* === Prune1 === *)
 let prune_rule_1 colours =
-		log_prune 1 ' ' colours;
-		print_newline();
-		List.filter (fun (c: Colour.t) ->
-			not (
-				Colour.exists (fun h ->
-					List.for_all (fun d->
-						(not (Colour.rx c d)) ||
-						Colour.for_all (fun g-> not (Hue.rx h g)) d
-					) colours
-				) c 
-			)
-		) colours
+	log_prune 1 ' ' colours;
+	print_newline();
+	List.filter (fun (c: Colour.t) ->
+		not (
+			Colour.exists (fun h ->
+				List.for_all (fun d->
+					(not (Colour.rx c d)) ||
+					Colour.for_all (fun g-> not (Hue.rx h g)) d
+				) colours
+			) c 
+		)
+	) colours
 
 (* === Prune2 === *)
 let prune_rule_2 in_colours =
-		log_prune 2 ' ' in_colours;
-		print_newline();
-		let colours = ref in_colours in
-		List.iter (fun f -> match f with
-			| UNTIL(a,beta) -> 
-				let ful_b = InstanceSet.fulfilled beta (!colours) in
-								if verbose then InstanceSet.println ful_b;
-				let new_colours = List.filter (fun c->
-					Colour.for_all ( 
-						fun h-> (Hue.mem f h) ==>  InstanceSet.mem (c,h) ful_b (*NOTE: check "non-vetoed" in paper*)
-					) c
-				) (!colours) in
-				colours := new_colours 
-			| _ -> ())
-			Hue.closure;
-		(!colours)
+	log_prune 2 ' ' in_colours;
+	print_newline();
+	let colours = ref in_colours in
+	List.iter (fun f -> match f with
+		| UNTIL(a,beta) -> 
+			let ful_b = InstanceSet.fulfilled beta (!colours) in
+							if verbose then InstanceSet.println ful_b;
+			let new_colours = List.filter (fun c->
+				Colour.for_all ( 
+					fun h-> (Hue.mem f h) ==>  InstanceSet.mem (c,h) ful_b 
+				) c
+			) (!colours) in
+			colours := new_colours 
+		| _ -> ())
+		Hue.closure;
+	(!colours)
 
 let prune_step colours = (prune_rule_2 (prune_rule_1 colours))
 
