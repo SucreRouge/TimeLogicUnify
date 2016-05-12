@@ -199,6 +199,7 @@ module Hue = struct
 
 	let () = print_endline "Building Hues"
 (*i    let all_hues = List.filter valid (List.map of_list (subsets (elements closure))) i*)
+(* === AllHues === *)
 	let all_hues = 
 		let out = ref [] in
 		 iter_small_subsets
@@ -475,6 +476,7 @@ let prune = fixpoint prune_step
 ;;
 let remaining_colours = prune Colour.all_colours
 
+(* === Result === *)
 let () = print_string (Printf.sprintf "Number of colours remaining %d\n" (List.length remaining_colours))
 let () = if verbose then print_string (String.concat "\n" (List.map Colour.to_string remaining_colours)) 
 
