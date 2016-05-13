@@ -828,6 +828,17 @@ let simple_entry name = ( name, "",  fun t fname ->
                             redirect_output fname;
                             Unix.execvp args.(0) args )
 
+let simple_entry_f name = ( name^"f", "",  fun t fname ->
+                          (*Unix.chdir "mark/";*)
+                          print_string (name^"->"^fname^"\n");
+                          let args =
+                            [| "../../ATL/"^name; format_tree_mark (force_state_var t)  |] in
+                            (*Unix.execvp "echo" args;*)
+			    Array.iter print_string args;
+			    print_string "\n";
+                            redirect_output fname;
+                            Unix.execvp args.(0) args )
+
 let java_entry name = ( name, "",  fun t fname ->
                           (*Unix.chdir "mark/";*)
                           print_string (name^"->"^fname^"\n");
@@ -1124,9 +1135,9 @@ let do_benchmark s = (
         appendc_s_to_fname (String.concat " & " (("$"^format_tree_tex ft_^"$")::(squeeze results)) ^ "\\\\ \n") out_fname 
        ) 
 	[
+           ("out/benchmark_simple.tex",[("nl_bctl",ft);("nl_bctlf",ft); ("nl_bctl", force_state_var_A ft); ("bctl", ft)]);
            ("out/benchmark.tex",    [("BPATH"  , ft); ("BPATHf"  , ft); ("BPATH"  , force_state_var_A ft); ("BCTLNEW", ft)]);
-           ("out/benchmarkhue.tex", [("BPATHUE", ft); ("BPATHUEf", ft); ("BPATHUE", force_state_var_A ft); ("BCTLHUE", ft)]);
-           ("out/benchmark_simple.tex",    [("nl_bctl"  , ft); ("nl_bctl", force_state_var ft); ("nl_bctl"  , force_state_var_A ft); ("bctl", ft)])
+           ("out/benchmarkhue.tex", [("BPATHUE", ft); ("BPATHUEf", ft); ("BPATHUE", force_state_var_A ft); ("BCTLHUE", ft)])
           ] 
     ) with
         Parsing.Parse_error-> print_string "Could not parse Formula.\n")

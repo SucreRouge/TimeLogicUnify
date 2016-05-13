@@ -7,7 +7,7 @@ grep 'eg\[' work/mark/src/formulas/Examples.java  | grep '"' | sed 's/";//' | se
 
 if [ 1 -gt "0$1" ]
 then
-(echo '<'; cat  $formulas) | UNIFY_OFFLINE=y UNIFY_SOLVERS="mlsolver BPATH BCTLNEW BCTLHUE BPATHf BPATHUE BPATHUEf" make runu
+(echo '<'; cat  $formulas) | UNIFY_OFFLINE=y UNIFY_SOLVERS="nl_bctl bctl nl_bctlfmlsolver BPATH BCTLNEW BCTLHUE BPATHf BPATHUE BPATHUEf" make runu
 #(echo '<'; cat  $formulas) | UNIFY_OFFLINE=y UNIFY_SOLVERS="BCTLNEW" make runu
 true && (echo '<'; cat  $formulas | sed 's/p/Ap/g
 s/q/Aq/g
@@ -18,6 +18,7 @@ fi
 
 echo -n '' > work/out/benchmark.tex
 echo -n '' > work/out/benchmarkhue.tex
+echo -n '' > work/out/benchmark_simple.tex
 (echo '<'; 
   while read -r L
   do
@@ -60,7 +61,7 @@ LOGICS_TEX2C=`
 echo "$LOGICS_TEX $LOGICS_TEX2C $LOGICS_TEX $LOGICS_TEX \\\\ \\hline"
 ) > table_header.tex
 
-for e in "" hue
+for e in "" hue _simple
 do
 sed 's/[.]/\&/g
 s/[$].neg\(................................*\)vee\(...................................*\)[$]/$\\neg ( \\ldots )$/
