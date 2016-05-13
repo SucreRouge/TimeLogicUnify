@@ -80,6 +80,7 @@ ifixsu:  ATOM			{ {l= $1; c=[]} }
 
 ifixsi:  ATOM			{ {l= $1; c=[]} }
 	| UNI ifixsi		{ {l= $1; c=[$2]} }
+	| UNI LPAREN ifixsi RPAREN		{ {l= $1; c=[$3]} }
 	| LPAREN ifixsi EQUALS ifixsi RPAREN	{ {l= $3; c=[$2; $4]} }
 	| LPAREN ifixsi BINARY ifixsi RPAREN	{ {l= $3; c=[$2; $4]} }
 	| LPAREN ifixsi PREFIX ifixsi RPAREN	{ {l= $3; c=[$2; $4]} }

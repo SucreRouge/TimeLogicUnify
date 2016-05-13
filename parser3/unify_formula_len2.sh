@@ -1,3 +1,4 @@
+mkdir -p TeX
 (
 cat <<EOF
 \begin{tabular}{|l|r|r|r|r|r|}
@@ -10,5 +11,6 @@ cat <<EOF
 \hline
 \end{tabular}
 EOF
-) | tee results/unify_len.tex
-cp results/unify_len.tex ~/uni/PhD || true
+) | sed 's/S/	/
+s/[.] / (CiME)/' |tee TeX/unify_len.tex
+#cp results/unify_len.tex ~/uni/PhD || true

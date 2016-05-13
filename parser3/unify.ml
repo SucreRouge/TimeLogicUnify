@@ -382,7 +382,7 @@ let process_file_stats name fname t =
   if verbose then Printf.printf "**** Begin %s\n" name;
   if (Sys.file_exists fname) then (
     let chan = open_in fname in
-    let size = 40 * 1024 in
+    let size = 440 * 1024 in
     let buffer = String.create size in
     let len = input chan buffer 0 size in
     close_in_noerr chan;
@@ -515,6 +515,7 @@ let rec simplify_star t_in =
   List.iter ( fun e -> 
 	used_rules:=((!used_rules)@[e]);
 	let rules =(!used_rules) in
+	t_new := simplify rules (!t);
   	while (not ((!t) = (!t_new))) do
 		printf "  .%s\n  .%s\n" (format_tree (!t)) (format_tree (!t_new));
 		t := !t_new;
@@ -737,11 +738,27 @@ let rec simplify_TRS rules t =
   then t
   else (simplify_root_TRS rules {l=t.l; c= List.map (simplify_TRS rules) t.c})
 
+
+(* Here I redirect the simplify_TRS to use CIME rather than internal TRS code
+   This is because cime supports Associative-Commutative rules *)
+
+let cimeplify t =
+	let str_orig = format_tree t in
+	let process = (Unix.open_process_in ("cime/simplify.sh '"^str_orig^"'")) in
+	let str_cime = input_line process in
+	Unix.close_process_in process;
+	let t2 = parse_ctls_formula (str_cime) in
+	print_string ("Cime: "^str_cime^"!\n");
+	t2
+;;
+
+let simplify_star_TRS = cimeplify
+
 (*  Simplify will use e.g
  *  (Xa|Xa) -> X(a|a)
  *  but then not be able to use a|a -> a
  *  This reruns the loop over again *)
-let rec simplify_star_TRS t_in =
+let rec simplify_star_TRS_nocime t_in =
   let rules = (!rule_list_TRS) in
   printf "Num TRS rules %d\n" (List.length rules);
 
@@ -782,12 +799,13 @@ let redirect_output fname =
   let _ = Unix.dup2 outfile Unix.stdout in
   let _ = Unix.dup2 outfile Unix.stderr in ()
 
+(* TODO: implement the unified BCTL+BCTL* unified solver from v2 rather than just use v1.0 *)
 (* this is creates an entry for a java solver *)                                             
 let java_entry name = ( name, "",  fun t fname ->
                           (*Unix.chdir "mark/";*)
                           print_string (name^"->"^fname^"\n");
                           let args =
-                            [| "java"; "-classpath"; "mark/src"; "-Djava.awt.headless=true"; "JApplet";
+                            [| "java"; "-classpath"; "mark/src/v1.0/src"; "-Djava.awt.headless=true"; "JApplet";
                                format_tree_mark t; name ; fname |] in
                             (*Unix.execvp "echo" args;*)
 			    Array.iter print_string args;
@@ -1139,7 +1157,7 @@ let expect_file fname =
 
 let main () =
   print_endline ("Data/current dir: "^(Sys.getcwd()));
-  expect_file "mark/JApplet.class";
+  expect_file "mark/src/JApplet.class";
   expect_file "mlsolver/bin/mlsolver";
   print_string "main loop";
 

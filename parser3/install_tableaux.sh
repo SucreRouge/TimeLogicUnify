@@ -13,8 +13,19 @@ mkdir -p work/out
 	else
 		git clone git@github.com:gmatht/CTLStarTab.git
 		mv CTLStarTab mark
-		cd mark
-		javac *java formulas/*java
+		cp -ra mark mark1
+		(cd mark1 && git checkout v1.x)
+		for d in mark mark1
+		do (
+			cd $d
+			javac *java formulas/*java
+		)
+		done
+		mv mark1 mark/src/v1.0 # really v1.x., should fix, but not now
 	fi
 )
-
+(
+	cd cime &&
+	[ -e c3_2605_stat2.opt ] || wget http://a3pat.ensiie.fr/pub/c3_2605_stat2.opt
+	chmod +x c3_2605_stat2.opt
+)

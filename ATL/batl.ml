@@ -1,3 +1,4 @@
+(* === BoilerPlate === *)
 (* ex: set tabstop=4 *)
 
 (* FIXME phi in non-vetoed hue? *)
@@ -84,14 +85,10 @@ let iter_small_subsets_filt filt f n xs =
 	r [] n xs;;
 (*i*)
 
+(* === Standard-Maths === *)
 (* We define $\Longrightarrow$ as one would expect. Note that this is not a formula. *)
 
 let ( ==> ) a b = ((not a) || b)
-
-(* A coalition is a set of agents, represented by integers *)
-type coalition = IntSet.t
-
-let coalition_to_string c = "{" ^ (String.concat "" (List.map string_of_int (IntSet.elements c))) ^ "}"
 
 (* We define fixpoints in the obvious way 
  * We test that our definition works correctly with an ``assert''
@@ -103,9 +100,23 @@ let rec fixpoint f x = let fx = f x in
 	
 assert ( (fixpoint (fun x -> x/2) 9) = 0);;
 
+(* WARNING!!! The above function uses OCaml '='
+         OCaml '=' is surprising to mathematicians. E.g. 
+	{1,2} = {2,1} is FALSE, you want
+	Set.equals {1,2} (2,1}, which is TRUE
+*)
+
+(* === Coalition === *)
+(* A coalition is a set of agents, represented by integers *)
+type coalition = IntSet.t
+
+let coalition_to_string c = "{" ^ (String.concat "" (List.map string_of_int (IntSet.elements c))) ^ "}"
+
+
 (* \subsection{Formulas}
  * We extend the (B)ATL* formulas with "STRONG" and "WEAK" vetos *)
 
+(* === Formula === *)
 type formula =
 	| ATOM of char
 	| NOT of formula
@@ -117,7 +128,7 @@ type formula =
 	| WEAK of coalition (* Weak Veto *)
 	| FALSE
 
-
+(* === Abbreviation === *)
 module Formula = struct
 	type t = formula 
 	let rec to_string psi = let s = to_string in
@@ -209,7 +220,7 @@ let neg psi =
 	| NOT alpha -> alpha
 	| alpha -> NOT alpha
 	
-
+(* === FixFormula === *)
 (* We now fix a formula that we wish to decide *)
 (*
 let phi = AND (CAN (IntSet.singleton(1), NOT (NEXT (ATOM 'p'))), CAN (IntSet.empty, ATOM 'p')) 
@@ -220,8 +231,7 @@ let phi =
 	if Array.length Sys.argv > 1
 	then Formula.of_string Sys.argv.(1)
 	else Formula.of_string "0&p"
-let use_weak = false;;
-let use_weak = true;;
+(* Weak vetos are needed in general so default to YES *)
 let use_weak = try
 	not (Sys.getenv "BATL_USE_WEAK" = "N")
 	with Not_found -> true ;;
@@ -254,6 +264,7 @@ module Hue = struct
 	
 	let rec of_list l = match l with [] -> empty | h::t -> add h (of_list t) 
 	
+(* === Closure === *)
 	let rec closure_of p =
 		let r = closure_of in
 		let p_notp = of_list [p; neg p] in
@@ -272,7 +283,8 @@ module Hue = struct
 	let closure = closure_of phi;;
 	
 	print_string (Printf.sprintf "\n Size of closure %d \n" (cardinal closure))
-	
+
+(* === MPC === *)	
 	let mpc h = for_all (fun b -> let has x = mem x h in 
 					match b with
 					| NOT  a    -> ( (has b) != (has a) )
@@ -280,6 +292,7 @@ module Hue = struct
 					| _ -> true
 				) closure;;
 
+(* === Vetos === *)
 	let rec add_vetos prev_vetos h =
 		let rec r (w,s) h =
 			match h with
@@ -308,6 +321,7 @@ module Hue = struct
 	assert (not (vetos_valid (ISS.empty,ISS.of_list2 [[1;2];[2]])));;
 	assert (not (vetos_valid (ISS.of_list2 [[1]],ISS.of_list2 [[1]])));;
 
+(* === Hue === *)
 	(* NOTE: the paper currently only has the `vetos\_valid` test on colours. either is correct, but this ways if faster. Maybe change paper?*)
 	let valid h = (mpc h) && (vetos_valid (get_vetos h)) &&  
 		for_all (fun p ->
@@ -347,6 +361,8 @@ module Hue = struct
 		
 	print_endline "Built Hues";;	
 
+(* === Hue-rx === *)
+
 	let rx h g = for_all (fun x -> match x with
 		| NEXT a       ->      mem a g
 		| NOT (NEXT a) -> not (mem a g)
@@ -355,6 +371,10 @@ module Hue = struct
 		| WEAK(s) | STRONG (s) -> (mem x g)
 		| _ -> true
 	) h
+
+(* === Hue-ra === *)
+
+	(* in ra iff state_atoms and can_formulas the same *)
 
 	let state_atom p =  (*NOTE: in the paper, all atoms are path atoms *)
 		match p with
@@ -455,6 +475,7 @@ module Colour = struct
 
 	let to_string x = "{" ^ (String.concat ", " (List.map Hue.to_string (elements x))) ^ "}";;
 
+(* === Colour === *)
 	let valid c =
 		let arbitrary_hue = min_elt c in
 		let can_f   = Hue.can_formulas arbitrary_hue in
@@ -511,6 +532,10 @@ module Colour = struct
 		printf "\nNumber of Colours: %d" (List.length all_colours);;
 	print_newline();;
 
+(* === Colour-rx === *)
+
+(* Note: Ocaml has limits capitization of functions *)
+
 	let rx c d = 
 		for_all (fun g -> 
 			exists (fun h -> Hue.rx h g) c
@@ -531,7 +556,8 @@ module Colour = struct
 		if Hashtbl.mem ra_r_hashtbl (ag,h,g) 
 		then Hashtbl.find  ra_r_hashtbl (ag,h,g) 
 		else ra_r ag h g i*)
-	
+
+(* === Colour-ra === *)	
 (* We will now define the relations on colours: $R_{<<A>>}$ (ra) and $R_{\neg <<A>>}$ (rna)
 Example of verbose output of rna:
  *)
@@ -568,6 +594,7 @@ Example of verbose output of rna:
 		(sat_2 && sat_3)
 
 
+(* === Colour-rna === *)	
 	let rna (b_ag: IntSet.t) (c: t) (d: t) = 
         let ag = bar b_ag in (* b\_ag = $\bar{\mathcal{A}}$*) 
 		let r (h: Hue.t) (g: Hue.t) = 
@@ -606,6 +633,7 @@ end
    We now define the pruning rules of the tableau. We begin by defining instances.
    *)
 
+(* === Prune === *)
 
 module Instance = struct
   type t = Colour.t * Hue.t
@@ -653,6 +681,7 @@ let log_prune n ch col = (
 	print_string (Printf.sprintf "Before rule %d%c:  Number of Colours: %d" n ch (List.length col));
 )
 
+(* === Prune1 === *)
 let prune_rule_1 colours =
 		log_prune 1 ' ' colours;
 		print_newline();
@@ -668,6 +697,7 @@ let prune_rule_1 colours =
 			)
 		) colours;;
 
+(* === Prune2 === *)
 let prune_rule_2 in_colours =
 		log_prune 2 ' ' in_colours;
 		print_newline();
@@ -686,6 +716,7 @@ let prune_rule_2 in_colours =
 			Hue.closure;
 		(!colours);;
 
+(* === Prune3 === *)
 let prune_rule_3 step colours =
 	log_prune 3 step colours;
 	print_newline();

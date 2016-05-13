@@ -46,7 +46,7 @@ It can farm out the rewritten formulas to external tableau. To do this they must
 	install_tableaux.sh
 
 To regenerate the benchmarks, run:
-	make report
+	make result
 
 
 USING unify rewrite tool:

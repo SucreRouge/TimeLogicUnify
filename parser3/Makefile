@@ -10,7 +10,7 @@ unify_.ml: unify.ml
 	sed s/NUM_CPUS/`< /proc/cpuinfo  grep ^processor | wc -l`/g < unify.ml > unify_.ml
 
 unify: me.ml do_parallel.ml mainlib.ml unify_.ml phi_lexer.ml phi_parser.ml  me_parser.ml me_parser.mli me_lexer.ml main.ml phi_parser.cmi me_parser.cmi me_parser.cmo me_parser.cmo
-	$(OCAMLC) -o unify     me.ml str.cmxa unix.cmxa do_parallel.ml phi_parser.ml phi_lexer.ml  me_lexer.ml me_parser.ml mainlib.ml unify_.ml  
+	$(OCAMLC) -o unify     me.ml str.cmxa unix.cmxa do_parallel.ml phi_parser.ml phi_lexer.ml mainlib.ml unify_.ml  
 unify_dbg:  me.ml do_parallel.ml mainlib.ml unify_.ml phi_lexer.ml phi_parser.ml  me_parser.ml me_parser.mli me_lexer.ml main.ml phi_parser.cmi me_parser.cmi me_parser.cmo me_parser.cmo
 	ocamlc -g -o unify_dbg me.ml str.cma unix.cma do_parallel.ml phi_parser.ml phi_lexer.ml  me_lexer.ml me_parser.ml mainlib.ml str.cma unify_.ml
 	mkdir -p ../.data/unify
@@ -148,20 +148,30 @@ clean:
 .mly.mli:
 	ocamlyacc -v $<
 
+rclean:
+	tar -zcf rclean_save-`date +%F`.tgz work/mark/out/ work/out/ results/ && rm work/mark/out/* work/out/* results/*
 
-result: results/unify_len.tex unify_misc/triv_60_100_simp.log TableHue.pdf
+cimeclean:
+	mkdir -p bak
+	mv unify_misc/trs_formulas.txt unify_misc/both_formulas.txt bak || true
+	mv results/*both* bak || true
+
+result: TeX/unify_len.tex unify_misc/triv_60_100_both.log TableHue.pdf
 
 results/unify_len.out: ./unify_formula_len.sh
 	#./unify_formula_len.sh
+	mkdir -p cime/out
+	(cd work && [ -e cime ] || ln -s ../cime .)
 	unify_benchmarks/len.sh
 
-results/unify_len.tex: results/unify_len.out ./unify_formula_len2.sh
+TeX/unify_len.tex: results/unify_len.out ./unify_formula_len2.sh
 	./unify_formula_len2.sh
-results/unify_len_TRS.tex: results/unify_len.out ./unify_formula_len2.sh
+TeX/unify_len_TRS.tex: results/unify_len.out ./unify_formula_len2.sh
 	./unify_formula_len2_TRS.sh
 
-unify_misc/triv_60_100_simp.log: ./unify_triv_solv.sh
+unify_misc/triv_60_100_both.log: ./unify_triv_solv.sh
 	./unify_triv_solv.sh
+	./unify_triv_solv2.sh
 
 TableHue.pdf:
 	bash ./benchpath.sh

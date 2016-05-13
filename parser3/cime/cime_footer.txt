@@ -1,0 +1,4 @@
+";
+let o = rpo A_CTL (precedence F_CTL "~ > & > | > G > F > U > X > E > A > 1 > 0") (status F_CTL " ");
+complete o R_CTL;
+
