@@ -80,10 +80,12 @@ my $Boilerplate_sample="(* Boilerplate *)
 
 sub wrappers {
 	my $module =$_[0];
+	print STDERR $_[1];
 	my @signature = split '\n', $_[1];
 	my $output = "(* Wrappers *)\n";
 	my $t;
 	my $r="[[:alnum:]. ]+|[(][^()\n]*[)]";
+	#my $r="t list";
 	foreach(@signature) {
 		my $fun;	
 		if (/type t = (\w+)/	){
@@ -137,7 +139,7 @@ sub memoize {
 	my $remainder =$_[1];
 	$remainder =~ s/\b$module\b/Memo$module/g;
 
-	if ($signatures =~ /module $module :\s*sig\s*((?:.|\n)*?)end/m) {
+	if ($signatures =~ /module $module :\s*sig\s*((?:.|\n)*?)end\n/m) {
 		my $wrapper = wrappers($module, $1);
 		my $Boilerplate = $Boilerplate_sample;
 		$Boilerplate =~ s/Droid/$module/g;

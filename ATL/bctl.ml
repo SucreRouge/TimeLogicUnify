@@ -12,6 +12,12 @@ let sprintf = Printf.sprintf
 
 let bool2str b = if b then "Y" else "n"
 
+let last_chars s n =
+  let l = (String.length s) - 1 in
+  String.sub s (l-n+1) n
+let ends_in s suffix =
+        (suffix = (last_chars s (String.length suffix)))
+	
 (*i*)
 
 
@@ -226,11 +232,20 @@ valid (of_list h) p)
 	(* in ra iff state_atoms and can_formulas the same *)
 
 	(*NOTE: in the paper, all atoms are path atoms *)
-	(* let state_atom p =  
+let last_chars s n =
+  let l = (String.length s) - 1 in
+  String.sub s (l-n+1) n
+let ends_in s suffix =
+        (suffix = (last_chars s (String.length suffix)))
+
+	let state_atom_local p =  
 		match p with
 		| ATOM c -> c >= 'a' && c <= 'z'
-		| _     -> false *)
-	let state_atom p = false
+		| _     -> false 
+	let state_atom p = 
+		if (ends_in Sys.argv.(0) "/bctl")
+		then state_atom_local p
+		else false
 	let state_atoms h = filter state_atom h
 
 	let can_formula p = 
@@ -486,7 +501,7 @@ let () = if verbose then print_string (String.concat "\n" (List.map Colour.to_st
 
 let result = Printf.sprintf "Finished Processing %s\n" (Formula.to_string phi) ^
 if satisfied_by remaining_colours
-then "RESULT: SATISFIABLE"
+then "RESULT: is SATISFIABLE"
 else 
 	if (max_hues_in_colour < List.length Hue.all_hues) 
 	then Printf.sprintf "Not satisfied, but large colours with more than %d (of %d) hues have been excluded\nRESULT: UNKNOWN" max_hues_in_colour (List.length Hue.all_hues) 
@@ -499,4 +514,7 @@ let result = let num_hues = (List.length Hue.all_hues) in
 	(List.length Colour.all_colours)
 		(List.length remaining_colours)
 
+let () = print_endline Sys.executable_name
+
 let () = print_endline result;;
+

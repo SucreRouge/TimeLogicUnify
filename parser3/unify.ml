@@ -94,6 +94,7 @@ let append_s_to_fname = append_s_to_fname_ [Open_append] ;;
 let appendc_s_to_fname = append_s_to_fname_ [Open_append; Open_creat] ;;
 
 let split = Str.split (Str.regexp " +");;
+let getenv_default key default = try (Sys.getenv key) with _ -> default;;
 let settings_solvers = ref (try split (Sys.getenv "UNIFY_SOLVERS") with _ -> ["mlsolver"; "BPATH"])
 let settings_simplify = ref true
 
@@ -157,7 +158,7 @@ let is_sat_regexp = Str.regexp " unsatisfiable"
 
 let title_unsat_str =  "  UNsatisfiable: " 
 let result_parse_info = [ ( Str.regexp_case_fold "is satisfiable", true);
-                          ( Str.regexp " unsatisfiable",           false) ]
+                          ( Str.regexp_case_fold " unsatisfiable",           false) ]
 let add_ref_list a : string list ref * 'a = (ref [],a)
 let result_info = List.map add_ref_list result_parse_info
 let clear_result_info () = List.iter (fun e -> (fst e) := []) result_info
@@ -799,6 +800,9 @@ let redirect_output fname =
   let _ = Unix.dup2 outfile Unix.stdout in
   let _ = Unix.dup2 outfile Unix.stderr in ()
 
+
+(*let () = redirect_output "/tmp/out.tmp"
+let () = assert (false)*)
 (* TODO: implement the unified BCTL+BCTL* unified solver from v2 rather than just use v1.0 *)
 (* this is creates an entry for a java solver *)                                             
 let java_entry name = ( name, "",  fun t fname ->
@@ -812,6 +816,32 @@ let java_entry name = ( name, "",  fun t fname ->
 			    print_string "\n";
                             redirect_output "/dev/null";
                             Unix.execvp "java" args )
+
+let simple_entry name = ( name, "",  fun t fname ->
+                          (*Unix.chdir "mark/";*)
+                          print_string (name^"->"^fname^"\n");
+                          let args =
+                            [| "../../ATL/"^name; format_tree_mark t  |] in
+                            (*Unix.execvp "echo" args;*)
+			    Array.iter print_string args;
+			    print_string "\n";
+                            redirect_output fname;
+                            Unix.execvp args.(0) args )
+
+let java_entry name = ( name, "",  fun t fname ->
+                          (*Unix.chdir "mark/";*)
+                          print_string (name^"->"^fname^"\n");
+                          let args =
+                            [| "java"; "-classpath"; "mark/src/v1.0/src"; "-Djava.awt.headless=true"; "JApplet";
+                               format_tree_mark t; name ; fname |] in
+                            (*Unix.execvp "echo" args;*)
+			    Array.iter print_string args;
+			    print_string "\n";
+                            redirect_output "/dev/null";
+                            Unix.execvp "java" args )
+
+
+
 
 (* As above but translates the formula so that all variables are forced to be
  * treated as state variables, even if we are using a non-local logic *)
@@ -838,7 +868,7 @@ let md5 s = Digest.to_hex (Digest.string s)
 let canonical_file t = md5 (format_tree_mark t)
 
 let required_tasks t =
-  let solver_entries = [mlsolver_entry; java_entry "BCTLNEW"; java_entry "BCTLOLD" ; java_entry "CTL"; java_entry "BPATH" ; java_entry "BPATHUE";java_entry_f "BPATH" ; java_entry_f "BPATHUE";  java_entry "BCTLHUE"  ] in
+  let solver_entries = [mlsolver_entry; java_entry "BCTLNEW"; java_entry "BCTLOLD" ; java_entry "CTL"; java_entry "BPATH" ; java_entry "BPATHUE";java_entry_f "BPATH" ; java_entry_f "BPATHUE";  java_entry "BCTLHUE"; simple_entry "bctl"; simple_entry "nl_bctl";  ] in
   let tasks = ref [] in
     List.iter  ( fun e -> 
                    let (solver_name, prefix, f) = e in
@@ -861,7 +891,7 @@ let required_tasks t =
 
 (*if not Sys.file_exists *)
 
-let equivalent_solvers = [["CTL"; "mlsolver"]; ["BCTL";"BCTLNEW"; "BCTLOLD"; "BCTLHUE"; "BPATHf"]; ["BPATH"; "BPATHUE"]]
+let equivalent_solvers = [["CTL"; "mlsolver"]; ["BCTL";"BCTLNEW"; "BCTLOLD"; "BCTLHUE"; "BPATHf"; "bctl"]; ["BPATH"; "BPATHUE"; "nl_bctl"]]
 
 let sat_implies = Hashtbl.create 40;;
 let stronger = ref [] in List.iter (
@@ -1092,9 +1122,11 @@ let do_benchmark s = (
                 let fname = "out/" ^ (canonical_file t) ^ "." ^ solver_name ^ "3600" in
                 (process_file_stats solver_name fname t)) tasks in
         appendc_s_to_fname (String.concat " & " (("$"^format_tree_tex ft_^"$")::(squeeze results)) ^ "\\\\ \n") out_fname 
-       ) [
+       ) 
+	[
            ("out/benchmark.tex",    [("BPATH"  , ft); ("BPATHf"  , ft); ("BPATH"  , force_state_var_A ft); ("BCTLNEW", ft)]);
-           ("out/benchmarkhue.tex", [("BPATHUE", ft); ("BPATHUEf", ft); ("BPATHUE", force_state_var_A ft); ("BCTLHUE", ft)])
+           ("out/benchmarkhue.tex", [("BPATHUE", ft); ("BPATHUEf", ft); ("BPATHUE", force_state_var_A ft); ("BCTLHUE", ft)]);
+           ("out/benchmark_simple.tex",    [("nl_bctl"  , ft); ("nl_bctl", force_state_var ft); ("nl_bctl"  , force_state_var_A ft); ("bctl", ft)])
           ] 
     ) with
         Parsing.Parse_error-> print_string "Could not parse Formula.\n")

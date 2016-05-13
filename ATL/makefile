@@ -7,3 +7,8 @@ atl.pdf: atl.ml
 	ps2pdf tmp/atl.ps
 fuzztest.tmp: fuzztest.sh
 	bash fuzztest.sh
+bctl_memo.ml: bctl.ml bits/memoize.pl
+	perl bits/memoize.pl bctl.ml > bctl_memo.ml
+bctl: bctl_memo.ml bctl.ml
+	ocamlopt.opt bctl_memo.ml -o bctl
+
