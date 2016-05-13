@@ -1,6 +1,10 @@
+<<<<<<< HEAD
+#bash ./atl_formulas.sh
+=======
 bash ../atl_formulas.sh
+>>>>>>> 3ae5f6cfe55b0ba411e34b654affb158f2afa9af
 
-for WAIT in 600 3600
+for WAIT in 1 5 60 600 3600
 do
 
 echo >> cache.txt
@@ -15,6 +19,17 @@ done
 echo >> cache.txt
 echo "--- NEW formulas: $WAIT ---" >> cache.txt
 
+<<<<<<< HEAD
+timeout $WAIT ./do.pl "(Xp&-{1}Xp)" 99
+timeout $WAIT ./do.pl "({1}P&-P)"   4
+timeout $WAIT ./do.pl "({1}{2}P&-{2}P)"   4
+timeout $WAIT ./do.pl "(({1}P&{2}Q)>{12}(P&Q))" 
+timeout $WAIT ./do.pl "~(({1}P&{2}Q)>{12}(P&Q))" 2
+timeout $WAIT ./do.pl "~((~{1}~P&~{2}~Q)>{12}(P&Q))" 
+timeout $WAIT ./do.pl "~(({1}P&{2}Q)>(P&Q))" 2
+timeout $WAIT ./do.pl "~(({1}P&{2}Q)>(P&Q))" 3
+(timeout $WAIT ./do.pl "({1}{2}P&-{2}P)" 64)
+=======
 timeout $WAIT ../do.pl "(Xp&-{1}Xp)" 99
 timeout $WAIT ../do.pl "({1}P&-P)"   4
 timeout $WAIT ../do.pl "({1}{2}P&-{2}P)"   4
@@ -23,6 +38,7 @@ timeout $WAIT ../do.pl "~((~{1}~P&~{2}~Q)>{12}(P&Q))"
 timeout $WAIT ../do.pl "~(({1}P&{2}Q)>(P&Q))" 2
 timeout $WAIT ../do.pl "~(({1}P&{2}Q)>(P&Q))" 3
 (timeout $WAIT ../do.pl "({1}{2}P&-{2}P)" 64)
+>>>>>>> 3ae5f6cfe55b0ba411e34b654affb158f2afa9af
 #) 2> add.err > add.out
 
 #(
