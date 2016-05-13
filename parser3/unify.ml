@@ -376,7 +376,9 @@ let regexp_get_num r fmt default s = try
 
 let runtime_regexp_ = Str.regexp "RUNTIME: \\([0-9.]*\\)"
 let colour_regexp_ = Str.regexp " \\([0-9.]*\\) colours,"
+let colour_regexp_2 = Str.regexp "#Colours=\\([0-9.]*\\)"
 let hue_regexp_ = Str.regexp " \\([0-9.]*\\) hues,"
+let hue_regexp_2 = Str.regexp "#Hues=\\([0-9.]*\\)"
 
 let process_file_stats name fname t =
   let sat_s = ref "?" in
@@ -388,9 +390,11 @@ let process_file_stats name fname t =
     let len = input chan buffer 0 size in
     close_in_noerr chan;
     let s = (String.sub buffer 0 len) in
-    let runtime_s = regexp_get_num runtime_regexp_ "%0.2f" "?.??" s in
-    let  colour_s = regexp_get_num  colour_regexp_ "%0.0f"  "?"     s in
-    let     hue_s = regexp_get_num     hue_regexp_ "%0.0f"  "?"     s in
+    let runtime_s = regexp_get_num runtime_regexp_  "%0.2f" "?.??"   s in
+    let  colour_s = regexp_get_num  colour_regexp_  "%0.0f" "?"      s in
+    let  colour_s = regexp_get_num  colour_regexp_2 "%0.0f" colour_s s in
+    let     hue_s = regexp_get_num     hue_regexp_ "%0.0f" "?"      s in
+    let     hue_s = regexp_get_num     hue_regexp_2 "%0.0f" hue_s    s in
     if verbose then print_string (s);
     if (len >= size) then print_string "Data file too long\n";
     List.iter (fun x ->
