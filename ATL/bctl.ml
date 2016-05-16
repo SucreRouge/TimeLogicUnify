@@ -227,42 +227,7 @@ valid (of_list h) p)
 		| _ -> true
 	) h
 
-(* === Hue-ra === *)
-
-	(* in ra iff state_atoms and can_formulas the same *)
-
-	(*NOTE: in the paper, all atoms are path atoms *)
-let last_chars s n =
-  let l = (String.length s) - 1 in
-  String.sub s (l-n+1) n
-let ends_in s suffix =
-        (suffix = (last_chars s (String.length suffix)))
-
-	let state_atom_local p =  
-		match p with
-		| ATOM c -> c >= 'a' && c <= 'z'
-		| _     -> false 
-	let state_atom p = 
-		if (ends_in Sys.argv.(0) "/bctl")
-		then state_atom_local p
-		else false
-	let state_atoms h = filter state_atom h
-
-	let can_formula p = 
-		match p with
-		| ALLPATH _ -> true
-		| NOT ALLPATH _ -> true
-		| _     -> false
-		
-	let can_formulas h = filter can_formula h
-
-	let () = assert ((can_formulas (singleton(ATOM 'p')))=empty)
-
-(* The Hues are now implemented, we now do some Input/Output defintions *)
-	
-	let () = print_string(Printf.sprintf "\nNumber of Hues: %d \n" (List.length all_hues) )
-	(*List.iter println all_hues*)
-
+(* === Filter-Hues === *)
 (* Since we will have to implement pruning of Colours later, let us
    practice pruning hues that are not even LTL-consistent *)
 		
@@ -299,6 +264,44 @@ let ends_in s suffix =
 	let () = print_string (Printf.sprintf "Number of LTL-Consistent Hues: %d \n\n" (List.length all_hues))
 	
 	let _ = List.iter println all_hues
+
+
+(* === Hue-ra === *)
+
+	(* in ra iff state_atoms and can_formulas the same *)
+
+	(*NOTE: in the paper, all atoms are path atoms *)
+let last_chars s n =
+  let l = (String.length s) - 1 in
+  String.sub s (l-n+1) n
+let ends_in s suffix =
+        (suffix = (last_chars s (String.length suffix)))
+
+	let state_atom_local p =  
+		match p with
+		| ATOM c -> c >= 'a' && c <= 'z'
+		| _     -> false 
+	let state_atom p = 
+		if (ends_in Sys.argv.(0) "/bctl")
+		then state_atom_local p
+		else false
+	let state_atoms h = filter state_atom h
+
+	let can_formula p = 
+		match p with
+		| ALLPATH _ -> true
+		| NOT ALLPATH _ -> true
+		| _     -> false
+		
+	let can_formulas h = filter can_formula h
+
+	let () = assert ((can_formulas (singleton(ATOM 'p')))=empty)
+
+(* The Hues are now implemented, we now do some Input/Output defintions *)
+	
+	let () = print_string(Printf.sprintf "\nNumber of Hues: %d \n" (List.length all_hues) )
+	(*List.iter println all_hues*)
+
 
 	let hash x = (Hashtbl.hash (Array.of_list (elements x)))
 end;;
