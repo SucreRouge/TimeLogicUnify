@@ -17,10 +17,7 @@ let last_chars s n =
   String.sub s (l-n+1) n
 let ends_in s suffix =
         (suffix = (last_chars s (String.length suffix)))
-	
 (*i*)
-
-
 
 (* We sometimes want a list of subsets of a list, but that can be rather large. 
    So instead of building the powerset, we will sometime iterate over it instead.
@@ -271,6 +268,7 @@ valid (of_list h) p)
 	(* in ra iff state_atoms and can_formulas the same *)
 
 	(*NOTE: in the paper, all atoms are path atoms *)
+
 let last_chars s n =
   let l = (String.length s) - 1 in
   String.sub s (l-n+1) n
@@ -281,6 +279,8 @@ let ends_in s suffix =
 		match p with
 		| ATOM c -> c >= 'a' && c <= 'z'
 		| _     -> false 
+	(* If the executable name is 'bctl' all lower case atoms are state-atoms *)
+	(* Otherwise, e.g.  'nl_bctl' there are no state-atoms *)
 	let state_atom p = 
 		if (ends_in Sys.argv.(0) "/bctl")
 		then state_atom_local p
@@ -362,6 +362,7 @@ module Colour = struct
 		let _ = if verbose then print_endline ((String.concat "" (List.map bool2str [sat_c1;sat_c2])) ^ (to_string c)) in
 		(sat_c1 && sat_c2)
 
+(* === All-Colours === *)
 	let () = print_endline "building_all_colours"
 
 	let println x = print_string ((to_string x) ^ "\n")  
