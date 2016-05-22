@@ -96,7 +96,6 @@ module Formula = struct
 		let rec c() = (
 			let got=s.[(!i)] in
 			i:=(!i)+1;
-			print_char got;
 			flush stdout;
 			if got = ' ' || got = '?' then c() else got
 		) in
@@ -181,7 +180,6 @@ module Hue = struct
 		| FALSE -> empty 
 	
 	let closure = List.sort Formula.compare_len (elements (closure_of phi))
-	let _ = List.iter Formula.println closure
 	
 	let () = print_string (Printf.sprintf "\n Size of closure %d \n" (List.length closure))
 
@@ -210,8 +208,7 @@ module Hue = struct
 			 (fun  hl->let h = of_list hl in
 				out := h::(!out) 
 			) 
-			(fun h p -> if not (valid (of_list h) p) then println (of_list h); Formula.println p;
-valid (of_list h) p) 
+			(fun h p -> valid (of_list h) p) 
 			max_int closure;
 		(!out)
 		
@@ -261,7 +258,6 @@ let ends_in s suffix =
 (* The Hues are now implemented, we now do some Input/Output defintions *)
 	
 	let () = print_string(Printf.sprintf "\nNumber of Hues: %d \n" (List.length all_hues) )
-	(*List.iter println all_hues*)
 
 (* Since we will have to implement pruning of Colours later, let us
    practice pruning hues that are not even LTL-consistent *)
@@ -274,7 +270,7 @@ let ends_in s suffix =
 	
 	let directly_fulfilled b hues = List.filter (fun h->mem b h) hues
 	
-	let _ = List.iter println (directly_fulfilled (ATOM 'a') all_hues)
+	(* let _ = List.iter println (directly_fulfilled (ATOM 'a') all_hues) *)
 	
 	(* returns a list of hues in "hues" that are fulfilled by arleady fulfilled hues in "fh" *)  
 	let fulfilled_step hues b fh = List.filter 
@@ -298,8 +294,6 @@ let ends_in s suffix =
 	
 	let () = print_string (Printf.sprintf "Number of LTL-Consistent Hues: %d \n\n" (List.length all_hues))
 	
-	let _ = List.iter println all_hues
-
 	let hash x = (Hashtbl.hash (Array.of_list (elements x)))
 end;;
 
