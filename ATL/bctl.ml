@@ -17,10 +17,7 @@ let last_chars s n =
   String.sub s (l-n+1) n
 let ends_in s suffix =
         (suffix = (last_chars s (String.length suffix)))
-	
 (*i*)
-
-
 
 (* We sometimes want a list of subsets of a list, but that can be rather large. 
    So instead of building the powerset, we will sometime iterate over it instead.
@@ -96,7 +93,6 @@ module Formula = struct
 		let rec c() = (
 			let got=s.[(!i)] in
 			i:=(!i)+1;
-			print_char got;
 			flush stdout;
 			if got = ' ' || got = '?' then c() else got
 		) in
@@ -181,7 +177,6 @@ module Hue = struct
 		| FALSE -> empty 
 	
 	let closure = List.sort Formula.compare_len (elements (closure_of phi))
-	let _ = List.iter Formula.println closure
 	
 	let () = print_string (Printf.sprintf "\n Size of closure %d \n" (List.length closure))
 
@@ -210,8 +205,7 @@ module Hue = struct
 			 (fun  hl->let h = of_list hl in
 				out := h::(!out) 
 			) 
-			(fun h p -> if not (valid (of_list h) p) then println (of_list h); Formula.println p;
-valid (of_list h) p) 
+			(fun h p -> valid (of_list h) p) 
 			max_int closure;
 		(!out)
 		
@@ -230,7 +224,7 @@ valid (of_list h) p)
 (* === Filter-Hues === *)
 (* Since we will have to implement pruning of Colours later, let us
    practice pruning hues that are not even LTL-consistent *)
-		
+	
 	let has_successor hues h = List.exists (rx h) hues
 	let filter_hues hues = List.filter (has_successor hues) hues
 	let all_hues = fixpoint filter_hues all_hues 
@@ -239,7 +233,7 @@ valid (of_list h) p)
 	
 	let directly_fulfilled b hues = List.filter (fun h->mem b h) hues
 	
-	let _ = List.iter println (directly_fulfilled (ATOM 'a') all_hues)
+	(* let _ = List.iter println (directly_fulfilled (ATOM 'a') all_hues) *)
 	
 	(* returns a list of hues in "hues" that are fulfilled by arleady fulfilled hues in "fh" *)  
 	let fulfilled_step hues b fh = List.filter 
@@ -263,8 +257,7 @@ valid (of_list h) p)
 	
 	let () = print_string (Printf.sprintf "Number of LTL-Consistent Hues: %d \n\n" (List.length all_hues))
 	
-	let _ = List.iter println all_hues
-
+	let hash x = (Hashtbl.hash (Array.of_list (elements x)))
 
 (* === Hue-ra === *)
 
@@ -300,10 +293,8 @@ let ends_in s suffix =
 (* The Hues are now implemented, we now do some Input/Output defintions *)
 	
 	let () = print_string(Printf.sprintf "\nNumber of Hues: %d \n" (List.length all_hues) )
-	(*List.iter println all_hues*)
 
-
-	let hash x = (Hashtbl.hash (Array.of_list (elements x)))
+(* === Filter-Hues === *)
 end;;
 
 (* The following comment asks memoize.pl to replace Hue with a memoized version.
@@ -362,6 +353,7 @@ module Colour = struct
 		let _ = if verbose then print_endline ((String.concat "" (List.map bool2str [sat_c1;sat_c2])) ^ (to_string c)) in
 		(sat_c1 && sat_c2)
 
+(* === All-Colours === *)
 	let () = print_endline "building_all_colours"
 
 	let println x = print_string ((to_string x) ^ "\n")  
