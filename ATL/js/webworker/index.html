@@ -2,10 +2,12 @@
 <head>
   <meta http-equiv="Content-Type" content="text/xhtml+xml; charset=UTF-8" />
   <title>Tutorial</title>
+  XX<div id="stdout"></div>YY
   <script type="text/javascript">
 <!--
-var worker = new Worker ("JsClient.js");
+var worker = new Worker ("JsClient.js?&arg1=txt&arg2=txt");
 var worker_handler = new Object ();
+  document.getElementById ("stdout").value = "HELLO WORLD";
 
 worker.onmessage = function (m) {
     if (typeof m.data == 'string') {
@@ -14,6 +16,7 @@ worker.onmessage = function (m) {
         console.log ("[ASYNCH] back from " + m.data.fname);
         var handler = worker_handler[m.data.fname];
         handler (m.data.result);
+  	document.getElementById ("output").value += "DONE";
     }
 }
 
@@ -34,6 +37,9 @@ function convert_nnf () {
 <body>
 <textarea id="formula" rows="2" cols="40">
 not (X and not Y)</textarea> 
+<br>
+<textarea id="output" rows="20" cols="40">
+</textarea> 
 <button onclick="convert_nnf()">Convert to NNF</button>
 </body>
 

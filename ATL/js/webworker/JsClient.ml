@@ -17,12 +17,26 @@ let onmessage event =
   Js.Unsafe.call postMessage (Js.Unsafe.variable "self") [|Js.Unsafe.inject response|]
 
 let _ = Js.Unsafe.set (Js.Unsafe.variable "self") (Js.string "onmessage") onmessage
+(*
+let url_argument x = List.assoc x Url.Current.arguments
+let url_argument x = let List.assoc x Url.Current.arguments
+let url_argc = 
+*)
+let url_argument x = List.assoc x Url.Current.arguments
+let url_argument x = List.assoc x [("arg1","XYA")]
+
+let rec arg_str l = match l with 
+	(a,b)::tl -> "["^a^","^b^"]"^(arg_str tl)
+	| _ -> ""
 
 (* The NNF conversion and registration in JS. *)
 let js_nnf s = 
-  
   log ("computing nnf of " ^ (Js.to_string s));
-  Js.string ("NNF:" ^ (Js.to_string s))
+  Js.string (arg_str Url.Current.arguments)
 
+(*
+  Js.string ("NNF:" ^ (Js.to_string s) ^ (string_of_int (List.length Url.Current.arguments )) ^ (
+	let (a,b) = List.tl Url.Current.arguments in (":"^a^":"^b^":")  ) ^ "..." ^ (try url_argument "XYA" with _ -> "_") )
+*)
 let _ = Js.Unsafe.set js_handler (Js.string "nnf") (Js.wrap_callback js_nnf)
-    
+   
