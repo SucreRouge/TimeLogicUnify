@@ -2,33 +2,26 @@
 <head>
   <meta http-equiv="Content-Type" content="text/xhtml+xml; charset=UTF-8" />
   <title>Tutorial</title>
-  XX<div id="stdout"></div>YY
   <script type="text/javascript">
 <!--
-var worker = new Worker ("JsClient.js?&arg1=txt&arg2=txt");
+var worker;
 var worker_handler = new Object ();
-  document.getElementById ("stdout").value = "HELLO WORLD";
-
-worker.onmessage = function (m) {
-    if (typeof m.data == 'string') {
-        console.log("" + m.data);
-    } else {
-        console.log ("[ASYNCH] back from " + m.data.fname);
-        var handler = worker_handler[m.data.fname];
-        handler (m.data.result);
-  	document.getElementById ("output").value += "DONE";
-    }
-}
-
-function ASYNCH (action_name, action_args, cont) {
-    worker_handler[action_name] = cont;
-    worker.postMessage ({fname: action_name, args: action_args});
-    console.log ("[ASYNCH] " + action_name + " (" + action_args + ")");
-}
 
 function convert_nnf () {
-  var txt = document.getElementById ("formula").value;
-  ASYNCH ("nnf", [txt], function (resp) { alert (resp) })
+  document.getElementById ("output").value="";
+  if (worker) {
+	worker.terminate();
+  }
+  worker = new Worker ("JsClient.js?&arg1=txt&arg2=txt");
+  worker.onmessage = function (m) {
+    if (typeof m.data == 'string') {
+        console.log("" + m.data);
+  	document.getElementById ("output").value+=m.data;
+    } else {
+        console.log ("[ASYNCH] back from " + m.data.fname);
+        alert(m.data.result);
+    }
+  }
 }
 //-->
 </script>
@@ -38,7 +31,7 @@ function convert_nnf () {
 <textarea id="formula" rows="2" cols="40">
 not (X and not Y)</textarea> 
 <br>
-<textarea id="output" rows="20" cols="40">
+<textarea id="output" rows="10" cols="40">
 </textarea> 
 <button onclick="convert_nnf()">Convert to NNF</button>
 </body>
