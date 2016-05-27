@@ -1,15 +1,13 @@
 (* Boilerplate code for calling OCaml in the worker thread. *)
 let output_buffer_ = Buffer.create 1000
-let flush()=(Js.Unsafe.call (Js.Unsafe.variable "postMessage")
-	 (Js.Unsafe.variable "self")
-	 [|Js.Unsafe.inject (Js.string (Buffer.contents output_buffer_))|];
-	 Buffer.clear output_buffer_)
-let stdout = ()
-let stderr = ()
+let flush x=let module J = Js.Unsafe in let () = J.call 
+		(J.variable "postMessage") (J.variable "self")
+	 	[|J.inject (Js.string (Buffer.contents output_buffer_))|]
+	 in Buffer.clear output_buffer_
 
 let print_string = Buffer.add_string output_buffer_
 let print_char = Buffer.add_char output_buffer_
-let print_newline = print_char '\n'
+let print_newline () = print_char '\n'
 let print_endline s = print_string (s^"\n"); flush ()
 
 (* let caml_ml_output_char c = ();; *)
@@ -28,6 +26,7 @@ module Sys = struct
 	let executable_name = argv.(0)
 end
 
-let _ = print_endline (String.lowercase Sys.argv.(1))
-let _ = flush ()
+let _ = print_string (Array.fold_left (^) "" (Array.make 40 (String.lowercase (Sys.argv.(1)^"\n"))) )
+
+let _ = flush stdout; print_endline "\x00" 
    
