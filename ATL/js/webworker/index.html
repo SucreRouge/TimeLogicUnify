@@ -12,7 +12,8 @@ function convert_nnf () {
   if (worker) {
 	worker.terminate();
   }
-  worker = new Worker ("JsClient.js?&arg1=txt&arg2=txt");
+  var argv = encodeURIComponent("/bin/ocaml\0"+document.getElementById ("input").value);
+  worker = new Worker ("JsClient.js?argv="+argv);
   worker.onmessage = function (m) {
     if (typeof m.data == 'string') {
         console.log("" + m.data);
@@ -28,7 +29,7 @@ function convert_nnf () {
 </head>
 
 <body>
-<textarea id="formula" rows="2" cols="40">
+<textarea id="input" rows="2" cols="40">
 not (X and not Y)</textarea> 
 <br>
 <textarea id="output" rows="10" cols="40">

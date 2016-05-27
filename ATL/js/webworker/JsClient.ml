@@ -1,22 +1,33 @@
 (* Boilerplate code for calling OCaml in the worker thread. *)
-let js_object = Js.Unsafe.variable "Object"
-let js_handler = jsnew js_object ()
-let postMessage = Js.Unsafe.variable "postMessage"
+let output_buffer_ = Buffer.create 1000
+let flush()=(Js.Unsafe.call (Js.Unsafe.variable "postMessage")
+	 (Js.Unsafe.variable "self")
+	 [|Js.Unsafe.inject (Js.string (Buffer.contents output_buffer_))|];
+	 Buffer.clear output_buffer_)
+let stdout = ()
+let stderr = ()
 
-let print_string s = Js.Unsafe.call postMessage (Js.Unsafe.variable "self") [|Js.Unsafe.inject (Js.string s)|]
-let print_endline s = (print_string (s^"\n"));;
-let print_newline () = (print_string "\n");;
-let caml_ml_output_char c = ();;
-let print_char c = ();;
-let printf fmt = 
-	let output_buffer = Buffer.create 1000 in
-	Printf.bprintf output_buffer fmt;;
-let url_argument x = List.assoc x Url.Current.arguments
-let url_argument x = List.assoc x [("arg1","XYA")];;
+let print_string = Buffer.add_string output_buffer_
+let print_char = Buffer.add_char output_buffer_
+let print_newline = print_char '\n'
+let print_endline s = print_string (s^"\n"); flush ()
 
-let rec arg_str l = match l with 
-	(a,b)::tl -> "["^a^","^b^"]"^(arg_str tl)
-	| _ -> ""
+(* let caml_ml_output_char c = ();; *)
+let printf fmt = Printf.bprintf output_buffer_ fmt
+module Sys = struct
+	let char_split delim s = (*Str.split is overkill*)
+		let hd = ref "" in let l = ref [] in 
+		String.iter (fun c -> 
+			if c = delim
+			then  (l := (!hd)::(!l); hd := "")
+			else hd := (!hd) ^ (String.make 1 c)
+		) s;
+		List.rev ((!hd)::(!l)) 
+	let getenv x = List.assoc x Url.Current.arguments
+	let argv = Array.of_list (char_split '\x00' (getenv "?argv"))
+	let executable_name = argv.(0)
+end
 
-let _ = print_endline "Goodbye"
+let _ = print_endline (String.lowercase Sys.argv.(1))
+let _ = flush ()
    
