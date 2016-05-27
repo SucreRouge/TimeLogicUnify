@@ -883,7 +883,7 @@ let md5 s = Digest.to_hex (Digest.string s)
 let canonical_file t = md5 (format_tree_mark t)
 
 let required_tasks t =
-  let solver_entries = [mlsolver_entry; java_entry "BCTLNEW"; java_entry "BCTLOLD" ; java_entry "CTL"; java_entry "BPATH" ; java_entry "BPATHUE";java_entry_f "BPATH" ; java_entry_f "BPATHUE";  java_entry "BCTLHUE"; simple_entry "bctl"; simple_entry "nl_bctl";  ] in
+  let solver_entries = [mlsolver_entry; java_entry "BCTLNEW"; java_entry "BCTLOLD" ; java_entry "CTL"; java_entry "BPATH" ; java_entry "BPATHUE";java_entry_f "BPATH" ; java_entry_f "BPATHUE";  java_entry "BCTLHUE"; simple_entry "bctl"; simple_entry "nl_bctl"; simple_entry_f "nl_bctl"  ] in
   let tasks = ref [] in
     List.iter  ( fun e -> 
                    let (solver_name, prefix, f) = e in
@@ -1138,6 +1138,7 @@ let do_benchmark s = (
                 (process_file_stats solver_name fname t)) tasks in
         appendc_s_to_fname (String.concat " & " (("$"^format_tree_tex ft_^"$")::(squeeze results)) ^ "\\\\ \n") out_fname 
        ) 
+       	(* To add now provers here, remember to add them to both places in benchpath.sh *)
 	[
            ("out/benchmark_simple.tex",[("nl_bctl",ft);("nl_bctlf",ft); ("nl_bctl", force_state_var_A ft); ("bctl", ft)]);
            ("out/benchmark.tex",    [("BPATH"  , ft); ("BPATHf"  , ft); ("BPATH"  , force_state_var_A ft); ("BCTLNEW", ft)]);

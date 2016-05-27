@@ -5,12 +5,12 @@ run=$1
 sec=$2
 count=$3
 
-for solver in null BCTLOLD CTL mlsolver BCTLNEW BPATH  BPATHUE BCTLHUE
+for solver in null BCTLOLD CTL mlsolver BCTLNEW BPATH  BPATHUE BCTLHUE bctl nl_bctl
 do
 	#for some reason I am sometimes getting EACCESS when attempting to kill a process, causing a abort in unify
 	# So just rerun unify multiple time and hope we get a bit further each time, manually cleaning up each time.
 	#for type in simp 
-        echo "$solver" | tr "\n" "\t"
+        echo "$solver" | tr "\n" "\t" | sed 's/_/\\_/g'
 	for type in orig simp both
         #for type in orig
 do
@@ -25,6 +25,7 @@ echo
 done | tee results/triv.out
 
 (
+echo '%'`cat /proc/cpuinfo  | grep model.name | head -n1`
 cat <<EOF
 %created by 'make result' and 'unify_triv_solv2.sh'
 \begin{tabular}{|l|r|r|r|}
