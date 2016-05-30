@@ -156,7 +156,7 @@ cimeclean:
 	mv unify_misc/trs_formulas.txt unify_misc/both_formulas.txt bak || true
 	mv results/*both* bak || true
 
-result: TeX/unify_len.tex unify_misc/triv_60_100_both.log TableHue.pdf
+result: TeX/unify_len.tex TeX/unify_triv.tex TeX/benchmark.tex TableHue.pdf
 
 results/unify_len.out: ./unify_formula_len.sh
 	#./unify_formula_len.sh
@@ -166,15 +166,25 @@ results/unify_len.out: ./unify_formula_len.sh
 
 TeX/unify_len.tex: results/unify_len.out ./unify_formula_len2.sh
 	./unify_formula_len2.sh
-TeX/unify_len_TRS.tex: results/unify_len.out ./unify_formula_len2.sh
-	./unify_formula_len2_TRS.sh
+#Obsolete? Merged with unify_len.tex
+#TeX/unify_len_TRS.tex: results/unify_len.out ./unify_formula_len2.sh
+#	./unify_formula_len2_TRS.sh
 
-unify_misc/triv_60_100_both.log: ./unify_triv_solv.sh
+results/triv_3_1000_both.log: ./unify_triv_solv.sh
 	./unify_triv_solv.sh
+
+TeX/unify_triv.tex: results/triv_3_1000_both.log 
 	./unify_triv_solv2.sh
+
+TeX/benchmark.tex: work/out/benchmark.tex
+	cp work/out/*.tex TeX/
 
 TableHue.pdf:
 	bash ./benchpath.sh
+
+check:
+	echo '-((-Fa)U(((F((((EXAa)|(a)))|(((GFa)|(Xa)))))|(a))))' | UNIFY_SOLVERS="mlsolver CTL" make runu
+	echo '-F((Fa)|(((GFa)|(a))))' | UNIFY_SOLVERS="mlsolver CTL" make runu
 
 
 include .depend

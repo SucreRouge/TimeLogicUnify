@@ -38,7 +38,7 @@ cat <<EOF
 \hline
 \end{tabular}
 EOF
-) | tee results/unify_triv$run.tex
+) | tee TeX/unify_triv$run.tex
 #cp results/unify_triv$run.tex ~/uni/PhD || true
 }
 

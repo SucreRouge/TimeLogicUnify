@@ -4,7 +4,7 @@ set -e
 #do
 #	make_random_ctls_formulas.ml 50 $i 1000 2999 > results/rand.$f.N.txt
 #	sed s/^/,/ < 
-
+touch null
 for S in  . S # "S" -> Standard Simplify "." -> both standard and CiME
 do
 for f in null urules_auto.txt              urules_manual.txt            urules_manual_then_auto.txt

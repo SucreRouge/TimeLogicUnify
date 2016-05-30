@@ -5,6 +5,7 @@ mkdir -p work/out
 	if ! command -v javac
 	then
 		echo "You will need to install a java compiler (javac) to compile the pure and BCTL* tableaux."
+		exit
 	fi
 	cd work
 	if [ -e ~/prj/CTLStarTab ]
@@ -13,15 +14,15 @@ mkdir -p work/out
 	else
 		git clone git@github.com:gmatht/CTLStarTab.git
 		mv CTLStarTab mark
-		cp -ra mark mark1
-		(cd mark1 && git checkout v1.x)
-		for d in mark mark1
+		cp -ra mark mark_v1
+		(cd mark_v1 && git checkout v1.x)
+		for d in mark mark_v1
 		do (
 			cd $d
 			javac *java formulas/*java
 		)
 		done
-		mv mark1 mark/src/v1.0 # really v1.x., should fix, but not now
+		#mv mark_v1 mark/src/v1.0 # really v1.x., should fix, but not now
 	fi
 )
 (

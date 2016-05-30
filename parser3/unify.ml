@@ -847,7 +847,7 @@ let java_entry name = ( name, "",  fun t fname ->
                           (*Unix.chdir "mark/";*)
                           print_string (name^"->"^fname^"\n");
                           let args =
-                            [| "java"; "-classpath"; "mark/src/v1.0/src"; "-Djava.awt.headless=true"; "JApplet";
+                            [| "java"; "-classpath"; "mark_v1/src"; "-Djava.awt.headless=true"; "JApplet";
                                format_tree_mark t; name ; fname |] in
                             (*Unix.execvp "echo" args;*)
 			    Array.iter print_string args;
