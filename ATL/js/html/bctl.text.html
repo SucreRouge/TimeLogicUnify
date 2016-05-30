@@ -1,0 +1,8 @@
+  This is implementation of a NL-BCTL*/BCTL* tableau.</p>
+
+  Currently the only way to input a formula is to manually play with the URL.</p>
+
+  Formulas have syntax defined by the following BNF notation where p is any lowercase letter and n..m is any sequence of digits: <br/>
+  &nbsp;&nbsp;&nbsp; &phi; := p <cal>|</cal> (&phi; ^ &phi;) <cal>|</cal> -&phi; <cal>|</cal> (&phi; U &phi;) <cal>|</cal> X&phi; <cal>|</cal> F&phi; <cal>|</cal> G&phi; <cal>|</cal> A&phi; <cal>|</cal> E&phi; <cal>|</cal> (&phi; | &phi;) <cal>|</cal> (&phi; &gt; &phi;) <!--<cal>|</cal> {n..m} &phi; <cal>|</cal> [n..m] &phi; --> <br/>
+ 
+  <p>These operators are to be read as: atomic (p)roposition, and (^), negation (-), (U)ntil, ne(X)t, (F)inally, (G)lobally/always, on (A)ll paths/futures, there (E)xists a path, or (|), implies (&gt;)<!--, strategy ({n..m}), and co-strategy ([n..m])-->.  If p is an uppercase letter: P, Q, R, then p is interpreted as a (non-local) path atom rather than a state atom.</p>

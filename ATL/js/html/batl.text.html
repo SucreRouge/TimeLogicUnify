@@ -1,12 +1,4 @@
-<!DOCTYPE html>
-<title>
-  NL-BATL* tableau (Prototype)
-</title>
-
-<body>
-  This is implementation in progress of a NL-BATL*/BATL* tableau.</p>
-
-  Currently the only way to input a formula is to manually play with the URL.</p>
+  This is an implementation of a NL-BATL*/BATL* tableau.</p>
 
   Formulas have syntax defined by the following BNF notation where p is any lowercase letter and n..m is any sequence of digits: <br/>
   &nbsp;&nbsp;&nbsp; &phi; := p <cal>|</cal> (&phi; ^ &phi;) <cal>|</cal> -&phi; <cal>|</cal> (&phi; U &phi;) <cal>|</cal> X&phi; <cal>|</cal> F&phi; <cal>|</cal> G&phi; <cal>|</cal> A&phi; <cal>|</cal> E&phi; <cal>|</cal> (&phi; | &phi;) <cal>|</cal> (&phi; &gt; &phi;) <cal>|</cal> {n..m} &phi; <cal>|</cal> [n..m] &phi; <br/>
@@ -15,25 +7,12 @@
 
   The tableau determines the number of agents based on the largest
   agent# found in the formula. For example,
-  <a href="batl.html?(P^-{1}P)^{2}Q">(P^-{1}P)^{2}Q</a> and 
-	<a href="?P^-{2}P">P^-{2}P</a>
+  <a href="?input=(P^-{1}P)^{2}Q">(P^-{1}P)^{2}Q</a> and 
+	<a href="?input=P^-{2}P">P^-{2}P</a>
   are satisfiable but 
-	<a href="?P^-{1}P">P^-{1}P</a> is not.
+	<a href="?input=P^-{1}P">P^-{1}P</a> is not.
 	Some more examples 
-		<a href="?({1}P>{12}P)"i>1</a>, 
-		<a href="?~({1}P>{12}P)"i>1</a>, 
+		<a href="?input=({1}P>{12}P)"i>1</a>, 
+		<a href="?input=~({1}P>{12}P)"i>2</a>, 
 	... 
 	</p>
-
-
-  NOTE: this is a protoype. Do not trust the output yet.
-  Also this javascript version is even slower and less featureful than the native
-  version. Firefox seems to hang when JavaScript is busy. Google-Chrome may be more pleasant. You should be able to download this file for offline use.</p>
-
-
-  Download: <a href="atl.ml">Command Line Version</a> or <a href="atlweb.ml">Javascript(of_ocaml) version</a></p>
-
-  <hr>
-<div id="stdout"></div>
-<script async src="atlweb.js"></script>
-</body>
