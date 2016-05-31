@@ -1,4 +1,5 @@
 OCAMLC = $(shell which ocamlopt.opt ocamlopt | head -n1)
+
 #REMOTE = "http://gmatht.homelinux.net"
 #REMOTE = "http://gmatht.mooo.com"
 REMOTE = "https://matt.ucc.asn.au/~mccabedj"
@@ -76,18 +77,29 @@ unify_install: unify_www_ unify
 	#bash -c "(echo '<html>' ; cat mechecker2.html) > /var/www/mechecker_plain.html"
 	#bash -c "cat mechecker1.html mechecker2.html > /var/www/mechecker.html"
 	(git archive --prefix=mechecker/ HEAD -o www/mechecker_src.tar && gzip -f -9 www/mechecker_src.tar) || cp ../mechecker_src.tar.gz www
-	cp unify_www/* /var/www
+	cp unify_www/* /var/www/html
 	mkdir -p /var/data/unify
 	touch /var/data/unify/log.3
 	chmod 666  /var/data/unify/log.3
-	rsync -ra work/ /var/data/unify
+	rsync -ra --safe-links work/ --exclude work/ATL /var/data/unify
 	mkdir -p /var/data/unify/out
 	chmod 777  /var/data/unify/mark_v1/out
 	chmod 777  /var/data/unify/mark/out
 	chmod 777  /var/data/unify/out
+	rm /var/data/unify/ATL || true
+	mkdir -p /var/data/unify/ATL
+	cp ../ATL/nl_bctl ../ATL/bctl /var/data/unify/ATL/
 	#touch /var/data/unify/out/rules.txt
-	touch /var/www/urules.txt
-	chmod 666 /var/www/urules.txt
+	touch /var/www/html/urules.txt
+	chmod 666 /var/www/html/urules.txt
+
+	mkdir -p /var/www/html/.data/
+	test -e /var/www/html/.data/unify_stats.txt || echo 0 > /var/www/html/.data/unify_stats.txt
+	test -e /var/www/html/.data/mechecker_stats.txt || echo 0 > /var/www/html/.data/mechecker_stats.txt
+	touch  /var/www/html/.data/unify_bad.log 
+	touch  /var/www/html/.data/unify_good.log 
+	chmod a+w /var/www/html/.data/unify_*.log
+	chmod a+w  /var/www/html/.data/*_stats.txt
 	#mkdir -p /var/data/unify
 	#cp -rv mark/ /var/data/unify/mark	
 	#cp -rv mlsolver/ /var/data/unify/mlsolver

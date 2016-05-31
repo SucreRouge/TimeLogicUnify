@@ -5,7 +5,7 @@
 
 let origcwd = Sys.getcwd ()
 (*let home = try Sys.getenv "HOME" with _ -> origcwd^"/../.."*)
-let publichtml = origcwd^"/../"
+let publichtml = if origcwd = "/usr/lib/cgi-bin" then "/var/www/html/" else origcwd^"/../"
 
 let printf=Printf.printf
 

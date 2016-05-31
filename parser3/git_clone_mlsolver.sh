@@ -1,12 +1,15 @@
 set -e
 set -x
+get () {
+  [ -d "$1" ] || git clone https://github.com/tcsprojects/"$1"
+}
 cd work
-git clone https://github.com/tcsprojects/mlsolver.git
+get mlsolver
 cd mlsolver/
-git clone https://github.com/tcsprojects/pgsolver
+get pgsolver
 cd  pgsolver/
-git clone https://github.com/tcsprojects/satsolversforocaml
-git clone https://github.com/tcsprojects/tcslib
+get satsolversforocaml
+get tcslib
 make -j5
 cd ..
 make -j5

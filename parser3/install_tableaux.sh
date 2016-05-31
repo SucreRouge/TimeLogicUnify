@@ -1,6 +1,6 @@
 mkdir -p work
 mkdir -p work/out
-[ -e work/mlsolver ] || ./git_clone_mlsolver.sh
+[ -e work/mlsolver/bin/mlsolver ] || ./git_clone_mlsolver.sh
 [ -e work/mark/src/JApplet.class ] || (
 	if ! command -v javac
 	then

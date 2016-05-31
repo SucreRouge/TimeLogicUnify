@@ -27,7 +27,7 @@ if [ "$1" == "unify" ]
 then #cat <<EOF
 #<br/><textarea name="exclude" cols=40 rows=2 onkeydown="if (event.keyCode == 13) { this.form.submit(); return false; }">CTL BCTLOLD BCTLNEW BCTLHUE BPATHUE</textarea>
 echo '<br/>'
-for s in CTL BCTLOLD BCTLNEW BCTLHUE BPATHUE
+for s in CTL BCTLOLD BCTLNEW BCTLHUE BPATHUE bctl nl_bctl
 do
  echo '<input type="checkbox" name="solver" value="'$s'"/> '$s '&nbsp; '
 done
