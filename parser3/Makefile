@@ -80,8 +80,9 @@ unify_install: unify_www_ unify
 	mkdir -p /var/data/unify
 	touch /var/data/unify/log.3
 	chmod 666  /var/data/unify/log.3
+	rsync -ra work/ /var/data/unify
 	mkdir -p /var/data/unify/out
-	mkdir -p /var/data/unify/mark/out
+	chmod 777  /var/data/unify/mark_v1/out
 	chmod 777  /var/data/unify/mark/out
 	chmod 777  /var/data/unify/out
 	#touch /var/data/unify/out/rules.txt

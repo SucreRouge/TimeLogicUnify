@@ -145,21 +145,22 @@ with Not_found ->
 		else "/var/www/.config/"
 	*)
 
-let print_count name file = Printf.printf "\nThis %s has been used %s times\n" name
-(try 
+let print_count name file = 
         let stats_fname = log_dir ^ file in
-        let old_count = try
+	Printf.printf "\nThis %s has been used %s times\n" name
+(try 
+        let count = try let old_count =
         	let input = open_in stats_fname in
 		let cnt = input_line input in 
 		close_in input;
-		cnt;
-	with _ -> "0" in
-        let count = string_of_int (1+ int_of_string (old_count)) in
+		cnt in
+		string_of_int (1+ int_of_string (old_count))
+	with _ -> (print_endline ("Cannot Access: "^stats_fname); "1") in
         let output = open_out stats_fname in
         output_string output count;
         close_out output;
         count
-with _ -> "UNKNOWN")
+with _ -> (print_endline ("Cannot Write: "^stats_fname); "UNKNOWN"))
         
 let log f_name s =
         let oc = open_out_gen [Open_creat; Open_text; Open_append] 0o600 f_name

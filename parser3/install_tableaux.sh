@@ -1,7 +1,7 @@
 mkdir -p work
 mkdir -p work/out
 [ -e work/mlsolver ] || ./git_clone_mlsolver.sh
-[ -e work/mark ] || (
+[ -e work/mark/src/JApplet.class ] || (
 	if ! command -v javac
 	then
 		echo "You will need to install a java compiler (javac) to compile the pure and BCTL* tableaux."
@@ -12,13 +12,16 @@ mkdir -p work/out
 	then
 		ln -s ~/prj/CTLStarTab mark
 	else
-		git clone git@github.com:gmatht/CTLStarTab.git
+		[ -e mark/.git ] || (
+		(rm -r mark || true; git clone git@github.com:gmatht/CTLStarTab.git) ||
+			git clone https://github.com/gmatht/CTLStarTab.git
 		mv CTLStarTab mark
 		cp -ra mark mark_v1
 		(cd mark_v1 && git checkout v1.x)
+                )
 		for d in mark mark_v1
 		do (
-			cd $d
+			cd $d/src
 			javac *java formulas/*java
 		)
 		done
