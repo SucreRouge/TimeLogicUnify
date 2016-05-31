@@ -3,6 +3,8 @@ OCAMLC = $(shell which ocamlopt.opt ocamlopt | head -n1)
 #REMOTE = "http://gmatht.mooo.com"
 REMOTE = "https://matt.ucc.asn.au/~mccabedj"
 
+all: main unify result
+
 main: precheck me.ml mainlib.ml phi_lexer.ml phi_parser.ml  me_parser.ml me_parser.mli me_lexer.ml main.ml phi_parser.cmi me_parser.cmi me_parser.cmo me_parser.cmo
 	$(OCAMLC) -o main str.cmxa me.ml phi_parser.ml phi_lexer.ml  me_lexer.ml me_parser.ml mainlib.ml main.ml  
 
