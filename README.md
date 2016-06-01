@@ -13,7 +13,7 @@ The unified UI uses (4) above, and can also use:
 1. [CTLStarTab](https://github.com/gmatht/CTLStarTab): Various Java based Tableaux for CTL*, BCTL* and NL-BCTL*. These the tableaux we gave uppercase names: CTL, BCTLOLD, BCTLNEW, BCTLHUE, BPATHUE and BPATH 
 2. [mlsolver](https://github.com/tcsprojects/mlsolver): Hybrid Tableau for CTL* that requires a [pgsolver](https://github.com/tcsprojects/pgsolver)
 
-To fetch all dependances and compile on Ubuntu just enter `./build.sh` 
+To fetch all dependances and compile on Ubuntu just enter `./build.sh`. This was last tested on Ubuntu 14.04.
 
 
 
