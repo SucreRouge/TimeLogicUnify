@@ -13,4 +13,6 @@ bctl_memo.ml: bctl.ml bits/memoize.pl
 	perl bits/memoize.pl bctl.ml > bctl_memo.ml
 bctl: bctl_memo.ml bctl.ml
 	ocamlopt bctl_memo.ml -o bctl
+js::
+	cd js/html && bash ./build.sh
 
