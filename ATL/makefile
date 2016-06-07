@@ -1,5 +1,7 @@
-all:
-	ocamlopt atl.ml -o atl
+all: batl bctl
+
+batl:
+	ocamlopt batl.ml -o batl
 	#ocamlc atl.ml -o atl
 	#ocamlc -c atl.ml -o atl
 atl.pdf: atl.ml
@@ -10,5 +12,7 @@ fuzztest.tmp: fuzztest.sh
 bctl_memo.ml: bctl.ml bits/memoize.pl
 	perl bits/memoize.pl bctl.ml > bctl_memo.ml
 bctl: bctl_memo.ml bctl.ml
-	ocamlopt.opt bctl_memo.ml -o bctl
+	ocamlopt bctl_memo.ml -o bctl
+js:: bctl_memo.ml
+	cd js/html && bash ./build.sh
 

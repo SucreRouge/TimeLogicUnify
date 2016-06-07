@@ -825,7 +825,7 @@ let simple_entry name = ( name, "",  fun t fname ->
                           (*Unix.chdir "mark/";*)
                           print_string (name^"->"^fname^"\n");
                           let args =
-                            [| "../../ATL/"^name; format_tree_mark t  |] in
+                            [| "ATL/"^name; format_tree_mark t  |] in
                             (*Unix.execvp "echo" args;*)
 			    Array.iter print_string args;
 			    print_string "\n";

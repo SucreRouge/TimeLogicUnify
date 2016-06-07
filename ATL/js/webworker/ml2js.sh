@@ -39,4 +39,4 @@ mv "$1"_merged.js "$1".js
 < $DIR/wrapper.html sed s/sample_cli/"$1"/g |
 	perl -e 'while(<>){if(/\#include (.*)/){system("cat $1")}else{print}}' > "$1".html
 
-firefox "$1".html
+firefox "$1".html || true
