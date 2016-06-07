@@ -21,7 +21,7 @@ do
 	then
 		continue
 	fi
-	echo -- $type $i
+	echo -- $type $i `date +%F.%s` | tee -a results/triv_run.log
 	(killall java
 	killall mlsolver
 	sleep 1
@@ -30,12 +30,19 @@ do
 
 	F=unify_misc/${type}_formulas.txt
 	head -n $NUM_FORMULAS < unify_misc/${type}_formulas.txt | sed 's/^/<\n/' > $F.tmp 
-       	UNIFY_SOLVERS="*" UNIFY_DO_NEG="N" UNIFY_CPUS=2 ./unify < $F.tmp > results/triv_${UNIFY_TIMEOUT}_${NUM_FORMULAS}_${type}.log
+       	UNIFY_SOLVERS="*" UNIFY_DO_NEG="N" UNIFY_CPUS=1 ./unify < $F.tmp > results/triv_${UNIFY_TIMEOUT}_${NUM_FORMULAS}_${type}.log
        	#UNIFY_SOLVERS="*" UNIFY_DO_NEG="N" UNIFY_CPUS=2 ./unify.exe < unify_misc/${type}_formulas.txt > results/triv_${type}.log
 done
 done
 }
 
+# It seems that if we let the tableau run for 60 seconds, unify might crash.
+# Perhaps an OOM killer thing?  
+
+for i in `seq 1 3`
+do
 triv_solv 3 1000
 triv_solv 60 100
 triv_solv 60 1000
+echo finished run $i, rerunning incase unify crashed | tee -a results/triv_run.log
+done

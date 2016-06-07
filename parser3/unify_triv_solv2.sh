@@ -18,7 +18,8 @@ do
 	   then
 		grep "^[01]$" unify_misc/${type}_formulas.txt.tmp | wc -l | tr "\n" "\t"
 	   else
-	   	grep -i satisfiable results/triv_${sec}_${count}_${type}.log  | grep -v '(3' | grep " $solver(" | wc -l | tr "\n" "\t"
+	   	#grep -i satisfiable results/triv_${sec}_${count}_${type}.log  | grep -v '(3' | grep " $solver(" | wc -l | tr "\n" "\t"
+	   	< results/triv_${sec}_${count}_${type}.log  grep " $solver(" | wc -l | tr "\n" "\t"
            fi 
 done
 echo

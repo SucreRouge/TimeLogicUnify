@@ -149,7 +149,7 @@ clean:
 	ocamlyacc -v $<
 
 rclean:
-	tar -zcf rclean_save-`date +%F`.tgz work/mark/out/ work/out/ results/ && rm work/mark/out/* work/out/* results/*
+	tar -zcf rclean_save-`date +%F`.tgz work/mark/out/ work/out/ results/ unify_misc/ TeX && rm work/mark/out/* work/out/* results/* TeX/* unify_misc/*
 
 cimeclean:
 	mkdir -p bak
