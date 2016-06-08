@@ -780,6 +780,15 @@ let rec simplify_star_TRS_nocime t_in =
 let simplify_star_both t =
 	simplify_star (simplify_star_TRS t)
 
+let simplify_star_both_nocime t =
+	simplify_star (simplify_star_TRS_nocime t)
+
+let simplify_star_all t =
+	simplify_star (simplify_star_TRS_nocime (simplify_star_TRS t))
+
+
+
+
 (*let do_mlsolver t = ignore (Do_parallel.do_commands
  [|
  fun () ->
@@ -1227,6 +1236,13 @@ let main () =
               | ',' -> do_simplify simplify_star_TRS  (split_at_n_r line 1)
               | '.' -> do_simplify simplify_star_both  (split_at_n_r line 1)
               | 'L' -> do_simplify simplify_learn (split_at_n_r line 1)
+              | '@' -> (match line.[1] with 
+		  'S' ->  (match line.[2] with 
+		      'w' -> do_simplify simplify_star_TRS_nocime (split_at_n_r line 3)
+		    | 'W' -> do_simplify simplify_star_both_nocime (split_at_n_r line 3)
+		    | 'a' -> do_simplify simplify_star_all (split_at_n_r line 3)
+		)
+	      )
               | 'B' -> do_benchmark (split_at_n_r line 1)
               | 'T' -> print_string (dump_TRS())
               | '#' -> ()

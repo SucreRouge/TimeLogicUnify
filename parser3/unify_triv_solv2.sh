@@ -11,7 +11,7 @@ do
 	# So just rerun unify multiple time and hope we get a bit further each time, manually cleaning up each time.
 	#for type in simp 
         echo "$solver" | tr "\n" "\t" | sed 's/_/\\_/g'
-	for type in orig simp both
+	for type in orig simp trs2 wald wald2 all
         #for type in orig
 do
 	   if [ $solver = null ] 
