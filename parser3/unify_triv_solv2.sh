@@ -31,7 +31,7 @@ cat <<EOF
 %created by 'make result' and 'unify_triv_solv2.sh'
 \begin{tabular}{|l|r|r|r|}
 \hline
-Solver & Original & Simplified & CiME+ \\\\
+Solver & Original & Simplified & CiME+ & Wald & Wald+ & Best\\\\
 \hline
 EOF
 sort -k3 < results/triv.out | ./csv2tex.pl  #> results/unify_len.out 

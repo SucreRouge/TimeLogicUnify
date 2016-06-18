@@ -1,6 +1,7 @@
 cp urules_manual_then_auto.txt work/urules.txt
 [ -s unify_misc/orig_formulas.txt ] || ocaml ./make_random_ctls_formulas.ml 50 1 1000 2999 > unify_misc/orig_formulas.txt
 simplify () {
+echo SIMPLIFY $1 $2
 [ -s unify_misc/"$1"_formulas.txt ] || ( < unify_misc/orig_formulas.txt sed s/^/"$2 "/ | make runu | grep Simplified.to: | sed 's/^Simplified to: //' > unify_misc/"$1"_formulas.txt )
 }
 
@@ -22,7 +23,6 @@ simplify all   @Sa
 #[ -s unify_misc/wald_formulas.txt ] || ( < unify_misc/orig_formulas.txt sed s/^/@w\ / | make runu | grep Simplified.to: | sed 's/^Simplified to: //' > unify_misc/both_formulas.txt )
 #[ -s unify_misc/wsim_formulas.txt ] || ( < unify_misc/orig_formulas.txt sed s/^/@W\ / | make runu | grep Simplified.to: | sed 's/^Simplified to: //' > unify_misc/both_formulas.txt )
 #[ -s unify_misc/all_formulas.txt  ] || ( < unify_misc/orig_formulas.txt sed s/^/@a\ / | make runu | grep Simplified.to: | sed 's/^Simplified to: //' > unify_misc/both_formulas.txt )
-exit
 
 mkdir -p work/out
 
