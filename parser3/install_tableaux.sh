@@ -1,5 +1,16 @@
 mkdir -p work
 mkdir -p work/out
+command -v firejail || apt-get install firejail || (
+	cd work/ 
+	git clone https://github.com/netblue30/firejail.git 
+	cd firejail/ 
+	git branch 9.40 
+	./configure  
+	make 
+	sudo make install
+)
+#Used as:
+#firejail --net=none --shell=none --private-dev=none --private=.  --private-bin=true ./ctlrp21_x86_64 example.01.dfg
 [ -e work/mlsolver/bin/mlsolver ] || ./git_clone_mlsolver.sh
 [ -e work/mark/src/JApplet.class ] || (
 	if ! command -v javac
