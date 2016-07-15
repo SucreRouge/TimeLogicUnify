@@ -83,7 +83,7 @@ let do_commands commands timeout concurrent =
                   with e ->
                     (print_endline ("Exception finalising task: "^(Printexc.to_string e));
 		     print_string("Current Directory: ");
-		     Sys.command("pwd");
+		     let _ = Sys.command("pwd") in
                      Printexc.print_backtrace stderr));
                    running := list_remove i (!running);
                  Hashtbl.remove pid2i pid)
