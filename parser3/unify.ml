@@ -157,8 +157,8 @@ let is_sat_regexp = Str.regexp_case_fold "is satisfiable";;
 let is_sat_regexp = Str.regexp " unsatisfiable"
 
 let title_unsat_str =  "  UNsatisfiable: " 
-let result_parse_info = [ ( Str.regexp_case_fold "\(is\|:\) satisfiable", true);
-                          ( Str.regexp_case_fold "\(is not \| un\)satisfiable",           false) ]
+let result_parse_info = [ ( Str.regexp_case_fold "\\(Result: Not valid\\|\\(is\\|:\\) satisfiable\\)", true);
+                          ( Str.regexp_case_fold "\\(Result: Valid\\|\\(is not \\| un\\)satisfiable\\)",           false) ]
 let add_ref_list a : string list ref * 'a = (ref [],a)
 let result_info = List.map add_ref_list result_parse_info
 let clear_result_info () = List.iter (fun e -> (fst e) := []) result_info
@@ -582,6 +582,29 @@ let l = match t.l with
            (format_tree_anu (List.nth t.c 1)) ^ "))"
     | _ -> failwith "Unexpected Error: invalid formula tree"
 
+
+(* Format used by CTL Resolution Procedure 
+2. Operators
+and, or, not, implies;
+AX, AG, AF, AW, AU;
+EX, EG, EF, EW, EU;
+*)
+let rec format_tree_ctlrp t = 
+  let c n = (format_tree_ctlrp(List.nth t.c n)) in
+  match t.l with
+    "<" -> "implies("^(c 1)^","^(c 0)^")" 
+  | ">" -> "implies("^(c 0)^","^(c 1)^")" 
+  | "=" -> "and(implies("^(c 1)^","^(c 0)^"),implies("^(c 0)^","^(c 1)^")"
+  | "-" -> "not("^(c 0)^")"
+  | "0" -> "and(a, not(a))"
+  | "1" ->  "or(a, not(a))"
+  | "A"| "E" -> (t.l)^(c 0)
+  | "U"| "W" -> (t.l)^"("^(c 0)^","^(c 1)^")"
+  | "X"| "F"| "G" -> (t.l)^"("^(c 0)^")"
+  | "&" -> "and("^(c 0)^","^(c 1)^")" 
+  | "|" ->  "or("^(c 0)^","^(c 1)^")" 
+  |  _ -> t.l 
+
 (* From stackoverflow *)
 let contains s2 s1 =
     let re = Str.regexp_string s2
@@ -931,12 +954,17 @@ let mlsolver_entry = ( "mlsolver", "", fun t fname ->
                               "-ve"; "-sat"; "ctlstar"; "E " ^ (format_tree2 t)  |]
 )
 
+let ctlrp_entry = ( "ctl-rp", "", fun t fname ->
+                    redirect_output fname;
+                    Unix.execv "./ctl-rp" [| "./ctl-rp"; (format_tree_ctlrp t)|]
+)
+
 (* gives the canonical file name for a tree t: STUB *)
 let md5 s = Digest.to_hex (Digest.string s)
 let canonical_file t = md5 (format_tree_mark t)
 
 let required_tasks t =
-  let solver_entries = [mlsolver_entry; anu_entry "tr";  anu_entry "gr"; anu_entry "grfoc";  anu_entry "grbj"; anu_entry_ "tree" "ctlProver/ctl"; java_entry "BCTLNEW"; java_entry "BCTLOLD" ; java_entry "CTL"; java_entry "BPATH" ; java_entry "BPATHUE";java_entry_f "BPATH" ; java_entry_f "BPATHUE";  java_entry "BCTLHUE"; simple_entry "bctl"; simple_entry "nl_bctl"; simple_entry_f "nl_bctl"  ] in
+  let solver_entries = [ctlrp_entry; mlsolver_entry; anu_entry "tr";  anu_entry "gr"; anu_entry "grfoc";  anu_entry "grbj"; anu_entry_ "tree" "ctlProver/ctl"; java_entry "BCTLNEW"; java_entry "BCTLOLD" ; java_entry "CTL"; java_entry "BPATH" ; java_entry "BPATHUE";java_entry_f "BPATH" ; java_entry_f "BPATHUE";  java_entry "BCTLHUE"; simple_entry "bctl"; simple_entry "nl_bctl"; simple_entry_f "nl_bctl"  ] in
   let tasks = ref [] in
     List.iter  ( fun e -> 
                    let (solver_name, prefix, f) = e in
@@ -959,7 +987,7 @@ let required_tasks t =
 
 (*if not Sys.file_exists *)
 
-let equivalent_solvers = [["CTL"; "mlsolver"]; ["BCTL";"BCTLNEW"; "BCTLOLD"; "BCTLHUE"; "BPATHf"; "bctl"]; ["BPATH"; "BPATHUE"; "nl_bctl"]]
+let equivalent_solvers = [["CTL"; "mlsolver"; "anu-tr"; "anu-gr"; "anu-grfoc"; "anu-grbj"; "anu-tree"; "ctl-rp"]; ["BCTL";"BCTLNEW"; "BCTLOLD"; "BCTLHUE"; "BPATHf"; "bctl"]; ["BPATH"; "BPATHUE"; "nl_bctl"]]
 
 let sat_implies = Hashtbl.create 40;;
 let stronger = ref [] in List.iter (
