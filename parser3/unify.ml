@@ -157,8 +157,8 @@ let is_sat_regexp = Str.regexp_case_fold "is satisfiable";;
 let is_sat_regexp = Str.regexp " unsatisfiable"
 
 let title_unsat_str =  "  UNsatisfiable: " 
-let result_parse_info = [ ( Str.regexp_case_fold "is satisfiable", true);
-                          ( Str.regexp_case_fold " unsatisfiable",           false) ]
+let result_parse_info = [ ( Str.regexp_case_fold "\\(Result: Not valid\\|\\(is\\|:\\) satisfiable\\)", true);
+                          ( Str.regexp_case_fold "\\(Result: Valid\\|\\(is not \\| un\\)satisfiable\\)",           false) ]
 let add_ref_list a : string list ref * 'a = (ref [],a)
 let result_info = List.map add_ref_list result_parse_info
 let clear_result_info () = List.iter (fun e -> (fst e) := []) result_info
@@ -563,6 +563,48 @@ let l = match t.l with
            (format_tree2 (List.nth t.c 1)) ^ "))"
     | _ -> failwith "Unexpected Error: invalid formula tree"
 
+(* Format used by ANU CTL provers *)
+let rec format_tree_anu t = let degree = List.length t.c in
+let l = match t.l with
+    "<" -> " <= "
+  | ">" -> " => "
+  | "=" -> " <=> "
+  | "-" -> " ~"
+  | "0" -> " (a & ~ a)"
+  | "1" -> " (a | ~ a)"
+  | "A" -> " A"
+  | "E" -> " E"
+  | _ -> t.l in
+  match degree with
+      0 -> " " ^ l ^ " "
+    | 1 -> l ^ (format_tree_anu (List.hd t.c))
+    | 2 -> "((" ^ (format_tree_anu (List.hd t.c)) ^ ") " ^ l ^ " (" ^
+           (format_tree_anu (List.nth t.c 1)) ^ "))"
+    | _ -> failwith "Unexpected Error: invalid formula tree"
+
+
+(* Format used by CTL Resolution Procedure 
+2. Operators
+and, or, not, implies;
+AX, AG, AF, AW, AU;
+EX, EG, EF, EW, EU;
+*)
+let rec format_tree_ctlrp t = 
+  let c n = (format_tree_ctlrp(List.nth t.c n)) in
+  match t.l with
+    "<" -> "implies("^(c 1)^","^(c 0)^")" 
+  | ">" -> "implies("^(c 0)^","^(c 1)^")" 
+  | "=" -> "and(implies("^(c 1)^","^(c 0)^"),implies("^(c 0)^","^(c 1)^")"
+  | "-" -> "not("^(c 0)^")"
+  | "0" -> "and(a, not(a))"
+  | "1" ->  "or(a, not(a))"
+  | "A"| "E" -> (t.l)^(c 0)
+  | "U"| "W" -> (t.l)^"("^(c 0)^","^(c 1)^")"
+  | "X"| "F"| "G" -> (t.l)^"("^(c 0)^")"
+  | "&" -> "and("^(c 0)^","^(c 1)^")" 
+  | "|" ->  "or("^(c 0)^","^(c 1)^")" 
+  |  _ -> t.l 
+
 (* From stackoverflow *)
 let contains s2 s1 =
     let re = Str.regexp_string s2
@@ -818,6 +860,34 @@ let redirect_output fname =
 let () = assert (false)*)
 (* TODO: implement the unified BCTL+BCTL* unified solver from v2 rather than just use v1.0 *)
 (* this is creates an entry for a java solver *)                                             
+
+let unix_atomic_write fd s =
+	let len = String.length s in
+        let pipe_buf = 4096 in (* linux = 4096, POSIX = 512 *)
+	assert (len < pipe_buf);
+	assert ((Unix.write fd s 0 len) = len)
+
+(* an entry for the ANU CTL provers *)
+let anu_entry_ name bin = ( "anu-"^name, "",  fun t fname ->
+  let (newstdin, pipe_write) = Unix.pipe() in
+  let oldstdin = Unix.dup Unix.stdin in
+  redirect_output fname;
+  print_string (name^"->"^fname^"\n");
+  print_string ("FORMULA: " ^ (format_tree_anu t) ^ "\n");
+  flush stdout;
+  Unix.dup2 newstdin Unix.stdin;
+  Unix.close newstdin;
+  let args = [| bin; name; "verbose" |] in
+    (*Unix.execvp "echo" args;*)
+          Array.iter print_string args;
+          print_string "\n";
+  unix_atomic_write pipe_write ((format_tree_anu t)^"\n");
+  Unix.close pipe_write;
+  Unix.execvp bin args )
+
+(* ANU graph tableau entries *)
+let anu_entry name = anu_entry_ name "graph/ctl"
+
 let java_entry name = ( name, "",  fun t fname ->
                           (*Unix.chdir "mark/";*)
                           print_string (name^"->"^fname^"\n");
@@ -864,9 +934,6 @@ let java_entry name = ( name, "",  fun t fname ->
                             redirect_output "/dev/null";
                             Unix.execvp "java" args )
 
-
-
-
 (* As above but translates the formula so that all variables are forced to be
  * treated as state variables, even if we are using a non-local logic *)
 let java_entry_f name = ( name ^ "f", "",  fun t fname ->
@@ -887,12 +954,17 @@ let mlsolver_entry = ( "mlsolver", "", fun t fname ->
                               "-ve"; "-sat"; "ctlstar"; "E " ^ (format_tree2 t)  |]
 )
 
+let ctlrp_entry = ( "ctl-rp", "", fun t fname ->
+                    redirect_output fname;
+                    Unix.execv "./ctl-rp" [| "./ctl-rp"; (format_tree_ctlrp t)|]
+)
+
 (* gives the canonical file name for a tree t: STUB *)
 let md5 s = Digest.to_hex (Digest.string s)
 let canonical_file t = md5 (format_tree_mark t)
 
 let required_tasks t =
-  let solver_entries = [mlsolver_entry; java_entry "BCTLNEW"; java_entry "BCTLOLD" ; java_entry "CTL"; java_entry "BPATH" ; java_entry "BPATHUE";java_entry_f "BPATH" ; java_entry_f "BPATHUE";  java_entry "BCTLHUE"; simple_entry "bctl"; simple_entry "nl_bctl"; simple_entry_f "nl_bctl"  ] in
+  let solver_entries = [ctlrp_entry; mlsolver_entry; anu_entry "tr";  anu_entry "gr"; anu_entry "grfoc";  anu_entry "grbj"; anu_entry_ "tree" "ctlProver/ctl"; java_entry "BCTLNEW"; java_entry "BCTLOLD" ; java_entry "CTL"; java_entry "BPATH" ; java_entry "BPATHUE";java_entry_f "BPATH" ; java_entry_f "BPATHUE";  java_entry "BCTLHUE"; simple_entry "bctl"; simple_entry "nl_bctl"; simple_entry_f "nl_bctl"  ] in
   let tasks = ref [] in
     List.iter  ( fun e -> 
                    let (solver_name, prefix, f) = e in
@@ -915,7 +987,7 @@ let required_tasks t =
 
 (*if not Sys.file_exists *)
 
-let equivalent_solvers = [["CTL"; "mlsolver"]; ["BCTL";"BCTLNEW"; "BCTLOLD"; "BCTLHUE"; "BPATHf"; "bctl"]; ["BPATH"; "BPATHUE"; "nl_bctl"]]
+let equivalent_solvers = [["CTL"; "mlsolver"; "anu-tr"; "anu-gr"; "anu-grfoc"; "anu-grbj"; "anu-tree"; "ctl-rp"]; ["BCTL";"BCTLNEW"; "BCTLOLD"; "BCTLHUE"; "BPATHf"; "bctl"]; ["BPATH"; "BPATHUE"; "nl_bctl"]]
 
 let sat_implies = Hashtbl.create 40;;
 let stronger = ref [] in List.iter (

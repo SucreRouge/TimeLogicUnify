@@ -1,0 +1,25 @@
+#!/bin/sh
+# The ctlrp21_x86_64 binary should be in the ctlrp.jail/ directory
+cat > "$0.jail/$$.tmp" <<EOF
+begin_problem(test2).
+
+list_of_descriptions.
+name({*test 2*}).
+author({*Lan Zhang*}).
+status(unsatisfiable).
+description({*Test a unsatisfiable CNF clauses set*}).
+end_of_list.
+
+
+list_of_ctlformulae(conjectures).
+  not(  $1  ).
+end_of_list.
+
+end_problem.
+EOF
+#cat $0.jail/$$.tmp
+echo "not(  $1  )"
+#echo "$1" >> $0.jail/$$.tmp
+firejail --private-etc=foo --private-tmp --net=none --shell=none --private-dev --private=$0.jail  --private-bin=true ./ctlrp21_x86_64 $$.tmp 
+rm "$0.jail/$$.tmp"
+
