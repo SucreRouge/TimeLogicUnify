@@ -28,6 +28,15 @@ mkdir -p work/out
 		#mv mark_v1 mark/src/v1.0 # really v1.x., should fix, but not now
 	fi
 )
+[ -e work/graph ] || (
+	wget http://rsise.anu.edu.au/~rpg/CTLProvers/ctlgraph.tar
+	cd work
+	tar -xf ../ctlgraph.tar 
+	cd graph
+	sudo apt install ocaml-native-compilers
+	make
+)
+
 (
 	cd cime &&
 	[ -e c3_2605_stat2.opt ] || wget http://a3pat.ensiie.fr/pub/c3_2605_stat2.opt
