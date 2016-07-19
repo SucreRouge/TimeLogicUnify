@@ -570,8 +570,8 @@ let l = match t.l with
   | ">" -> " => "
   | "=" -> " <=> "
   | "-" -> " ~"
-  | "0" -> " (a & ~ a)"
-  | "1" -> " (a | ~ a)"
+  | "0" -> " False"
+  | "1" -> " True"
   | "A" -> " A"
   | "E" -> " E"
   | _ -> t.l in
@@ -964,7 +964,7 @@ let md5 s = Digest.to_hex (Digest.string s)
 let canonical_file t = md5 (format_tree_mark t)
 
 let required_tasks t =
-  let solver_entries = [ctlrp_entry; mlsolver_entry; anu_entry "tr";  anu_entry "gr"; anu_entry "grfoc";  anu_entry "grbj"; anu_entry_ "tree" "ctlProver/ctl"; java_entry "BCTLNEW"; java_entry "BCTLOLD" ; java_entry "CTL"; java_entry "BPATH" ; java_entry "BPATHUE";java_entry_f "BPATH" ; java_entry_f "BPATHUE";  java_entry "BCTLHUE"; simple_entry "bctl"; simple_entry "nl_bctl"; simple_entry_f "nl_bctl"  ] in
+  let solver_entries = [ctlrp_entry; mlsolver_entry; anu_entry_ "tree" "ctlProver/ctl"; anu_entry_ "bdd" "bddctl/bddctl"; anu_entry "tr";  anu_entry "gr"; anu_entry "grfoc";  anu_entry "grbj"; java_entry "BCTLNEW"; java_entry "BCTLOLD" ; java_entry "CTL"; java_entry "BPATH" ; java_entry "BPATHUE";java_entry_f "BPATH" ; java_entry_f "BPATHUE";  java_entry "BCTLHUE"; simple_entry "bctl"; simple_entry "nl_bctl"; simple_entry_f "nl_bctl"  ] in
   let tasks = ref [] in
     List.iter  ( fun e -> 
                    let (solver_name, prefix, f) = e in
@@ -987,7 +987,7 @@ let required_tasks t =
 
 (*if not Sys.file_exists *)
 
-let equivalent_solvers = [["CTL"; "mlsolver"; "anu-tr"; "anu-gr"; "anu-grfoc"; "anu-grbj"; "anu-tree"; "ctl-rp"]; ["BCTL";"BCTLNEW"; "BCTLOLD"; "BCTLHUE"; "BPATHf"; "bctl"]; ["BPATH"; "BPATHUE"; "nl_bctl"]]
+let equivalent_solvers = [["CTL"; "ctl-rp"; "anu-tree"; "mlsolver"; "anu-bdd"; "anu-tr"; "anu-gr"; "anu-grfoc"; "anu-grbj"]; ["BCTL"; "BCTLNEW"; "BCTLOLD"; "BCTLHUE"; "BPATHf"; "bctl"]; ["BPATH"; "BPATHUE"; "nl_bctl"]]
 
 let sat_implies = Hashtbl.create 40;;
 let stronger = ref [] in List.iter (

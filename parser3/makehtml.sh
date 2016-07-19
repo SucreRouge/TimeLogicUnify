@@ -26,17 +26,17 @@ EOF
 if [ "$1" == "unify" ] 
 then #cat <<EOF
 #<br/><textarea name="exclude" cols=40 rows=2 onkeydown="if (event.keyCode == 13) { this.form.submit(); return false; }">CTL BCTLOLD BCTLNEW BCTLHUE BPATHUE</textarea>
-echo '<br/>'
-for s in CTL BCTLOLD BCTLNEW BCTLHUE BPATHUE bctl nl_bctl
-do
- echo '<input type="checkbox" name="solver" value="'$s'"/> '$s '&nbsp; '
-done
-for s in mlsolver BPATH
-do
- echo '<input type="checkbox" name="solver" value="'$s'" checked/> '$s '&nbsp; '
-done
-echo '<br/><input type="checkbox" name="simplify" value="y" checked/>' simplify '<br/>'
-#EOF
+echo '<br/> CTL(*): '
+checked () { for s in $*; do echo '<input type="checkbox" name="solver" value="'$s'" checked/> '$s '&nbsp; '; done; } 
+unchecked () { for s in $*; do echo '<input type="checkbox" name="solver" value="'$s'"/> '$s '&nbsp; '; done; }
+checked mlsolver
+unchecked CTL ctl-rp anu-tree anu-bdd anu-tr anu-gr anu-grfoc anu-grbj
+echo '<br/> BCTL*: '
+checked BCTLHUE 
+unchecked BCTLNEW BCTLOLD BCTLHUE BPATHf bctl
+echo '<br/> NL-BCTL*: '
+checked BPATHUE
+unchecked BPATH nl_bctl
 fi
 cat <<EOF
  <input type="submit" value="Go">
