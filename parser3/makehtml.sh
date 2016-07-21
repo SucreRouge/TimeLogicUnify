@@ -37,6 +37,7 @@ unchecked BCTLNEW BCTLOLD BCTLHUE BPATHf bctl
 echo '<br/> NL-BCTL*: '
 checked BPATHUE
 unchecked BPATH nl_bctl
+echo '<br/><input type="checkbox" name="simplify" value="y" checked/>' simplify '<br/>'
 fi
 cat <<EOF
  <input type="submit" value="Go">

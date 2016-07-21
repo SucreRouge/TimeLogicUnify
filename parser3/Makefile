@@ -83,14 +83,15 @@ unify_install: unify_www_ unify
 	chmod 666  /var/data/unify/log.3
 	rsync -ra --safe-links work/ --exclude work/ATL /var/data/unify
 	mkdir -p /var/data/unify/out
-	chmod 777  /var/data/unify/mark_v1/out
-	chmod 777  /var/data/unify/mark/out
+	#chmod 777  /var/data/unify/mark_v1/out
+	#chmod 777  /var/data/unify/mark/out
 	chmod 777  /var/data/unify/out
 	rm /var/data/unify/ATL || true
 	mkdir -p /var/data/unify/ATL
 	cp ../ATL/nl_bctl ../ATL/bctl /var/data/unify/ATL/
 	#touch /var/data/unify/out/rules.txt
 	touch /var/www/html/urules.txt
+	cp work/urules.txt.trs /var/www/html/
 	chmod 666 /var/www/html/urules.txt
 
 	mkdir -p /var/www/html/.data/
@@ -100,9 +101,14 @@ unify_install: unify_www_ unify
 	touch  /var/www/html/.data/unify_good.log 
 	chmod a+w /var/www/html/.data/unify_*.log
 	chmod a+w  /var/www/html/.data/*_stats.txt
+	chmod a+rx  /var/data/unify/ctlProver
 	#mkdir -p /var/data/unify
 	#cp -rv mark/ /var/data/unify/mark	
 	#cp -rv mlsolver/ /var/data/unify/mlsolver
+	chmod a+rwx /var/data/unify/ctl-rp.jail/
+	touch /var/www/html/.data/unify_BUG.log	
+	#firejail is unreliable on executables outside bin, *sometimes* marking them no-exec. 
+	cp -a ctl-rp.jail/ctlrp21_x86_64 /bin/
 
 # Install to a non-root web-directory where cgi-bin is not allowed (link back to machine where cgi-bin is installed)
 install_home: www_

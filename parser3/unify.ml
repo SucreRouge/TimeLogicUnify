@@ -56,7 +56,6 @@ let contains s2 s1 =
 let replace input output =
     Str.global_replace (Str.regexp_string input) output
 
-
 let _cache_result_sat = ref [""]
 let _cache_result_unsat = ref [""]
 
@@ -73,7 +72,7 @@ let home = try Sys.getenv "HOME" with _ -> origcwd^"/../.."
 *)
 (*let home = try Sys.getenv "HOME" with _ -> print_string ("Could not find HOME, trying"^origcwd^"/../..") ; origcwd^"/../.."*)
 (*let _ = Unix.chdir "/var/data/unify";;*)
-let rule_fname  = try Unix.chdir "/var/data/unify" ; "/var/www/urules.txt" 
+let rule_fname  = try Unix.chdir "/var/data/unify" ; if Sys.file_exists "/var/www/urules.txt" then  "/var/www/urules.txt" else "/var/www/html/urules.txt"
          with Unix.Unix_error (Unix.ENOENT, "chdir", _ )  ->  (*let publichtml = home ^ "/public-html/" in*)
 		try Unix.chdir (Mainlib.publichtml^".data/unify") ; Mainlib.publichtml^"urules.txt" 
          		with Unix.Unix_error (Unix.ENOENT, "chdir", _ )  -> Unix.chdir ("work") ; "urules.txt" 
@@ -397,6 +396,7 @@ let process_file_stats name fname t =
     let     hue_s = regexp_get_num     hue_regexp_2 "%0.0f" hue_s    s in
     if verbose then print_string (s);
     if (len >= size) then print_string "Data file too long\n";
+    let known = ref false in
     List.iter (fun x ->
                  let (l,(regexp,issat)) = x in
                  let result_str = (name^"("^runtime_s^")") in
@@ -413,9 +413,11 @@ let process_file_stats name fname t =
                            (* ) *)
                         | _ -> ());
                      Printf.printf "%s%s\n" title result_str; flush stdout;
+                     known := true;
                      l := (name^"("^runtime_s^")")::(!l)
                  with Not_found -> ()
     ) result_info;
+    (if not (!known) then (Printf.printf "UNKNOWN %s\n" name; flush stdout));
     if verbose then Printf.printf "**** End %s\n" fname;
     [!sat_s; runtime_s; colour_s; hue_s]
   ) else (
@@ -934,6 +936,18 @@ let java_entry name = ( name, "",  fun t fname ->
                             redirect_output "/dev/null";
                             Unix.execvp "java" args )
 
+let shades_entry = ( "BSHADES", "",  fun t fname ->
+                          (*Unix.chdir "mark/";*)
+                          print_string ("BSHADES->"^fname^"\n");
+                          let args =
+                            [| "java"; "-classpath"; "mark/src"; "-Djava.awt.headless=true"; "JApplet";
+                               format_tree_mark t; "BCTLNEW" ; fname |] in
+                            (*Unix.execvp "echo" args;*)
+			    Array.iter print_string args;
+			    print_string "\n";
+                            redirect_output "/dev/null";
+                            Unix.execvp "java" args )
+
 (* As above but translates the formula so that all variables are forced to be
  * treated as state variables, even if we are using a non-local logic *)
 let java_entry_f name = ( name ^ "f", "",  fun t fname ->
@@ -964,7 +978,7 @@ let md5 s = Digest.to_hex (Digest.string s)
 let canonical_file t = md5 (format_tree_mark t)
 
 let required_tasks t =
-  let solver_entries = [ctlrp_entry; mlsolver_entry; anu_entry_ "tree" "ctlProver/ctl"; anu_entry_ "bdd" "bddctl/bddctl"; anu_entry "tr";  anu_entry "gr"; anu_entry "grfoc";  anu_entry "grbj"; java_entry "BCTLNEW"; java_entry "BCTLOLD" ; java_entry "CTL"; java_entry "BPATH" ; java_entry "BPATHUE";java_entry_f "BPATH" ; java_entry_f "BPATHUE";  java_entry "BCTLHUE"; simple_entry "bctl"; simple_entry "nl_bctl"; simple_entry_f "nl_bctl"  ] in
+  let solver_entries = [ctlrp_entry; mlsolver_entry; anu_entry_ "tree" "ctlProver/ctl"; anu_entry_ "bdd" "bddctl/bddctl"; anu_entry "tr";  anu_entry "gr"; anu_entry "grfoc";  anu_entry "grbj"; java_entry "BCTLNEW"; java_entry "BCTLOLD" ; java_entry "CTL"; java_entry "BPATH" ; java_entry "BPATHUE";java_entry_f "BPATH"; shades_entry ; java_entry_f "BPATHUE";  java_entry "BCTLHUE"; simple_entry "bctl"; simple_entry "nl_bctl"; simple_entry_f "nl_bctl"  ] in
   let tasks = ref [] in
     List.iter  ( fun e -> 
                    let (solver_name, prefix, f) = e in
@@ -974,7 +988,12 @@ let required_tasks t =
                    let fullfname3600 = fullfname_ ^ "3600" in
 		   let fullfname = if (Sys.file_exists fullfname3600) then fullfname3600 else fullfname_ ^ max_runtime in
 		   let fname = fname_ ^ max_runtime in
-                   let task_f = (fun () -> f t fname) in
+                   let task_f = (fun () ->
+				 (* So timeouts are recorded *)
+                                 let oc = open_out fullfname in
+				 Printf.fprintf oc "EMPTY\n";
+				 close_out oc; 
+			         f t fname) in
                    let on_finish_f1 = (fun () -> process_file solver_name fullfname t ) in
                      if (Sys.file_exists fullfname) then
                        on_finish_f1 ()
@@ -987,7 +1006,7 @@ let required_tasks t =
 
 (*if not Sys.file_exists *)
 
-let equivalent_solvers = [["CTL"; "ctl-rp"; "anu-tree"; "mlsolver"; "anu-bdd"; "anu-tr"; "anu-gr"; "anu-grfoc"; "anu-grbj"]; ["BCTL"; "BCTLNEW"; "BCTLOLD"; "BCTLHUE"; "BPATHf"; "bctl"]; ["BPATH"; "BPATHUE"; "nl_bctl"]]
+let equivalent_solvers = [["CTL"; "ctl-rp"; "anu-tree"; "mlsolver"; "anu-bdd"; "anu-tr"; "anu-gr"; "anu-grfoc"; "anu-grbj"]; ["BSHADES"; "BCTL"; "BCTLNEW"; "BCTLOLD"; "BCTLHUE"; "BPATHf"; "bctl"]; ["BPATH"; "BPATHUE"; "nl_bctl"]]
 
 let sat_implies = Hashtbl.create 40;;
 let stronger = ref [] in List.iter (

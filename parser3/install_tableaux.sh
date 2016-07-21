@@ -50,17 +50,25 @@ command -v firejail || (
 	)
 	done
 )
-[ -e work/graph ] || (
-	wget http://rsise.anu.edu.au/~rpg/CTLProvers/ctlgraph.tar
+[ -e work/graph/ctl ] || (
+	[ -e ctlgraph.tar ] || wget http://rsise.anu.edu.au/~rpg/CTLProvers/ctlgraph.tar
 	cd work
 	tar -xf ../ctlgraph.tar 
 	cd graph
 	sudo apt install ocaml-native-compilers
 	make
 )
+[ -e work/ctlProver/ctl ] || (
+	[ -e ctlProver_r1368.tar ] || wget http://rsise.anu.edu.au/~rpg/CTLProvers/ctlProver_r1368.tar
+	cd work
+	tar -xf ../ctlProver_r1368.tar
+	cd ctlProver
+	make
+)
 
 [ -e work/bddctl/bddctl ] || (
-	[ -e work/buddy  ] || (
+	command -v g++ || sudo apt-get install g++
+	[ -e /usr/lib/libbdd.so.0  ] || (
 		cd work
 		git clone https://github.com/utwente-fmt/buddy.git 
 		cd buddy 
@@ -70,6 +78,7 @@ command -v firejail || (
 		./configure  
 		make 
 		sudo make install 
+		ln -s /usr/local/lib/libbdd.so.0 /usr/lib/
 	)
 	[ -e bddctl.tgz ] || wget http://rsise.anu.edu.au/~rpg/CTLProvers/bddctl.tgz
 	cd work
@@ -77,6 +86,15 @@ command -v firejail || (
 	cd bddctl
 	sed -i.bak 's/unique_ptr<CTLFormula::CTLFormula>/unique_ptr<typename CTLFormula::CTLFormula>/g' CTLMisc.cpp
 	make
+)
+
+[ -e work/ctl-rp.jail/ctlrp21_x86_64 ] || (
+	[ `arch` = x86_64 ]
+	cd work/ 
+	mkdir -p ctl-rp.jail 
+	cd ctl-rp.jail 
+	wget http://101.200.212.235:8080/01_lan_html/ctlrp/ctlrp21_x86_64 
+	chmod +x ctlrp21_x86_64  
 )
 
 (
