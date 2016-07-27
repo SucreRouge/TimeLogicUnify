@@ -99,6 +99,7 @@ let do_commands commands timeout concurrent =
                         then ()
                         else (
                           let pid = pids.(i) in
+                            Unix.system("kill `pstree -p "^(string_of_int pid)^" | perl -ne 'print \"$1\\n\" while /\\((\\d+)\\)/g'`");
                             kill pid (if killed.(i) > 1 then Sys.sigkill else sigxcpu);
                             killed.(i) <- killed.(i) + 1;
                             if killed.(i) > 3 then (

@@ -548,8 +548,8 @@ let rec simplify_star t_in =
   (!t) *)
 
 
-
-let rec format_tree2 t = let degree = List.length t.c in
+(* Format the tree in the format used my mlsolver *)
+let rec format_tree_mlsolver t = let degree = List.length t.c in
 let l = match t.l with
     "<" -> "<=="
   | ">" -> "==>"
@@ -560,10 +560,34 @@ let l = match t.l with
   | _ -> t.l in
   match degree with
       0 -> l
-    | 1 -> l ^ " " ^ (format_tree2 (List.hd t.c))
-    | 2 -> "((" ^ (format_tree2 (List.hd t.c)) ^ ") " ^ l ^ " (" ^
-           (format_tree2 (List.nth t.c 1)) ^ "))"
+    | 1 -> l ^ " " ^ (format_tree_mlsolver (List.hd t.c))
+    | 2 -> "((" ^ (format_tree_mlsolver (List.hd t.c)) ^ ") " ^ l ^ " (" ^
+           (format_tree_mlsolver (List.nth t.c 1)) ^ "))"
     | _ -> failwith "Unexpected Error: invalid formula tree"
+
+(* Encode a simple fairness constraing FGa on paths used by mlsolver *)
+let format_tree_mlsolver_simple_fair = let rec r t = 
+let degree = List.length t.c in
+let l = match t.l with
+    "<" -> "<=="
+  | ">" -> "==>"
+  | "=" -> "<==>"
+  | "-" -> "~"
+  | "0" -> "((a) & (~ a))"
+  | "1" -> "((a) | (~ a))"
+  | _ -> t.l in
+  match l with 
+	"A" -> "A ( F G a ==> "^(r (List.hd t.c))^" )"
+	| "E" -> "E ( F G a & "  ^(r (List.hd t.c))^" )"
+	| _ ->
+	  match degree with
+	      0 -> l
+	    | 1 -> l ^ " " ^ (r (List.hd t.c))
+	    | 2 -> "((" ^ (r (List.hd t.c)) ^ ") " ^ l ^ " (" ^
+	           (r (List.nth t.c 1)) ^ "))"
+	    | _ -> failwith "Unexpected Error: invalid formula tree"
+in r
+
 
 (* Format used by ANU CTL provers *)
 let rec format_tree_anu t = let degree = List.length t.c in
@@ -839,7 +863,7 @@ let simplify_star_all t =
  Unix.execv "/home/john_large/src/mlsolver-1.1/mlsolver/bin/mlsolver"
  (*[| "../../4lsolver/lsolver/bin/mlsolver.exe"; "-pgs"; "recursive"; *)
  [| "/home/john_large/src/mlsolver-1.1/mlsolver/bin/mlsolver"; "-pgs"; "recursive";
- "-ve"; "-val"; "ctlstar"; format_tree2 t  |]
+ "-ve"; "-val"; "ctlstar"; format_tree_mlsolver t  |]
  |] 1.9 3);;
 
  let do_mark t  = (*let s = format_tree_mark t*)
@@ -863,9 +887,12 @@ let () = assert (false)*)
 (* TODO: implement the unified BCTL+BCTL* unified solver from v2 rather than just use v1.0 *)
 (* this is creates an entry for a java solver *)                                             
 
-let unix_atomic_write fd s =
+let unix_noblock_write fd s =
 	let len = String.length s in
+	(*
         let pipe_buf = 4096 in (* linux = 4096, POSIX = 512 *)
+	but for non-blocking 64k should be OK: http://stackoverflow.com/questions/4624071/pipe-buffer-size-is-4k-or-64k *)
+	let pipe_buf = (1024*64) in
 	assert (len < pipe_buf);
 	assert ((Unix.write fd s 0 len) = len)
 
@@ -883,7 +910,7 @@ let anu_entry_ name bin = ( "anu-"^name, "",  fun t fname ->
     (*Unix.execvp "echo" args;*)
           Array.iter print_string args;
           print_string "\n";
-  unix_atomic_write pipe_write ((format_tree_anu t)^"\n");
+  unix_noblock_write pipe_write ((format_tree_anu t)^"\n");
   Unix.close pipe_write;
   Unix.execvp bin args )
 
@@ -965,8 +992,17 @@ let mlsolver_entry = ( "mlsolver", "", fun t fname ->
                          redirect_output fname;
                          Unix.execv "mlsolver/bin/mlsolver"
                            [| "mlsolver"; "-pgs"; "recursive";
-                              "-ve"; "-sat"; "ctlstar"; "E " ^ (format_tree2 t)  |]
+                              "-ve"; "-sat"; "ctlstar"; "E " ^ (format_tree_mlsolver t)  |]
 )
+
+let mlsolver_simple_fair_entry = ( "mlsolver_simple_fair", "", fun t fname ->
+                         redirect_output fname;
+                         Unix.execv "mlsolver/bin/mlsolver"
+                           [| "mlsolver"; "-pgs"; "recursive";
+                              "-ve"; "-sat"; "ctlstar"; "E " ^ (format_tree_mlsolver_simple_fair t)  |]
+)
+
+
 
 let ctlrp_entry = ( "ctl-rp", "", fun t fname ->
                     redirect_output fname;
@@ -978,7 +1014,7 @@ let md5 s = Digest.to_hex (Digest.string s)
 let canonical_file t = md5 (format_tree_mark t)
 
 let required_tasks t =
-  let solver_entries = [ctlrp_entry; mlsolver_entry; anu_entry_ "tree" "ctlProver/ctl"; anu_entry_ "bdd" "bddctl/bddctl"; anu_entry "tr";  anu_entry "gr"; anu_entry "grfoc";  anu_entry "grbj"; java_entry "BCTLNEW"; java_entry "BCTLOLD" ; java_entry "CTL"; java_entry "BPATH" ; java_entry "BPATHUE";java_entry_f "BPATH"; shades_entry ; java_entry_f "BPATHUE";  java_entry "BCTLHUE"; simple_entry "bctl"; simple_entry "nl_bctl"; simple_entry_f "nl_bctl"  ] in
+  let solver_entries = [mlsolver_simple_fair_entry;ctlrp_entry; mlsolver_entry; anu_entry_ "tree" "ctlProver/ctl"; anu_entry_ "bdd" "bddctl/bddctl"; anu_entry "tr";  anu_entry "gr"; anu_entry "grfoc";  anu_entry "grbj"; java_entry "BCTLNEW"; java_entry "BCTLOLD" ; java_entry "CTL"; java_entry "BPATH" ; java_entry "BPATHUE";java_entry_f "BPATH"; shades_entry ; java_entry_f "BPATHUE";  java_entry "BCTLHUE"; simple_entry "bctl"; simple_entry "nl_bctl"; simple_entry_f "nl_bctl"  ] in
   let tasks = ref [] in
     List.iter  ( fun e -> 
                    let (solver_name, prefix, f) = e in
@@ -1024,7 +1060,7 @@ let do_formula_tree formula_tree =
       	  append_s_to_fname_ [Open_append;Open_creat] normal_s ("log." ^ max_runtime);
           (*List.iter print_string (tree_leafs formula_tree);
           print_string ((format_tree (remap_leafs formula_tree)) ^ "\n");
-          print_string ((format_tree2 formula_tree) ^ "\n");
+          print_string ((format_tree_mlsolver formula_tree) ^ "\n");
           do_mlsolver formula_tree ;
            do_mark formula_tree*)
           _cache_result_sat := []; 
@@ -1166,7 +1202,7 @@ let rec simplify_learn t_in =
 
 (*let do_mlsolver t = ignore (Do_parallel.do_commands (fun () ->  [|
  [| "../../4mlsolver/mlsolver/bin/mlsolver.exe"; "-pgs"; "recursive";
- "-ve"; "-val"; "ctlstar"; format_tree2 t  |]
+ "-ve"; "-val"; "ctlstar"; format_tree_mlsolver t  |]
  |] 1.9 3)  *)
 
 let do_simplify my_simplify s =
@@ -1202,7 +1238,7 @@ let do_string s =
         print_string ("Input formula: " ^ (format_tree formula_tree) ^ "\n");
         let formula_tree = rename_variables formula_tree in 
         print_string ("Normalised to: " ^ (format_tree formula_tree) ^ "\n");
-        print_string ("mlsolver fmt: " ^ (format_tree2 formula_tree) ^ "\n");
+        print_string ("mlsolver fmt: " ^ (format_tree_mlsolver formula_tree) ^ "\n");
         print_string ("Force State Var: " ^ (format_tree (force_state_var formula_tree)) ^ "\n");
         let formula_tree = (if (!settings_simplify) 
 		then simplify (!rule_list) (rename_variables formula_tree)

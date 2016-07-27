@@ -17,12 +17,27 @@ end_of_list.
 
 end_problem.
 EOF
+
+_xcpu() { 
+  echo "Caught SIGXCPU signal!" 
+  #kill -TERM "$child" 2>/dev/null
+  kill -TERM `pstree -p $child | perl -ne 'print "$1\n" while /\((\d+)\)/g'`
+  pkill ctlrp21_x86_64 
+}
+
+trap _xcpu SIGXCPU
+trap _xcpu SIGTERM
+
 #cat $0.jail/$$.tmp
 echo "not(  $1  )"
 #--noprofile is not required on my 16.04 VM, but is on my 14.04 VPN
 cd $0.jail
+exe="--private-bin=ctlrp21_x86_64 ctlrp21_x86_64"
 if command -v ctlrp21_x86_64
-then firejail --noprofile --private-etc=foo --private-tmp --net=none --shell=none --private-dev --private=.  --private-bin=ctlrp21_x86_64 ctlrp21_x86_64 $$.tmp
-else firejail --noprofile --private-etc=foo --private-tmp --net=none --shell=none --private-dev --private=.  --private-bin=true         ./ctlrp21_x86_64 $$.tmp 
+then exe="--private-bin=ctlrp21_x86_64 ctlrp21_x86_64" 
+else exe="--private-bin=true         ./ctlrp21_x86_64" 
 fi
-rm "$0.jail/$$.tmp"
+firejail --noprofile --private-etc=foo --private-tmp --net=none --shell=none --private-dev --private=.  $exe $$.tmp &
+child=$! 
+wait "$child"
+rm "$$.tmp"
