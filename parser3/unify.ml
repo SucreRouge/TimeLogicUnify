@@ -1236,8 +1236,8 @@ let do_string s =
 (*      print_endline origcwd; *)
       let formula_tree = parse_ctls_formula s in
         print_string ("Input formula: " ^ (format_tree formula_tree) ^ "\n");
-        let formula_tree = rename_variables formula_tree in 
-        print_string ("Normalised to: " ^ (format_tree formula_tree) ^ "\n");
+        let formula_tree = if (not (!settings_simplify)) then rename_variables formula_tree else formula_tree in 
+        if ((!settings_simplify)) then print_string ("Normalised to: " ^ (format_tree formula_tree) ^ "\n");
         print_string ("mlsolver fmt: " ^ (format_tree_mlsolver formula_tree) ^ "\n");
         print_string ("Force State Var: " ^ (format_tree (force_state_var formula_tree)) ^ "\n");
         let formula_tree = (if (!settings_simplify) 
