@@ -143,6 +143,9 @@ run: main
 
 runu: run_unify
 
+runua: 
+	UNIFY_SOLVERS="*" rlwrap ./unify
+
 run_unify: unify
 	rlwrap ./unify
 
@@ -170,7 +173,7 @@ clean:
 	ocamlyacc -v $<
 
 rclean:
-	tar -zcf rclean_save-`date +%F`.tgz work/mark/out/ work/out/ results/ unify_misc/ TeX && rm work/mark/out/* work/out/* results/* TeX/* unify_misc/*
+	tar -zcf rclean_save-`date +%F`.tgz work/mark/out/ work/out/ results/ unify_misc/ TeX && rm -f work/mark/out/* work/out/* results/* TeX/* unify_misc/*
 
 cimeclean:
 	mkdir -p bak
