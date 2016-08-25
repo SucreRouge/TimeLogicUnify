@@ -68,11 +68,16 @@ command -v firejail || (
 
 [ -e work/bddctl/bddctl ] || (
 	command -v g++ || sudo apt-get install g++
+	command -v libtool || sudo apt-get install libtool
 	[ -e /usr/lib/libbdd.so.0  ] || (
 		cd work
 		git clone https://github.com/utwente-fmt/buddy.git 
 		cd buddy 
-		sudo apt install libtool-bin 
+		sudo apt install libtool-bin
+		libtoolize --force
+		aclocal
+		autoheader
+		automake --force-missing --add-missing
 		autoreconf --install 
 		autoconf
 		./configure  
