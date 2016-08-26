@@ -1,24 +1,23 @@
 %results=();
-$IN="";
 $ID="";
 while (<>) {
 	if (/^ID: ([[:alnum:]]*)/) {
-		print "||- $IN\n ";
+		if ($ID > "") {
+my @keys = sort { $a cmp $b } keys %results;  my @vals = @results{@keys}; print "$ID @vals\n#ID @keys\n";
+		}
+		#print "ID -- $1\n";
 		$ID=$1;
-	}elsif (/^Negation: (.*)/) {
-		$IN=$1;
-		print "||+ $ID\n "
-	} elsif (/^Input formula: (.*)/) {
-		$IN=$1;
 	} elsif (/^  Satisfiable: ([[:alpha:]_-]*)\(([0-9.]*)\)/) {
-		print " Y:$1:"
+		#print "Y $1 $2\n";
+		$results{$1}="Y";
 	} elsif (/^  UNsatisfiable: ([[:alpha:]_-]*)\(([0-9.]*)\)/) {
-		print " N:$1:"
+		#print "N $1 $2\n";
+		$results{$1}="N";
 	} elsif (/^UNKNOWN ([[:alpha:]_-]*)/) {
-		print " _:$1:"
 		#print "? $1\n";
+		$results{$1}="?";
+		
 	}
 }
-print "||- $IN\n ";
 			
 
