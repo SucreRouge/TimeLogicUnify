@@ -144,6 +144,7 @@ run: main
 runu: run_unify
 
 run_unify: unify
+	mkdir -p work/out
 	rlwrap ./unify
 
 depend:
