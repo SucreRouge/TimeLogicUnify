@@ -8,10 +8,17 @@ OUT=../results/ctl-tsv
 
 normalize(){
 sed '
+s/\t$//
+s/ $//
 s/,BSHADES,/BSHADES-fair/g
 s/,BCTLNEW,/BCTLNEW-fair/g
 s/:mlsolver_simple_fair:/mlsolver-fair/g
 s/://g
+s/GOOD=//
+s/BCTLNEW/ROOT/g
+s/BSHADES/SHADE/g
+s/BCTL//g
+s/^_/?/g
 '
 }
 
