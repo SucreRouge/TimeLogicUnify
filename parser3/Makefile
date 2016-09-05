@@ -204,6 +204,18 @@ TeX/benchmark.tex: work/out/benchmark.tex
 TableHue.pdf:
 	bash ./benchpath.sh
 
+#Used as a proxy for all tableax
+work/mlsolver:
+	bash ./install_tableaux.sh
+
+work/mark/src/output/MIX_FLL10NY.1.time: work/mlsolver 
+	(cd work/mark/src/benchmarks; bash do_all.sh; bash maketable.sh; bash mergetables.sh)
+
+FairBCTL-benchmarks: work/mlsolver unify work/mark/src/output/MIX_FLL10NY.1.time
+	bash unify_benchmarks/anu_benchmarks.sh
+	bash unify_benchmarks/CTL_benchmarks.sh
+	bash unify_benchmarks/process_ctl_benchmark.sh
+
 check:
 	echo '-((-Fa)U(((F((((EXAa)|(a)))|(((GFa)|(Xa)))))|(a))))' | UNIFY_SOLVERS="mlsolver CTL" make runu
 	echo '-F((Fa)|(((GFa)|(a))))' | UNIFY_SOLVERS="mlsolver CTL" make runu
