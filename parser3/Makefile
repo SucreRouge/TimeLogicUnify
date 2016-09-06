@@ -10,6 +10,7 @@ main: precheck me.ml mainlib.ml phi_lexer.ml phi_parser.ml  me_parser.ml me_pars
 	$(OCAMLC) -o main str.cmxa me.ml phi_parser.ml phi_lexer.ml  me_lexer.ml me_parser.ml mainlib.ml main.ml  
 
 unify_.ml: unify.ml
+	rm unify_.ml 2> /dev/null || true #In case a root owned file pops up
 	sed s/NUM_CPUS/`< /proc/cpuinfo  grep ^processor | wc -l`/g < unify.ml > unify_.ml
 
 unify: me.ml do_parallel.ml mainlib.ml unify_.ml phi_lexer.ml phi_parser.ml  me_parser.ml me_parser.mli me_lexer.ml main.ml phi_parser.cmi me_parser.cmi me_parser.cmo me_parser.cmo
@@ -156,6 +157,7 @@ depend:
 clean:
 	rm -rf *.cmi *.cmo *.cmx $(TARGET)
 	rm -rf calc.ml calc.mli lexer.ml lexer.mli
+	rm -f *.output
 
 .SUFFIXES: .ml .mli .mll .mly .cmo .cmi
 
@@ -206,6 +208,18 @@ TeX/benchmark.tex: work/out/benchmark.tex
 
 TableHue.pdf:
 	bash ./benchpath.sh
+
+#Used as a proxy for all tableax
+work/mlsolver:
+	bash ./install_tableaux.sh
+
+work/mark/src/output/MIX_FLL10NY.1.time: work/mlsolver 
+	(cd work/mark/src/benchmarks; bash do_all.sh; bash maketable.sh; bash mergetables.sh)
+
+FairBCTL-benchmarks: unify work/mlsolver work/mark/src/output/MIX_FLL10NY.1.time
+	bash unify_benchmarks/anu_benchmarks.sh
+	bash unify_benchmarks/CTL_benchmarks.sh
+	bash unify_benchmarks/process_ctl_benchmark.sh
 
 check:
 	echo '-((-Fa)U(((F((((EXAa)|(a)))|(((GFa)|(Xa)))))|(a))))' | UNIFY_SOLVERS="mlsolver CTL" make runu
