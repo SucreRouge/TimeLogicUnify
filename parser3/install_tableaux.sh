@@ -98,7 +98,15 @@ command -v firejail || (
 	cd work/ 
 	mkdir -p ctl-rp.jail 
 	cd ctl-rp.jail 
-	wget http://101.200.212.235:8080/01_lan_html/ctlrp/ctlrp21_x86_64 
+	wget http://101.200.212.235:8080/01_lan_html/ctlrp/ctlrp21_x86_64 || 
+		echo try: https://sourceforge.net/projects/ctlrp/
+
+	#Check that the binary hasn't been corrupted
+	#ddee03557477de1d4714237f0ed7f1be98b4c02b083fd61aa4b81da1eaabf99cc9a31b9b93c23735fc6f8db0e8c42680f36b549f1f67247a79bedff5aa98f for i686
+	[ "`sha512sum < ctlrp21_x86_64`" == '818e09cf00d0c23e0fc91bed8554783c4aa5f8af660443728220c9418f98e2b78d30d8403b50134de60552c6845e4c3ecf5820fc58fef19abc46d100629af46c  -' ] &&
+	[ "`sha256sum < ctlrp21_x86_64`" == '4a1c07aca80bd25ab80287a678671924662ecbb3edf54a76d6af24cdfd79e954  -' ] &&
+	[ "`sha1sum < ctlrp21_x86_64`"   == 'f81e5ddeb4d2ee5aa67eccf308952ce7f6da32ad  -' ] &&
+	[ "`md5sum < ctlrp21_x86_64`"    == '1f3e037bbdb20724b23e3acf5f50dea6  -' ] &&
 	chmod +x ctlrp21_x86_64  
 )
 

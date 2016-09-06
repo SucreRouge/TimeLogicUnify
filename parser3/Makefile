@@ -147,6 +147,7 @@ runua:
 	UNIFY_SOLVERS="*" rlwrap ./unify
 
 run_unify: unify
+	mkdir -p work/out
 	rlwrap ./unify
 
 depend:
