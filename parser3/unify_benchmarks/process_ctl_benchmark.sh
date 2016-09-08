@@ -78,7 +78,7 @@ SOLVERS=":ctl-rp: :anu-tr: :anu-bdd: :BSHADES: :BCTLNEW: :BCTLHUE: :mlsolver: :B
 perl unify_log2set.pl < $RESULTS/unify_CTL.log > /tmp/ubenchCTL.log
 output ubenchCTL
 
-SOLVERS=":mlsolver_simple_fair: ,BSHADES, ,BCTLNEW, ,BCTLHUE, :mlsolver: :BSHADES: :BCTLNEW: :ctl-rp: :anu-tr: :anu-bdd:"
+SOLVERS=":mlsolver_simple_fair: ,BSHADES, ,BCTLNEW, ,BCTLHUE, :mlsolver: :BSHADES: :BCTLNEW: :ctl-rp: :anu-tr: :anu-bdd: :BCTLHUE:"
 paste <(perl unify_log2set.pl < $RESULTS/anu_benchmark2.log|sed s/:/,/g) <(perl unify_log2set.pl < $RESULTS/anu_benchmark3.log) > /tmp/ubench23.log
 output ubench23
 ) | tee $OUT/summary.txt
