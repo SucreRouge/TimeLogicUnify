@@ -106,6 +106,7 @@ let getenv_kd k d = try Sys.getenv k with Not_found -> d
 let getenvi_kd k d = try int_of_string (Sys.getenv k) with Not_found -> d
 
 let settings_do_negation = (getenv_kd "UNIFY_DO_NEG" "Y") = "Y"
+let settings_do_positive = (getenv_kd "UNIFY_DO_POS" "Y") = "Y"
 (* split a string a position n and return (l)eft or (r)ight part *)
 let split_at_n_l s n =  String.sub s 0 n  
 let split_at_n_r s n = let len = String.length s in
@@ -1245,7 +1246,7 @@ let do_string s =
 		else formula_tree) in
         (if (!settings_simplify) then print_string ("Simplified to: " ^ (format_tree formula_tree) ^ "\n"));
 	print_endline ("ID: "^(canonical_file formula_tree));
-	do_formula_tree formula_tree;
+	if settings_do_positive then do_formula_tree formula_tree;
         if settings_do_negation then (
                 let formula_tree = {l="-"; c=[formula_tree]} in 
                 print_string ("Negation: " ^ (format_tree formula_tree) ^ "\n");
