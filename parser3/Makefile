@@ -155,9 +155,10 @@ depend:
 	ocamldep *.ml *.mli > .depend
 
 clean:
-	rm -rf *.cmi *.cmo *.cmx $(TARGET)
-	rm -rf calc.ml calc.mli lexer.ml lexer.mli
-	rm -f *.output
+	rm -rf *.cmi *.cmo *.cmx $(TARGET) || true
+	rm -rf calc.ml calc.mli lexer.ml lexer.mli || true
+	rm -f *.output || true
+	rm me_lexer.ml phi_lexer.ml me_parser.ml phi_parser.ml me_parser.mli *.o
 
 .SUFFIXES: .ml .mli .mll .mly .cmo .cmi
 

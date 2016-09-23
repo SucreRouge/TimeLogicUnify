@@ -23,7 +23,8 @@ let do_model_check_string s =
 		with Parsing.Parse_error-> print_string "Could not parse ME.\n")
         with 
 	  Parsing.Parse_error-> print_string "Could not parse Formula.\n"
-        | Not_found -> print_string "Is there a `:' in your input? \nIt is needed to seperate the formula from the me\n")
+        | Not_found -> print_string "Is there a `:' in your input? \nIt is needed to seperate the formula from the me\n"
+	| _ -> print_string "Unexpected model checking error")
 	;	
         Mainlib.print_count "ME checker" "mechecker_stats.txt";
         Mainlib.log (Mainlib.log_dir ^ "mechecker_" ^ !status ^ ".log") 
@@ -47,7 +48,10 @@ let main () =
     
   with End_of_file -> (print_string "EOF\n" ; flush stdout; exit 0)
 
-let _ = 
+let _ = (
+try  do_model_check_string (Sys.argv.(1))
+with Parsing.Parse_error -> Printf.printf "Parse Error!\n"
+| _ -> 
 try
     	Printf.printf "Content-type: text/plain\n\n";
 	let qs = Sys.getenv "QUERY_STRING" in
@@ -59,4 +63,4 @@ try
 with 
 	Not_found -> Printexc.print main () 
 	|  _ -> Printf.printf "Unexpected error in main loop\n"
-
+)
