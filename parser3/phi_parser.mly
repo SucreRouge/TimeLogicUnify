@@ -30,7 +30,6 @@ open Me
 %token <string> ATOM
 %token <string> BINARY
 %token <string> PREFIX 
-%token <string> BINARY
 
 %left EQUALS
 %left COMMA
