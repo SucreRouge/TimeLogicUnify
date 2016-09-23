@@ -23,7 +23,7 @@ cat $DIR/JsHeader.ml "$1".ml $DIR/JsFooter.ml > "$1"_merged.ml
 
 ocamlbuild -use-menhir -menhir "menhir" \
   -pp "camlp4o -I /opt/local/lib/ocaml/site-lib js_of_ocaml/pa_js.cmo" \
-  -cflags -I,+js_of_ocaml,-I,+site-lib/js_of_ocaml -libs js_of_ocaml \
+  -cflags -I,+js_of_ocaml,-I,+site-lib/js_of_ocaml -libs js_of_ocaml $3 \
   -lflags -I,+js_of_ocaml,-I,+site-lib/js_of_ocaml "$1"_merged.byte
 js_of_ocaml "$1"_merged.byte
 
