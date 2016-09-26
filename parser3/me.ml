@@ -373,7 +373,7 @@ let add_atom_Upq = fun  d_in fd f ->
 							then   ( ~< left ) 
 							else ( ( ~< left ) +: (right) )
                                         | '>' ->  ( ~> ( t mI.(0) pre.(mI.(0)).(b)) )
-                                        | 'S' ->  (shuffle (Array.map (fun i -> t i b) mI))
+                                        | 'S' ->  (let b_ = pre.(k).(b) in shuffle (Array.map (fun i -> t i b_) mI))
 					| _ -> failwith "Invalid_ME_Operator"
 				) in
                                 (*assert (ret != k);*)
