@@ -1,4 +1,17 @@
 #first run scripts/fuzztest.sh
+cd scripts
+cd ..
+if [ ! -e work/tatl ]
+then
+	echo run ./install_tableaux.sh THEN run scripts/check_tatl.sh
+	exit
+fi
+if [ ! -e fuzztest1.out ]
+then
+	echo first generate some results by runnign scripts/fuzztest.sh THEN run scripts/check_tatl.sh
+	exit
+fi
+
 for d in 'mlsolver>tatl' 'tatl>mlsolver'
 do
 	echo
