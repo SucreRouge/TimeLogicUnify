@@ -19,6 +19,13 @@ command -v firejail || (
 )
 #Used as:
 #firejail --net=none --shell=none --private-dev=none --private=.  --private-bin=true ./ctlrp21_x86_64 example.01.dfg
+[ -e /usr/bin/tatl ] || (
+	cd work
+	wget -c http://atila.ibisc.univ-evry.fr/tableau_ATL_star/bin/tatl_star.tar.gz
+	tar -zxf tatl_star.tar.gz tatl
+	sudo cp tatl /usr/bin
+	#sudo chown root /usr/bin/tatl
+)
 [ -e work/mlsolver/bin/mlsolver ] || ./git_clone_mlsolver.sh
 [ -e work/mark/src/JApplet.class ] || (
 	if ! command -v javac

@@ -25,8 +25,8 @@ _xcpu() {
   pkill ctlrp21_x86_64 
 }
 
-trap _xcpu SIGXCPU
-trap _xcpu SIGTERM
+trap _xcpu XCPU
+trap _xcpu TERM
 
 #cat $0.jail/$$.tmp
 echo "not(  $1  )"

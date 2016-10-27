@@ -549,7 +549,7 @@ let rec simplify_star t_in =
   (!t) *)
 
 
-(* Format the tree in the format used my mlsolver *)
+(* Format the tree in the format used by mlsolver *)
 let rec format_tree_mlsolver t = let degree = List.length t.c in
 let l = match t.l with
     "<" -> "<=="
@@ -565,6 +565,34 @@ let l = match t.l with
     | 2 -> "((" ^ (format_tree_mlsolver (List.hd t.c)) ^ ") " ^ l ^ " (" ^
            (format_tree_mlsolver (List.nth t.c 1)) ^ "))"
     | _ -> failwith "Unexpected Error: invalid formula tree"
+
+(* Format the tree in the format used by TATL *)
+let rec format_tree_tatl_ t = let degree = List.length t.c in
+let l = match t.l with
+  | ">" -> "->"
+  | "=" -> "<->"
+  | "-" -> "~"
+  | "0" -> "((a)/\\(~ a))"
+  | "1" -> "((a)\\/(~ a))"
+  | "&" -> "/\\"
+  | "A" -> "<<>>"
+  | "E" -> "<<1>>"
+  | "|" -> "\\/"
+  | _ -> t.l in
+  match degree with
+      0 -> l
+    | 1 -> l ^ " " ^ (format_tree_tatl_ (List.hd t.c))
+    | 2 -> "((" ^ (format_tree_tatl_ (List.hd t.c)) ^ ") " ^ l ^ " (" ^
+           (format_tree_tatl_ (List.nth t.c 1)) ^ "))"
+    | _ -> failwith "Unexpected Error: invalid formula tree"
+
+let format_tree_tatl t =
+  let rec n t =
+    match t with 
+      {l="<"; c=[a;b]} -> {l=">"; c=[n b;n a]}
+      | {l=ll; c=cc} -> {l=ll; c=List.map n cc} in
+  print_string (format_tree_tatl_ (n t));
+  format_tree_tatl_ (n t)
 
 (* Encode a simple fairness constraing FGa on paths used by mlsolver *)
 let format_tree_mlsolver_simple_fair = let rec r t = 
@@ -918,6 +946,25 @@ let anu_entry_ name bin = ( "anu-"^name, "",  fun t fname ->
 (* ANU graph tableau entries *)
 let anu_entry name = anu_entry_ name "graph/ctl"
 
+(*
+let tatl_entry = ( "tatl", "",  fun t fname ->
+  let (newstdin, pipe_write) = Unix.pipe() in
+  let oldstdin = Unix.dup Unix.stdin in
+  redirect_output fname;
+  print_string ("tatl->"^fname^"\n");
+  print_string ("FORMULA: " ^ (format_tree_tatl t) ^ "\n");
+  flush stdout;
+  Unix.dup2 newstdin Unix.stdin;
+  Unix.close newstdin;
+  let args = [| "./tatl"; "tatl"; "verbose" |] in
+    (*Unix.execvp "echo" args;*)
+          Array.iter print_string args;
+          print_string "\n";
+  unix_noblock_write pipe_write ("1\n"^(format_tree_tatl t)^"\n2\n2\n\n\n");
+  Unix.close pipe_write;
+  Unix.execvp "./tatl" args )
+*)
+
 let java_entry name = ( name, "",  fun t fname ->
                           (*Unix.chdir "mark/";*)
                           print_string (name^"->"^fname^"\n");
@@ -1010,12 +1057,18 @@ let ctlrp_entry = ( "ctl-rp", "", fun t fname ->
                     Unix.execv "./ctl-rp" [| "./ctl-rp"; (format_tree_ctlrp t)|]
 )
 
+
+let tatl_entry = ( "tatl", "", fun t fname ->
+                    redirect_output fname;
+                    Unix.execv "./wrap_tatl" [| "./wrap_tatl"; (format_tree_tatl t)|]
+)
+
 (* gives the canonical file name for a tree t: STUB *)
 let md5 s = Digest.to_hex (Digest.string s)
 let canonical_file t = md5 (format_tree_mark t)
 
 let required_tasks t =
-  let solver_entries = [mlsolver_simple_fair_entry;ctlrp_entry; mlsolver_entry; anu_entry_ "tree" "ctlProver/ctl"; anu_entry_ "bdd" "bddctl/bddctl"; anu_entry "tr";  anu_entry "gr"; anu_entry "grfoc";  anu_entry "grbj"; java_entry "BCTLNEW"; java_entry "BCTLOLD" ; java_entry "CTL"; java_entry "BPATH" ; java_entry "BPATHUE";java_entry_f "BPATH"; shades_entry ; java_entry_f "BPATHUE";  java_entry "BCTLHUE"; simple_entry "bctl"; simple_entry "nl_bctl"; simple_entry_f "nl_bctl"  ] in
+  let solver_entries = [tatl_entry; mlsolver_simple_fair_entry; ctlrp_entry; mlsolver_entry; anu_entry_ "tree" "ctlProver/ctl"; anu_entry_ "bdd" "bddctl/bddctl"; anu_entry "tr";  anu_entry "gr"; anu_entry "grfoc";  anu_entry "grbj"; java_entry "BCTLNEW"; java_entry "BCTLOLD" ; java_entry "CTL"; java_entry "BPATH" ; java_entry "BPATHUE";java_entry_f "BPATH"; shades_entry ; java_entry_f "BPATHUE";  java_entry "BCTLHUE"; simple_entry "bctl"; simple_entry "nl_bctl"; simple_entry_f "nl_bctl"  ] in
   let tasks = ref [] in
     List.iter  ( fun e -> 
                    let (solver_name, prefix, f) = e in
@@ -1043,7 +1096,7 @@ let required_tasks t =
 
 (*if not Sys.file_exists *)
 
-let equivalent_solvers = [["CTL"; "ctl-rp"; "anu-tree"; "mlsolver"; "anu-bdd"; "anu-tr"; "anu-gr"; "anu-grfoc"; "anu-grbj"]; ["BSHADES"; "BCTL"; "BCTLNEW"; "BCTLOLD"; "BCTLHUE"; "BPATHf"; "bctl"]; ["BPATH"; "BPATHUE"; "nl_bctl"]]
+let equivalent_solvers = [["CTL"; "ctl-rp"; "anu-tree"; "mlsolver"; "anu-bdd"; "anu-tr"; "anu-gr"; "anu-grfoc"; "anu-grbj"; "tatl"]; ["BSHADES"; "BCTL"; "BCTLNEW"; "BCTLOLD"; "BCTLHUE"; "BPATHf"; "bctl"]; ["BPATH"; "BPATHUE"; "nl_bctl"]]
 
 let sat_implies = Hashtbl.create 40;;
 let stronger = ref [] in List.iter (
