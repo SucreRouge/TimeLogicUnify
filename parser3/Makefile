@@ -21,6 +21,7 @@ unify_dbg:  me.ml do_parallel.ml mainlib.ml unify_.ml phi_lexer.ml phi_parser.ml
 	mkdir ../.data/unify/mark
 	mkdir ../.data/unify/mark/out
 	touch ../urules.txt
+	touch work/urules.txt
 	
 www_: 
 	mkdir -p www
