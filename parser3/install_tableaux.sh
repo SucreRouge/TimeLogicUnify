@@ -62,7 +62,7 @@ command -v firejail || (
 	cd work
 	tar -xf ../ctlgraph.tar 
 	cd graph
-	sudo apt install ocaml-native-compilers
+	sudo apt-get install ocaml-native-compilers 
 	make
 )
 [ -e work/ctlProver/ctl ] || (
@@ -105,8 +105,10 @@ command -v firejail || (
 	cd work/ 
 	mkdir -p ctl-rp.jail 
 	cd ctl-rp.jail 
-	wget http://101.200.212.235:8080/01_lan_html/ctlrp/ctlrp21_x86_64 || 
-		echo try: https://sourceforge.net/projects/ctlrp/
+	wget 'http://downloads.sourceforge.net/project/ctlrp/ctlrp21_sourceforge.zip?r=https%3A%2F%2Fsourceforge.net%2Fprojects%2Fctlrp%2Ffiles%2F&ts=1477648466&use_mirror=netix' -O ctlrp.zip
+	unzip -p ctlrp.zip ctlrp21_sourceforge/ctlrp21_x86_64  > ctlrp21_x86_64
+	#wget http://101.200.212.235:8080/01_lan_html/ctlrp/ctlrp21_x86_64 || 
+	#	echo try: https://sourceforge.net/projects/ctlrp/
 
 	#Check that the binary hasn't been corrupted
 	#ddee03557477de1d4714237f0ed7f1be98b4c02b083fd61aa4b81da1eaabf99cc9a31b9b93c23735fc6f8db0e8c42680f36b549f1f67247a79bedff5aa98f for i686
@@ -123,3 +125,4 @@ command -v firejail || (
 	chmod +x c3_2605_stat2.opt
 )
 cd ../ATL; make
+command -v rlwrap || apt-get install rl-wrap
