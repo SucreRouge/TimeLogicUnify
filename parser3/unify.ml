@@ -374,11 +374,17 @@ let regexp_get_num r fmt default s = try
         Printf.sprintf fmt (float_of_string ret)
     with Not_found -> default
 
+let regexp_get_str r fmt default s = try
+        ignore(Str.search_forward r s 0);
+        let ret = Str.matched_group 1 s in
+        ret
+    with Not_found -> default
+
 let runtime_regexp_ = Str.regexp "RUNTIME: \\([0-9.]*\\)"
 let colour_regexp_ = Str.regexp " \\([0-9.]*\\) colours,"
 let colour_regexp_2 = Str.regexp "#Colours=\\([0-9.]*\\)"
 let hue_regexp_ = Str.regexp " \\([0-9.]*\\) hues,"
-let hue_regexp_2 = Str.regexp "#Hues=\\([0-9.]*\\)"
+let hue_regexp_2 = Str.regexp "#Hues=\\([0-9/.]*\\)"
 
 let process_file_stats name fname t =
   let sat_s = ref "?" in
@@ -393,8 +399,8 @@ let process_file_stats name fname t =
     let runtime_s = regexp_get_num runtime_regexp_  "%0.2f" "?.??"   s in
     let  colour_s = regexp_get_num  colour_regexp_  "%0.0f" "?"      s in
     let  colour_s = regexp_get_num  colour_regexp_2 "%0.0f" colour_s s in
-    let     hue_s = regexp_get_num     hue_regexp_ "%0.0f" "?"      s in
-    let     hue_s = regexp_get_num     hue_regexp_2 "%0.0f" hue_s    s in
+    let     hue_s = regexp_get_str     hue_regexp_ "%0.0f" "?"      s in
+    let     hue_s = regexp_get_str     hue_regexp_2 "%0.0f" hue_s    s in
     if verbose then print_string (s);
     if (len >= size) then print_string "Data file too long\n";
     let known = ref false in
@@ -420,7 +426,12 @@ let process_file_stats name fname t =
     ) result_info;
     (if not (!known) then (Printf.printf "UNKNOWN %s\n" name; flush stdout));
     if verbose then Printf.printf "**** End %s\n" fname;
-    [!sat_s; runtime_s; colour_s; hue_s]
+    if (!sat_s) = "?" 
+      then (if String.contains hue_s '/'
+        then ["M"; "("^runtime_s^")"; "("^colour_s^")"; hue_s]
+        else ["?"; "?.??"; "?"; "?"]
+      )
+      else [!sat_s; runtime_s; colour_s; hue_s]
   ) else (
     print_string (fname ^ " does not exist\n");
     []
