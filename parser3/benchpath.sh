@@ -11,7 +11,7 @@ then
 #(echo '<'; cat  $formulas) | UNIFY_OFFLINE=y UNIFY_SOLVERS="BCTLNEW" make runu
 true && (echo '<'; cat  $formulas | sed 's/p/Ap/g
 s/q/Aq/g
-s/r/Ar/g' ) | UNIFY_OFFLINE=y UNIFY_SOLVERS="BPATH BPATHUE nl_bctl" make runu
+s/r/Ar/g' ) | UNIFY_OFFLINE=y UNIFY_SOLVERS="BPATH BPATHUE nl_bctl" make runu | tee benchpath.log
 fi
 
 #exit
