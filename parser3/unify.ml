@@ -1110,7 +1110,7 @@ let stronger = ref [] in List.iter (
 ) equivalent_solvers
 
 let do_formula_tree formula_tree =
-          let normal_s = (format_tree formula_tree) ^ "\n" in
+          let normal_s = (format_tree formula_tree) ^ "\t" ^ (canonical_file formula_tree) ^ "\n" in
       	  append_s_to_fname_ [Open_append;Open_creat] normal_s ("log." ^ max_runtime);
           (*List.iter print_string (tree_leafs formula_tree);
           print_string ((format_tree (remap_leafs formula_tree)) ^ "\n");
