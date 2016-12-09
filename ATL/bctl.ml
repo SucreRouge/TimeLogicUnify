@@ -106,6 +106,7 @@ module Formula = struct
 					| 'U' -> UNTIL (x,r())
 					| '|' -> NOT   (AND (NOT x, NOT (r())))
 					| '>' -> NOT   (AND (    x, NOT (r())))
+					| '<' -> NOT   (AND (NOT x,      r() ))
 					| '=' -> let y = r() in 
 						let tt =  AND (x,y) in
 						let ff =  AND (NOT x, NOT y) in
