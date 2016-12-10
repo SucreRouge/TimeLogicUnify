@@ -306,10 +306,32 @@ end;;
 
 (* MEMOIZE MODULE Hue *)
 
+let rec fact x =
+    if x <= 1 then 1.0 else (float_of_int x) *. fact (x - 1)
+
+let n_choose_k n k = (fact n) /. ( (fact k) *. (fact (n-k)) );;
+
+let max_colours = 1000000.0;;
+
+let max_hues_in_col max_colours all_hues = (
+	let max_k = ref 1 in
+	let rec rr k sum = (
+		let sum = sum +. (n_choose_k all_hues k) in
+		if sum <= max_colours
+			then (
+				max_k := k; 
+				if k < all_hues then rr (k+1) sum
+			)
+	) in
+	rr 1 0.0;
+	(!max_k)
+);;
+
 let max_hues_in_colour = 
 	if Array.length Sys.argv > 2
 	then int_of_string Sys.argv.(2)
-	else int_of_float (log (float_of_int colour_limit) /. log (float_of_int (List.length Hue.all_hues)))
+	else max_hues_in_col (float_of_int colour_limit) (List.length Hue.all_hues)
+	(*. else int_of_float (log (float_of_int colour_limit) /. log (float_of_int (List.length Hue.all_hues))) i*)
 (*i let max_hues_in_colour = 2 i*)
 let () = print_string (Printf.sprintf "Limiting ourselves to %d hues per colour\n" max_hues_in_colour)
 
