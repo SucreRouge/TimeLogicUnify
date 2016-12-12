@@ -428,7 +428,7 @@ let process_file_stats name fname t =
     if verbose then Printf.printf "**** End %s\n" fname;
     if (!sat_s) = "?" 
       then (if String.contains hue_s '/'
-        then ["M"; "("^runtime_s^")"; "("^colour_s^")"; hue_s]
+        then ["-"; "("^runtime_s^")"; "("^colour_s^")"; hue_s]
         else ["?"; "?.??"; "?"; "?"]
       )
       else [!sat_s; runtime_s; colour_s; hue_s]

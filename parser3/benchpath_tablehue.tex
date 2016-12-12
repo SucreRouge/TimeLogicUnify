@@ -1,38 +1,38 @@
 %Made by benchpath.sh and unify.ml (the unified theorem prover)
 %model name	: Intel(R) Core(TM) i7-2620M CPU @ 2.70GHz
-$(\G (p \rightarrow q) \rightarrow (\G p \rightarrow \G q))$ & Y & Y & Y & Y & 0&16 & 0&27 & 0&24 & 0&18 & 4 & 4 & 5 & 4 & 5 & 12 & 7 & 7\\ 
-$\neg (\G (p \rightarrow q) \rightarrow (\G p \rightarrow \G q))$ & N & N & N & N & 0&14 & 0&15 & 0&15 & 0&14 & 1 & 1 & 1 & 1 & 4 & 8 & 6 & 6\\ 
-$(\G p \rightarrow ((p \wedge \X p) \wedge \X \G p))$ & Y & Y & Y & Y & 0&15 & 0&19 & 0&18 & 0&16 & 4 & 4 & 5 & 4 & 5 & 8 & 6 & 6\\ 
-$\neg (\G p \rightarrow ((p \wedge \X p) \wedge \X \G p))$ & N & N & N & N & 0&14 & 0&15 & 0&15 & 0&15 & 1 & 1 & 1 & 1 & 7 & 13 & 8 & 8\\ 
-$((p \U q) \leftrightarrow (q \vee (p \wedge \X (p \U q))))$ & Y & Y & Y & Y & 0&19 & 0&34 & 0&30 & 0&20 & 4 & 5 & 6 & 4 & 5 & 13 & 7 & 7\\ 
-$\neg ((p \U q) \leftrightarrow (q \vee (p \wedge \X (p \U q))))$ & N & N & N & N & 0&14 & 0&16 & 0&15 & 0&15 & 1 & 1 & 1 & 1 & 5 & 14 & 5 & 5\\ 
+$(\G (p \rightarrow q) \rightarrow (\G p \rightarrow \G q))$ & Y & Y & Y & Y & 0&17 & 0&28 & 0&21 & 0&36 & 4 & 4 & 5 & 4 & 5 & 12 & 7 & 7\\ 
+$\neg (\G (p \rightarrow q) \rightarrow (\G p \rightarrow \G q))$ & N & N & N & N & 0&12 & 0&14 & 0&14 & 0&13 & 1 & 1 & 1 & 1 & 4 & 8 & 6 & 6\\ 
+$(\G p \rightarrow ((p \wedge \X p) \wedge \X \G p))$ & Y & Y & Y & Y & 0&15 & 0&19 & 0&18 & 0&15 & 4 & 4 & 5 & 4 & 5 & 8 & 6 & 6\\ 
+$\neg (\G p \rightarrow ((p \wedge \X p) \wedge \X \G p))$ & N & N & N & N & 0&13 & 0&14 & 0&14 & 0&13 & 1 & 1 & 1 & 1 & 7 & 13 & 8 & 8\\ 
+$((p \U q) \leftrightarrow (q \vee (p \wedge \X (p \U q))))$ & Y & Y & Y & Y & 0&19 & 0&31 & 0&33 & 0&22 & 4 & 5 & 6 & 4 & 5 & 13 & 7 & 7\\ 
+$\neg ((p \U q) \leftrightarrow (q \vee (p \wedge \X (p \U q))))$ & N & N & N & N & 0&14 & 0&15 & 0&15 & 0&13 & 1 & 1 & 1 & 1 & 5 & 14 & 5 & 5\\ 
 $((p \U q) \rightarrow \F q)$ & Y & Y & Y & Y & 0&14 & 0&19 & 0&17 & 0&15 & 4 & 4 & 6 & 4 & 5 & 10 & 7 & 7\\ 
-$\neg ((p \U q) \rightarrow \F q)$ & N & N & N & N & 0&14 & 0&14 & 0&14 & 0&14 & 1 & 1 & 1 & 1 & 6 & 11 & 7 & 8\\ 
-$(p \rightarrow \A \E p)$ & Y & Y & Y & Y & 0&14 & 0&21 & 0&14 & 0&14 & 3 & 3 & 4 & 3 & 4 & 6 & 5 & 5\\ 
-$\neg (p \rightarrow \A \E p)$ & N & N & N & N & 0&15 & 0&14 & 0&14 & 0&15 & 3 & 1 & 2 & 2 & 4 & 5 & 4 & 4\\ 
-$(\A p \rightarrow \A \A p)$ & Y & Y & Y & Y & 0&14 & 0&15 & 0&15 & 0&14 & 4 & 3 & 5 & 4 & 5 & 7 & 6 & 6\\ 
-$\neg (\A p \rightarrow \A \A p)$ & N & N & N & N & 0&16 & 0&13 & 0&14 & 0&14 & 2 & 1 & 2 & 2 & 4 & 6 & 4 & 4\\ 
-$(\A \X p \rightarrow \X \A p)$ & Y & Y & Y & Y & 0&14 & 0&15 & 0&15 & 0&15 & 5 & 4 & 6 & 5 & 6 & 9 & 7 & 6\\ 
-$\neg (\A \X p \rightarrow \X \A p)$ & N & N & N & N & 0&13 & 0&14 & 0&13 & 0&13 & 7 & 4 & 7 & 7 & 6 & 12 & 6 & 6\\ 
-$(p \rightarrow \A p)$ & Y & Y & Y & Y & 0&15 & 0&16 & 0&14 & 0&13 & 3 & 3 & 4 & 3 & 4 & 6 & 5 & 5\\ 
-$\neg (p \rightarrow \A p)$ & Y & N & N & N & 0&14 & 0&14 & 0&16 & 0&14 & 4 & 1 & 2 & 2 & 4 & 5 & 4 & 4\\ 
-$(\E (p \U \E (p \U q)) \rightarrow \E (p \U q))$ & Y & Y & Y & Y & 0&19 & 0&16 & 0&29 & 0&19 & 5 & 4 & 7 & 4 & 7 & 8 & 9 & 7\\ 
-$\neg (\E (p \U \E (p \U q)) \rightarrow \E (p \U q))$ & Y & N & N & N & 0&37 & 0&23 & 0&30 & 0&19 & 73 & 23 & 54 & 32 & 18 & 29 & 25 & 18\\ 
-$((\A \G (p \rightarrow (q \U r)) \wedge (q \U p)) \rightarrow (q \U r))$ & Y & Y & Y & Y & 0&20 & 0&34 & 0&29 & 0&22 & 7 & 7 & 9 & 7 & 8 & 20 & 12 & 14\\ 
-$\neg ((\A \G (p \rightarrow (q \U r)) \wedge (q \U p)) \rightarrow (q \U r))$ & N & N & N & N & 0&14 & 0&17 & 0&15 & 0&14 & 1 & 1 & 1 & 1 & 7 & 42 & 8 & 10\\ 
-$(\G (\E \F p \rightarrow \X \F \E \F p) \rightarrow (\E \F p \rightarrow \G \F \E \F p))$ & Y & Y & Y & Y & 0&28 & 0&30 & 0&30 & 0&28 & 9 & 8 & 10 & 9 & 9 & 17 & 12 & 11\\ 
-$\neg (\G (\E \F p \rightarrow \X \F \E \F p) \rightarrow (\E \F p \rightarrow \G \F \E \F p))$ & N & N & N & N & 0&15 & 4&73 & 0&14 & 0&14 & 1 & 983 & 1 & 1 & 12 & 202 & 12 & 12\\ 
-$(\A \G (p \rightarrow \E \X p) \rightarrow (p \rightarrow \E \G p))$ & Y & Y & Y & Y & 0&22 & 0&19 & 0&26 & 0&23 & 6 & 5 & 7 & 6 & 9 & 9 & 12 & 11\\ 
-$\neg (\A \G (p \rightarrow \E \X p) \rightarrow (p \rightarrow \E \G p))$ & Y & Y & Y & Y & 0&32 & 0&32 & 0&32 & 0&32 & 14 & 17 & 13 & 11 & 16 & 20 & 17 & 15\\ 
-$(\A \G (\E p \rightarrow \E \X (\E q \U \E p)) \rightarrow (\E p \rightarrow \E \G (\E q \U \E p)))$ & Y & Y & Y & Y & 0&30 & 0&28 & 0&35 & 0&30 & 8 & 6 & 10 & 8 & 11 & 17 & 15 & 13\\ 
-$\neg (\A \G (\E p \rightarrow \E \X (\E q \U \E p)) \rightarrow (\E p \rightarrow \E \G (\E q \U \E p)))$ & Y & Y & Y & Y & 0&66 & 0&69 & 0&72 & 0&59 & 51 & 61 & 64 & 40 & 40 & 155 & 51 & 40\\ 
-$((\A \G (p \rightarrow \E \X r) \wedge \A \G (r \rightarrow \E \X p)) \rightarrow (p \rightarrow \E \G (\F p \wedge \F r)))$ & Y & Y & Y & Y & 0&30 & 0&27 & 0&33 & 0&29 & 7 & 6 & 8 & 7 & 10 & 10 & 13 & 12\\ 
-$\neg ((\A \G (p \rightarrow \E \X r) \wedge \A \G (r \rightarrow \E \X p)) \rightarrow (p \rightarrow \E \G (\F p \wedge \F r)))$ & Y & Y & ? & Y & 0&51 & 2&06 & 3601&00 & 1&15 & 108 & 671 & ? & 2043 & 39 & 233 & ? & 245\\ 
-$p$ & Y & Y & Y & Y & 0&14 & 0&15 & 0&14 & 0&15 & 2 & 2 & 2 & 2 & 3 & 5 & 3 & 3\\ 
-$\neg p$ & Y & Y & Y & Y & 0&14 & 0&15 & 0&14 & 0&14 & 2 & 2 & 3 & 2 & 3 & 5 & 4 & 3\\ 
-$((p \wedge \X p) \wedge \F \neg p)$ & Y & Y & Y & Y & 0&15 & 0&20 & 0&18 & 0&15 & 5 & 9 & 6 & 5 & 6 & 16 & 8 & 7\\ 
-$\neg ((p \wedge \X p) \wedge \F \neg p)$ & Y & Y & Y & Y & 0&14 & 0&16 & 0&15 & 0&13 & 4 & 4 & 5 & 4 & 5 & 8 & 6 & 6\\ 
-\pbox{10cm}{$(\A \G (((((p \wedge \X \neg p) \wedge \neg q) \wedge \neg r) \vee (((\neg p \wedge \X p) \wedge q) \wedge \neg r)) \vee \ldots $\\    $\quad (((\neg p \wedge \X p) \wedge \neg q) \wedge r)) \wedge \E (\F q \wedge \F r)) $} & Y & Y & Y & Y & 0&56 & 0&40 & 0&65 & 0&58 & 36 & 67 & 50 & 36 & 31 & 68 & 49 & 35\\ 
-$\neg ( \ldots )$ & Y & Y & Y & Y & 0&36 & 0&41 & 0&41 & 0&41 & 12 & 14 & 14 & 12 & 13 & 17 & 15 & 14\\ 
-$(\A \G (\E \X p \wedge \E \X \neg p) \wedge \A \G (\G p \vee (\neg r \U (r \wedge \neg p))))$ & Y & N & Y & Y & 0&50 & 0&49 & 0&52 & 0&57 & 58 & 42 & 64 & 60 & 38 & 57 & 43 & 47\\ 
-$\neg (\A \G (\E \X p \wedge \E \X \neg p) \wedge \A \G (\G p \vee (\neg r \U (r \wedge \neg p))))$ & Y & Y & Y & Y & 0&26 & 0&23 & 0&31 & 0&26 & 7 & 6 & 8 & 7 & 10 & 9 & 11 & 10\\ 
+$\neg ((p \U q) \rightarrow \F q)$ & N & N & N & N & 0&14 & 0&14 & 0&13 & 0&13 & 1 & 1 & 1 & 1 & 6 & 11 & 7 & 8\\ 
+$(p \rightarrow \A \E p)$ & Y & Y & Y & Y & 0&14 & 0&15 & 0&15 & 0&14 & 3 & 3 & 4 & 3 & 4 & 6 & 5 & 5\\ 
+$\neg (p \rightarrow \A \E p)$ & N & N & N & N & 0&14 & 0&13 & 0&13 & 0&13 & 3 & 1 & 2 & 2 & 4 & 5 & 4 & 4\\ 
+$(\A p \rightarrow \A \A p)$ & Y & Y & Y & Y & 0&14 & 0&17 & 0&16 & 0&15 & 4 & 3 & 5 & 4 & 5 & 7 & 6 & 6\\ 
+$\neg (\A p \rightarrow \A \A p)$ & N & N & N & N & 0&13 & 0&14 & 0&12 & 0&13 & 2 & 1 & 2 & 2 & 4 & 6 & 4 & 4\\ 
+$(\A \X p \rightarrow \X \A p)$ & Y & Y & Y & Y & 0&15 & 0&16 & 0&14 & 0&14 & 5 & 4 & 6 & 5 & 6 & 9 & 7 & 6\\ 
+$\neg (\A \X p \rightarrow \X \A p)$ & N & N & N & N & 0&13 & 0&20 & 0&14 & 0&13 & 7 & 4 & 7 & 7 & 6 & 12 & 6 & 6\\ 
+$(p \rightarrow \A p)$ & Y & Y & Y & Y & 0&14 & 0&14 & 0&14 & 0&14 & 3 & 3 & 4 & 3 & 4 & 6 & 5 & 5\\ 
+$\neg (p \rightarrow \A p)$ & Y & N & N & N & 0&13 & 0&14 & 0&13 & 0&13 & 4 & 1 & 2 & 2 & 4 & 5 & 4 & 4\\ 
+$(\E (p \U \E (p \U q)) \rightarrow \E (p \U q))$ & Y & Y & Y & Y & 0&19 & 0&16 & 0&31 & 0&19 & 5 & 4 & 7 & 4 & 7 & 8 & 9 & 7\\ 
+$\neg (\E (p \U \E (p \U q)) \rightarrow \E (p \U q))$ & Y & N & N & N & 0&38 & 0&24 & 0&29 & 0&19 & 73 & 23 & 57 & 33 & 18 & 29 & 25 & 18\\ 
+$((\A \G (p \rightarrow (q \U r)) \wedge (q \U p)) \rightarrow (q \U r))$ & Y & Y & Y & Y & 0&22 & 0&36 & 0&32 & 0&22 & 7 & 7 & 9 & 7 & 8 & 20 & 12 & 14\\ 
+$\neg ((\A \G (p \rightarrow (q \U r)) \wedge (q \U p)) \rightarrow (q \U r))$ & N & N & N & N & 0&13 & 0&16 & 0&13 & 0&14 & 1 & 1 & 1 & 1 & 7 & 42 & 8 & 10\\ 
+$(\G (\E \F p \rightarrow \X \F \E \F p) \rightarrow (\E \F p \rightarrow \G \F \E \F p))$ & Y & Y & Y & Y & 0&28 & 0&33 & 0&29 & 1&02 & 9 & 8 & 10 & 9 & 9 & 17 & 12 & 11\\ 
+$\neg (\G (\E \F p \rightarrow \X \F \E \F p) \rightarrow (\E \F p \rightarrow \G \F \E \F p))$ & N & N & N & N & 0&14 & 7&24 & 0&14 & 0&14 & 1 & 983 & 1 & 1 & 12 & 202 & 12 & 12\\ 
+$(\A \G (p \rightarrow \E \X p) \rightarrow (p \rightarrow \E \G p))$ & Y & Y & Y & Y & 0&22 & 0&19 & 0&29 & 0&21 & 6 & 5 & 7 & 6 & 9 & 9 & 12 & 11\\ 
+$\neg (\A \G (p \rightarrow \E \X p) \rightarrow (p \rightarrow \E \G p))$ & Y & Y & Y & Y & 1&14 & 0&99 & 0&33 & 0&30 & 14 & 17 & 13 & 11 & 16 & 20 & 17 & 15\\ 
+$(\A \G (\E p \rightarrow \E \X (\E q \U \E p)) \rightarrow (\E p \rightarrow \E \G (\E q \U \E p)))$ & Y & Y & Y & Y & 0&29 & 0&27 & 0&35 & 0&30 & 8 & 6 & 10 & 8 & 11 & 17 & 15 & 13\\ 
+$\neg (\A \G (\E p \rightarrow \E \X (\E q \U \E p)) \rightarrow (\E p \rightarrow \E \G (\E q \U \E p)))$ & Y & Y & Y & Y & 0&66 & 0&66 & 0&80 & 0&59 & 51 & 61 & 64 & 40 & 40 & 155 & 51 & 40\\ 
+$((\A \G (p \rightarrow \E \X r) \wedge \A \G (r \rightarrow \E \X p)) \rightarrow (p \rightarrow \E \G (\F p \wedge \F r)))$ & Y & Y & Y & Y & 0&30 & 0&27 & 0&34 & 0&30 & 7 & 6 & 8 & 7 & 10 & 10 & 13 & 12\\ 
+$\neg ((\A \G (p \rightarrow \E \X r) \wedge \A \G (r \rightarrow \E \X p)) \rightarrow (p \rightarrow \E \G (\F p \wedge \F r)))$ & Y & Y & ? & Y & 0&54 & 2&46 & ?&?? & 1&22 & 116 & 671 & ? & 2219 & 39 & 233 & ? & 245\\ 
+$p$ & Y & Y & Y & Y & 0&13 & 0&14 & 0&13 & 0&13 & 2 & 2 & 2 & 2 & 3 & 5 & 3 & 3\\ 
+$\neg p$ & Y & Y & Y & Y & 0&13 & 0&13 & 0&14 & 0&14 & 2 & 2 & 3 & 2 & 3 & 5 & 4 & 3\\ 
+$((p \wedge \X p) \wedge \F \neg p)$ & Y & Y & Y & Y & 0&15 & 0&19 & 0&16 & 0&15 & 5 & 9 & 6 & 5 & 6 & 16 & 8 & 7\\ 
+$\neg ((p \wedge \X p) \wedge \F \neg p)$ & Y & Y & Y & Y & 0&14 & 0&16 & 0&16 & 0&14 & 4 & 4 & 5 & 4 & 5 & 8 & 6 & 6\\ 
+\pbox{10cm}{$(\A \G (((((p \wedge \X \neg p) \wedge \neg q) \wedge \neg r) \vee (((\neg p \wedge \X p) \wedge q) \wedge \neg r)) \vee \ldots $\\    $\quad (((\neg p \wedge \X p) \wedge \neg q) \wedge r)) \wedge \E (\F q \wedge \F r)) $} & Y & Y & Y & Y & 0&57 & 0&37 & 0&68 & 0&54 & 36 & 67 & 50 & 36 & 31 & 68 & 49 & 35\\ 
+$\neg ( \ldots )$ & Y & Y & Y & Y & 0&39 & 0&39 & 0&43 & 0&41 & 12 & 14 & 14 & 12 & 13 & 17 & 15 & 14\\ 
+$(\A \G (\E \X p \wedge \E \X \neg p) \wedge \A \G (\G p \vee (\neg r \U (r \wedge \neg p))))$ & Y & N & Y & Y & 0&46 & 0&44 & 1&78 & 0&53 & 59 & 42 & 65 & 61 & 38 & 57 & 43 & 47\\ 
+$\neg (\A \G (\E \X p \wedge \E \X \neg p) \wedge \A \G (\G p \vee (\neg r \U (r \wedge \neg p))))$ & Y & Y & Y & Y & 0&27 & 0&22 & 0&28 & 0&23 & 7 & 6 & 8 & 7 & 10 & 9 & 11 & 10\\ 

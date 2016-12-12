@@ -151,7 +151,7 @@ let verbose  =
 
 let () = print_endline "Read formula"
 
-let colour_limit = 1000000
+let colour_limit = 100000
 
 (* \subsection{Hues} *)
 (* We define a Hue as a set of formulas, however a "Hue" is only a
