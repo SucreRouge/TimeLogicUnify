@@ -153,6 +153,15 @@ let read_all_lines file_name =
   let _ = close_in_noerr in_channel in
   List.rev (lines);;
 
+(* Rosetta URL: http://rosettacode.org/wiki/Read_entire_file#OCaml *)
+let load_file f =
+  let ic = open_in f in
+  let n = in_channel_length ic in
+  let s = String.create n in
+  really_input ic s 0 n;
+  close_in ic;
+  (s)
+
 let is_sat_regexp = Str.regexp_case_fold "is satisfiable";;
 let is_sat_regexp = Str.regexp " unsatisfiable"
 
@@ -390,19 +399,26 @@ let process_file_stats name fname t =
   let sat_s = ref "?" in
   if verbose then Printf.printf "**** Begin %s\n" name;
   if (Sys.file_exists fname) then (
+(* Should have used "really_input" instead of input
+   Quick check that fix really is correct: 
+     for f in BSHADES BCTLNEW BCTLHUE; do grep formula `grep 'ID_neg:\ ' results/anu_benchmark3.log | sed s,'ID.*:\ ',work/out/, | sed 's/$/.'$f'60/'` | wc -l; done
+     for f in BSHADES BCTLNEW BCTLHUE; do grep formula `grep 'ID_neg:\ ' results/anu_benchmark3.log | sed s,'ID.*:\ ',work/out/, | sed 's/$/.'$f'60/'` | grep is.sat | wc -l; done
+     for f in ctl-rp anu-tr  anu-bdd BSHADES BCTLNEW BCTLHUE mlsolver; do grep formula `grep 'ID.*:\ ' results/anu_benchmark60.log | sed s,'ID.*:\ ',work/out/, | sed 's/$/.'$f'3/'` | wc -l; done
+
     let chan = open_in fname in
-    let size = 440 * 1024 in
+    let size = 1 + (in_channel_length chan) in
     let buffer = String.create size in
     let len = input chan buffer 0 size in
     close_in_noerr chan;
     let s = (String.sub buffer 0 len) in
+    if (len >= size) then print_string "Data file too long\n";*)
+    let s = load_file fname in
     let runtime_s = regexp_get_num runtime_regexp_  "%0.2f" "?.??"   s in
     let  colour_s = regexp_get_num  colour_regexp_  "%0.0f" "?"      s in
     let  colour_s = regexp_get_num  colour_regexp_2 "%0.0f" colour_s s in
     let     hue_s = regexp_get_str     hue_regexp_ "%0.0f" "?"      s in
     let     hue_s = regexp_get_str     hue_regexp_2 "%0.0f" hue_s    s in
     if verbose then print_string (s);
-    if (len >= size) then print_string "Data file too long\n";
     let known = ref false in
     List.iter (fun x ->
                  let (l,(regexp,issat)) = x in
@@ -1314,6 +1330,7 @@ let do_string s =
         if settings_do_negation then (
                 let formula_tree = {l="-"; c=[formula_tree]} in 
                 print_string ("Negation: " ^ (format_tree formula_tree) ^ "\n");
+		print_endline ("ID_neg: "^(canonical_file formula_tree));
         	do_formula_tree formula_tree
         );
 	status := "good"
