@@ -403,7 +403,7 @@ let process_file_stats name fname t =
    Quick check that fix really is correct: 
      for f in BSHADES BCTLNEW BCTLHUE; do grep formula `grep 'ID_neg:\ ' results/anu_benchmark3.log | sed s,'ID.*:\ ',work/out/, | sed 's/$/.'$f'60/'` | wc -l; done
      for f in BSHADES BCTLNEW BCTLHUE; do grep formula `grep 'ID_neg:\ ' results/anu_benchmark3.log | sed s,'ID.*:\ ',work/out/, | sed 's/$/.'$f'60/'` | grep is.sat | wc -l; done
-     for f in ctl-rp anu-tr  anu-bdd BSHADES BCTLNEW BCTLHUE mlsolver; do grep formula `grep 'ID.*:\ ' results/anu_benchmark60.log | sed s,'ID.*:\ ',work/out/, | sed 's/$/.'$f'3/'` | wc -l; done
+     for f in ctl-rp anu-tr  anu-bdd BSHADES BCTLNEW BCTLHUE mlsolver; do grep formula `grep 'ID_neg:\ ' results/anu_benchmark1.log | sed s,'ID.*:\ ',work/out/, | sed 's/$/.'$f'60/'` | wc -l; done
 
     let chan = open_in fname in
     let size = 1 + (in_channel_length chan) in
@@ -574,7 +574,33 @@ let rec simplify_star t_in =
                
   done;
   (!t) *)
-
+let rec is_ctl t = let hd = List.hd in
+  match (List.length t.c) with
+  0 -> (t.l = "0" || t.l = "1" || ((String.compare t.l "a") * (String.compare t.l "z") < 1))
+  | 1 -> (
+    match t.l with 
+    "A" | "E" -> (let path = (hd t.c) in 
+      match List.length path.c with
+      0 -> false
+      | 1 -> (match path.l with
+        "G" | "F" | "N" | "X" -> is_ctl (hd path.c)
+        | _ -> false)
+      | 2 -> (
+        match path.l with
+        "U" | "W" -> (
+          match path.c with 
+          a :: b :: [] -> (is_ctl a) && (is_ctl b)
+	  | _ -> false)
+        | _ -> false)
+      | _ -> false)
+    | "-" -> is_ctl (hd t.c)
+    | _ -> false)
+  | 2 -> (match t.l with
+    "=" | "<" | ">" | "|" | "&" -> (match t.c with
+      a :: b :: [] -> is_ctl a && is_ctl b
+      | _ -> false)
+    | _ -> false)
+  | _ -> false
 
 (* Format the tree in the format used by mlsolver *)
 let rec format_tree_mlsolver t = let degree = List.length t.c in
@@ -1419,9 +1445,15 @@ let expect_file fname =
     Sys.command("pwd");();
     print_endline ("Warning, cannot find file: "^fname)
   )
-   
+
+let filter_ctl () =
+  while true do
+    let line = try read_line() with End_of_file -> (flush stdout; exit 0)  in
+    if (is_ctl (parse_ctls_formula line)) then print_string (line ^ "\n")
+  done
 
 let main () =
+  if (Array.length Sys.argv = 2) && (Sys.argv.(1) = "--filter-ctl") then filter_ctl ();
   print_endline ("Data/current dir: "^(Sys.getcwd()));
   expect_file "mark/src/JApplet.class";
   expect_file "mlsolver/bin/mlsolver";
@@ -1466,12 +1498,12 @@ let main () =
        | x -> print_string (Printexc.get_backtrace ()) ; print_string (Printexc.to_string x); failwith "Unexpected exception 1"
 
 let _ =
-  Printf.printf "Content-Type: text/plain\n\n";
   (*let (p,t) = parse_tree_trs_ 0 "U(a,b)" in
   print_endline (format_tree t);*)
   let _ =  parse_tree_TRS_rule_ " U(implies(x, y), -(y)) -> F(-(y))" in
   try
     let qs = Sys.getenv "QUERY_STRING" in
+    Printf.printf "Content-Type: text/plain\n\n";
       Me.max_size := 10000;
       ( try
 	  settings_simplify := (try (Mainlib.get_url_argument "simplify" qs) = "y" with Not_found -> false);
