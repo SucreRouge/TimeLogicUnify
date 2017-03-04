@@ -8,8 +8,8 @@ if($i>26){s/.*/ERROR:TOO MANY ATOMS/}; #But we cant have more than 26 ASCII lett
 s/False/0/g;s/True/1/g; 
 s/ => / > /g;
 s/^/~(/g;
-s/$/)/;'  | grep -v ATOMS | grep -v B | (cd ../.. ; ./unify --filter-ctl)
+s/$/)/;'  | grep -v ATOMS | grep -v B | (cd ../.. ; ./unify --filter-ctl) | sort -u
 
 #Relace last three lines with following line for original benchmarks.
-#s/ => / > /g;'  | grep -v ATOMS | grep -v B | (cd ../.. ; ./unify --filter-ctl)
+#s/ => / > /g;'  | grep -v ATOMS | grep -v B | (cd ../.. ; ./unify --filter-ctl) | sort -u
 #s/p([0-9]*)/chr(ord(a)+$1)/eg;
