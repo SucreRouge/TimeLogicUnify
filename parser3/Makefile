@@ -222,6 +222,7 @@ FairBCTL-benchmarks: unify work/mlsolver work/mark/src/output/MIX_FLL10NY.1.time
 	bash unify_benchmarks/anu_benchmarks.sh
 	bash unify_benchmarks/CTL_benchmarks.sh
 	bash unify_benchmarks/process_ctl_benchmark.sh
+	echo NOT ALL benchmarks have been generated, see comment in convert_anu.sh
 
 check:
 	echo '-((-Fa)U(((F((((EXAa)|(a)))|(((GFa)|(Xa)))))|(a))))' | UNIFY_SOLVERS="mlsolver CTL" make runu
