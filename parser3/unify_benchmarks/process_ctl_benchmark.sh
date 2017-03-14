@@ -2,9 +2,26 @@
 #processes ctl and anu bencmarks
 #generates TeX tables in TeX/ctl
 #RESULTS=~/i7e420anu2/results/
+
+SOLVERS="ctl-rp anu-tr anu-bdd BSHADES BCTLNEW BCTLHUE mlsolver"
 RESULTS=../results/
 OUT=../results/ctl-tsv
 [ -e $OUT  ] || mkdir $OUT
+
+(
+cd $RESULTS
+for SOLVER in $SOLVERS
+do T="$SOLVER"60; grep ID ../results/unify_CTL.log | sed s,.*:.,../work/out/, | while read f; do 
+if grep -i  '\(valid\|satisfiable\)' $f.$T > /dev/null; then grep RUNTIME $f.$T; else echo 99;fi; done | sed s/RUNTIME:.// | 
+    tee $T.runtime 
+#sed s/\\..*// |
+(echo $SOLVER; sort -n < $T.runtime) > $T.sort
+done
+paste `for SOLVER in $SOLVERS; do echo $SOLVER"60".sort; done` | tee ALL.sort
+
+#echo "plot for [i=1:7] 'ALL.sort' u 0:i w lp title columnheader(i)" | gnuplot
+echo "set term pdf mono; set key at graph 0.4,0.95 ; set logscale y; set yrange [0.01:60]; set output 'FairBCTL-Benchmark-ALL-logscale.pdf'; plot for [i=1:7] 'ALL.sort' u 0:i w lp title columnheader(i)  pointinterval 50 " | gnuplot; evince ALL.pdf &
+)
 
 
 normalize(){
@@ -97,3 +114,5 @@ echo NOTE: there ARE counterexamples to this, just not in this benchmark.
 for a in Y N; do echo; for b in Y N; do echo -ne `< /tmp/ubench23.log grep "$a:mlsolver_simple_fair:" | grep "$b,B[[:alnum:]]*," | wc -l`"\t"; done; done
 
 less $OUT/summary.txt
+
+
