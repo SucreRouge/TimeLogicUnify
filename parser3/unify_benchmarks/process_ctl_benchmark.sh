@@ -3,25 +3,66 @@
 #generates TeX tables in TeX/ctl
 #RESULTS=~/i7e420anu2/results/
 
-SOLVERS="ctl-rp anu-tr anu-bdd BSHADES BCTLNEW BCTLHUE mlsolver"
 RESULTS=../results/
 OUT=../results/ctl-tsv
 [ -e $OUT  ] || mkdir $OUT
 
 (
+SOLVERS="BSHADES BCTLNEW BCTLHUE"
+cd $RESULTS
+for SOLVER in mlsolver_simple_fair
+do T="$SOLVER"60; 
+[ -e $T.FAIRruntime ] || ( 
+ grep ID_neg ../results/anu_benchmark1.log | sed s,.*:.,../work/out/, | while read f; do
+if grep -i  '\(valid\|satisfiable\)' $f.$T > /dev/null; then grep RUNTIME $f.$T; else echo 99;fi; done | sed s/RUNTIME:.// | 
+    tee $T.FAIRruntime)
+#sed s/\\..*// |
+(echo $SOLVER; sort -n < $T.FAIRruntime) > $T.FAIRsort
+done
+for SOLVER in $SOLVERS
+do T="$SOLVER"60; 
+[ -e $T.FAIRruntime ] || ( 
+ grep ID_neg ../results/anu_benchmark2.log | sed s,.*:.,../work/out/, | while read f; do
+if grep -i  '\(valid\|satisfiable\)' $f.$T > /dev/null; then grep RUNTIME $f.$T; else echo 99;fi; done | sed s/RUNTIME:.// | 
+    tee $T.FAIRruntime)
+#sed s/\\..*// |
+(echo $SOLVER; sort -n < $T.FAIRruntime) > $T.FAIRsort
+done
+paste `for SOLVER in mlsolver_simple_fair $SOLVERS; do echo $SOLVER"60".FAIRsort; done` | sed '
+s/anu-//g
+s/BCTLNEW/TREE/g
+s/BSHADES/SHADE/g
+s/BCTL//g' | tee ALL.FAIRsort
+#s/_simple_fair//
+
+#echo "plot for [i=1:4] 'ALL.sort' u 0:i w lp title columnheader(i)" | gnuplot
+echo "set term pdf mono; set key at graph 0.4,0.95 ; set logscale y; set yrange [0.01:60]; set xrange [1:500]; set output 'FairBCTL-Benchmark-ALL-logscale-FAIR.pdf'; plot for [i=1:4] 'ALL.FAIRsort' u 0:i w lp title columnheader(i)  pointinterval 50 " | gnuplot
+evince FairBCTL-Benchmark-ALL-logscale-FAIR.pdf &
+)
+exit
+
+(
+SOLVERS="ctl-rp anu-tr anu-bdd BSHADES BCTLNEW BCTLHUE mlsolver"
 cd $RESULTS
 for SOLVER in $SOLVERS
-do T="$SOLVER"60; grep ID ../results/unify_CTL.log | sed s,.*:.,../work/out/, | while read f; do 
+do T="$SOLVER"60; 
+[ -e $T.runtime ] || ( 
+ grep ID ../results/unify_CTL.log | sed s,.*:.,../work/out/, | while read f; do
 if grep -i  '\(valid\|satisfiable\)' $f.$T > /dev/null; then grep RUNTIME $f.$T; else echo 99;fi; done | sed s/RUNTIME:.// | 
-    tee $T.runtime 
+    tee $T.runtime)
 #sed s/\\..*// |
 (echo $SOLVER; sort -n < $T.runtime) > $T.sort
 done
-paste `for SOLVER in $SOLVERS; do echo $SOLVER"60".sort; done` | tee ALL.sort
+paste `for SOLVER in $SOLVERS; do echo $SOLVER"60".sort; done` | sed '
+s/anu-//g
+s/BCTLNEW/TREE/g
+s/BSHADES/SHADE/g
+s/BCTL//g' | tee ALL.sort
 
 #echo "plot for [i=1:7] 'ALL.sort' u 0:i w lp title columnheader(i)" | gnuplot
-echo "set term pdf mono; set key at graph 0.4,0.95 ; set logscale y; set yrange [0.01:60]; set output 'FairBCTL-Benchmark-ALL-logscale.pdf'; plot for [i=1:7] 'ALL.sort' u 0:i w lp title columnheader(i)  pointinterval 50 " | gnuplot; evince ALL.pdf &
+echo "set term pdf mono; set key at graph 0.4,0.95 ; set logscale y; set yrange [0.01:60]; set output 'FairBCTL-Benchmark-ALL-logscale.pdf'; plot for [i=1:7] 'ALL.sort' u 0:i w lp title columnheader(i)  pointinterval 50 " | gnuplot; evince FairBCTL-Benchmark-ALL-logscale.pdf &
 )
+exit
 
 
 normalize(){
